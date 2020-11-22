@@ -15,50 +15,17 @@ ROOT.gStyle.SetOptStat(0)
 ROOT.gROOT.SetBatch(True)   
 
 sample_names = [
-    'jpsi_tau' ,
-    'jpsi_mu'  ,
-#     'jpsi_pi'  ,
-    'psi2s_mu' ,
-    'chic0_mu' ,
-    'chic1_mu' ,
-    'chic2_mu' ,
-    'hc_mu'    ,
-    'psi2s_tau',
-#     'jpsi_3pi' ,
-    'jpsi_hc'  ,
+    'jpsi_tau_new',
+    'jpsi_mu_new' ,
+    'jpsi_tau_old',
+    'jpsi_mu_old' ,
 ]
 
-weights = dict()
-weights['jpsi_tau' ] = 0.25
-weights['jpsi_mu'  ] = 1.
-weights['jpsi_pi'  ] = 1.
-weights['psi2s_mu' ] = 0.336000000 + 0.177300000 + 0.032800000 + 0.001300000
-weights['chic0_mu' ] = 0.011600000
-weights['chic1_mu' ] = 0.344000000
-weights['chic2_mu' ] = 0.195000000
-weights['hc_mu'    ] = 0.01
-weights['psi2s_tau'] = 0.336000000 + 0.177300000 + 0.032800000 + 0.001300000
-weights['jpsi_3pi' ] = 1.
-weights['jpsi_hc'  ] = 1.
-weights['data'     ] = 1.
-
-# add normalisation factor from Jpsi pi MC
-for k, v in weights.items():
-    v *= 0.79
-
 titles = dict()
-titles['jpsi_tau' ] = 'B_{c}#rightarrowJ/#Psi#tau'
-titles['jpsi_mu'  ] = 'B_{c}#rightarrowJ/#Psi#mu'
-titles['jpsi_pi'  ] = 'B_{c}#rightarrowJ/#Psi#pi'
-titles['psi2s_mu' ] = 'B_{c}#rightarrow#Psi(2S)#mu'
-titles['chic0_mu' ] = 'B_{c}#rightarrow#chi_{c0}#mu'
-titles['chic1_mu' ] = 'B_{c}#rightarrow#chi_{c1}#mu'
-titles['chic2_mu' ] = 'B_{c}#rightarrow#chi_{c2}#mu'
-titles['hc_mu'    ] = 'B_{c}#rightarrowh_{c}#mu'
-titles['psi2s_tau'] = 'B_{c}#rightarrow#Psi(2S)#tau'
-titles['jpsi_3pi' ] = 'B_{c}#rightarrowJ/#Psi3#pi'
-titles['jpsi_hc'  ] = 'B_{c}#rightarrowJ/#PsiH_{c}'
-titles['data'     ] = 'observed'
+titles['jpsi_tau_new'] = 'B_{c}#rightarrowJ/#Psi#tau Private'
+titles['jpsi_mu_new' ] = 'B_{c}#rightarrowJ/#Psi#mu Private'
+titles['jpsi_tau_old'] = 'B_{c}#rightarrowJ/#Psi#tau UL18'
+titles['jpsi_mu_old' ] = 'B_{c}#rightarrowJ/#Psi#mu UL18'
    
 preselection = ' & '.join([
     'mu1pt>3'               ,
@@ -85,14 +52,10 @@ preselection = ' & '.join([
 preselection_mc = ' & '.join([preselection, 'abs(k_genpdgId)==13'])
 
 samples = dict()
-for isample_name in sample_names:
-    samples[isample_name] = ROOT.RDataFrame('BTommm', '../samples_20_novembre/samples/BcToXToJpsi_is_%s_merged.root' %isample_name).Filter(preselection_mc)
-
-samples['data'] = ROOT.RDataFrame('BTommm', '../samples_20_novembre/samples/data_bc_mmm.root').Filter(preselection)
-
-# @ROOT.Numba.Declare(['float', 'float', 'float'], 'float')
-# def maxdr(x, y, z):
-#     return max([x, y, z])
+samples['jpsi_tau_new'] = ROOT.RDataFrame('BTommm', '../samples_20_novembre/samples/BcToXToJpsi_is_jpsi_tau_merged.root').Filter(preselection_mc) 
+samples['jpsi_mu_new' ] = ROOT.RDataFrame('BTommm', '../samples_20_novembre/samples/BcToXToJpsi_is_jpsi_mu_merged.root' ).Filter(preselection_mc) 
+samples['jpsi_tau_old'] = ROOT.RDataFrame('BTommm', '../dataframes_2020Oct19/BcToXToJpsi_is_jpsi_tau_merged.root'       ).Filter(preselection_mc) 
+samples['jpsi_mu_old' ] = ROOT.RDataFrame('BTommm', '../dataframes_2020Oct19/BcToXToJpsi_is_jpsi_mu_merged.root'        ).Filter(preselection_mc) 
 
 to_define = [
     ('abs_mu1_dxy' , 'abs(mu1_dxy)'         ),
@@ -107,7 +70,7 @@ to_define = [
     ('k_iso03_rel' , 'k_iso03/kpt'          ),
     ('k_iso04_rel' , 'k_iso04/kpt'          ),
     ('l1_iso03_rel', 'l1_iso03/mu1pt'       ),
-    ('l1_iso04_rel', 'l1_iso04/mu2pt'       ),
+    ('l1_iso04_rel', 'l1_iso04/mu1pt'       ),
     ('l2_iso03_rel', 'l2_iso03/mu2pt'       ),
     ('l2_iso04_rel', 'l2_iso04/mu2pt'       ),
     ('mu1_p4'      , 'ROOT::Math::PtEtaPhiMVector(mu1pt, mu1eta, mu1phi, mu1mass)'),
@@ -128,9 +91,6 @@ to_define = [
 ]
 
 for k, v in samples.items():
-    samples[k] = samples[k].Define('br_weight', '%f' %weights[k])
-#     samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight*weightGen')
-    samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight' if k!='data' else 'br_weight') # weightGen is suposed to be the lifetime reweigh, but it's broken
     for new_column, new_definition in to_define:
         samples[k] = samples[k].Define(new_column, new_definition)
 
@@ -140,7 +100,7 @@ colours = list(map(ROOT.TColor.GetColor, all_palettes['Spectral'][len(samples)])
 
 print ('user defined variables')
 print ('='*80)
-for i in samples['jpsi_mu'].GetDefinedColumnNames(): print(i)
+for i in samples['jpsi_mu_new'].GetDefinedColumnNames(): print(i)
 print ('%'*80)
 
 c1 = ROOT.TCanvas('c1', '', 700, 700)
@@ -154,24 +114,33 @@ c1.Draw()
 # first create all the pointers
 print('====> creating pointers to histo')
 temp_hists = {}
+to_skip = []
 for k, v in histos.items():    
     temp_hists[k] = {}
     for kk, vv in samples.items():
-        temp_hists[k]['%s_%s' %(k, kk)] = vv.Histo1D(v[0], k, 'total_weight')
-
+        try:
+            temp_hists[k]['%s_%s' %(k, kk)] = vv.Histo1D(v[0], k, 'puWeight')
+        except:
+            print('problem with', k, 'skipping...')
+            to_skip.append(k)
+            
 print('====> now looping')
 # then let RDF lazyness work 
 for k, v in histos.items():
 
+    if k in to_skip:
+        continue
+        
     leg = ROOT.TLegend(0.22,.74,.93,.90)
     leg.SetBorderSize(0)
     leg.SetFillColor(0)
     leg.SetFillStyle(0)
     leg.SetTextFont(42)
     leg.SetTextSize(0.035)
-    leg.SetNColumns(3)
+    leg.SetNColumns(2)
+    
     for kk, vv in samples.items():
-        leg.AddEntry(temp_hists[k]['%s_%s' %(k, kk)].GetValue(), titles[kk], 'F' if kk!='data' else 'EP')
+        leg.AddEntry(temp_hists[k]['%s_%s' %(k, kk)].GetValue(), titles[kk], 'L')
 
     maxima = []
     data_max = 0.
@@ -180,17 +149,13 @@ for k, v in histos.items():
         ihist = kv[1]
         ihist.GetXaxis().SetTitle(v[1])
         ihist.GetYaxis().SetTitle('a.u.')
-#         ihist.Scale(1./ihist.Integral())
-        ihist.SetLineColor(colours[i] if key!='%s_data'%k else ROOT.kBlack)
-        ihist.SetFillColor(colours[i] if key!='%s_data'%k else ROOT.kWhite)
-        if key!='%s_data'%k:
-            maxima.append(ihist.GetMaximum())
-        else:
-            data_max = ihist.GetMaximum()
+        ihist.Scale(1./ihist.Integral())
+        ihist.SetLineColor(colours[i])
+        ihist.SetFillColor(colours[i])
+        ihist.SetFillStyle(0) # hollow
+        maxima.append(ihist.GetMaximum())
     
     c1.SetLogy(v[2])
-
-    ths1 = ROOT.THStack('stack', '')
 
     for i, kv in enumerate(temp_hists[k].items()):
         key = kv[0]
@@ -200,32 +165,20 @@ for k, v in histos.items():
         if not v[2]:
             ihist.SetMinimum(0.)
         ihist.Draw('hist' + 'same'*(i>0))
-        ths1.Add(ihist.GetValue())
 
-    ths1.Draw('hist')
-    ths1.GetXaxis().SetTitle(v[1])
-#     ths1.GetYaxis().SetTitle('a.u.')
-    ths1.GetYaxis().SetTitle('events')
-    if v[2]:
-        ths1.SetMaximum(20*max(sum(maxima), data_max))
-    else:
-        ths1.SetMaximum(1.5*max(sum(maxima), data_max))
+        if v[2]:
+            ihist.SetMaximum(20*max(maxima))
+        else:
+            ihist.SetMaximum(1.5*max(maxima))
 
     leg.Draw('same')
-    
-    temp_hists[k]['%s_data'%k].Draw('EP SAME')
-        
+            
     CMS_lumi(c1, 4, 0, cmsText = 'CMS', extraText = '   Simulation', lumi_13TeV = '')
 
     c1.cd()
-    rjpsi_value = ROOT.TPaveText(0.7, 0.68, 0.88, 0.72, 'nbNDC')
-    rjpsi_value.AddText('R(J/#Psi) = %.2f' %weights['jpsi_tau'])
-#     rjpsi_value.SetTextFont(62)
-    rjpsi_value.SetFillColor(0)
-    rjpsi_value.Draw()
 
     c1.Modified()
     c1.Update()
-    c1.SaveAs('plots/pdf/%s.pdf' %k)
-    c1.SaveAs('plots/png/%s.png' %k)
+    c1.SaveAs('plots_shapes/pdf/%s.pdf' %k)
+    c1.SaveAs('plots_shapes/png/%s.png' %k)
     
