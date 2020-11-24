@@ -3,7 +3,6 @@ import numpy as np
 from bokeh.palettes import viridis, all_palettes
 from histos import histos
 from cmsstyle import CMS_lumi
-import pickle
 
 from officialStyle import officialStyle
 officialStyle(ROOT.gStyle)
@@ -18,40 +17,20 @@ ROOT.gROOT.SetBatch(True)
 sample_names = [
     'jpsi_tau' ,
     'jpsi_mu'  ,
-#     'jpsi_pi'  ,
+    'bkg'      ,
     'psi2s_mu' ,
     'chic0_mu' ,
     'chic1_mu' ,
     'chic2_mu' ,
     'hc_mu'    ,
     'psi2s_tau',
-#     'jpsi_3pi' ,
     'jpsi_hc'  ,
-    'data'     ,
 ]
-
-weights = dict()
-weights['jpsi_tau' ] = 0.25
-weights['jpsi_mu'  ] = 1.
-weights['jpsi_pi'  ] = 1.
-weights['psi2s_mu' ] = 0.336000000 + 0.177300000 + 0.032800000 + 0.001300000
-weights['chic0_mu' ] = 0.011600000
-weights['chic1_mu' ] = 0.344000000
-weights['chic2_mu' ] = 0.195000000
-weights['hc_mu'    ] = 0.01
-weights['psi2s_tau'] = 0.336000000 + 0.177300000 + 0.032800000 + 0.001300000
-weights['jpsi_3pi' ] = 1.
-weights['jpsi_hc'  ] = 1.
-weights['data'     ] = 1.
-
-# add normalisation factor from Jpsi pi MC
-for k, v in weights.items():
-    v *= 0.79
 
 titles = dict()
 titles['jpsi_tau' ] = 'B_{c}#rightarrowJ/#Psi#tau'
 titles['jpsi_mu'  ] = 'B_{c}#rightarrowJ/#Psi#mu'
-titles['jpsi_pi'  ] = 'B_{c}#rightarrowJ/#Psi#pi'
+titles['bkg'      ] = 'J/#Psi + #mu background'
 titles['psi2s_mu' ] = 'B_{c}#rightarrow#Psi(2S)#mu'
 titles['chic0_mu' ] = 'B_{c}#rightarrow#chi_{c0}#mu'
 titles['chic1_mu' ] = 'B_{c}#rightarrow#chi_{c1}#mu'
@@ -60,7 +39,6 @@ titles['hc_mu'    ] = 'B_{c}#rightarrowh_{c}#mu'
 titles['psi2s_tau'] = 'B_{c}#rightarrow#Psi(2S)#tau'
 titles['jpsi_3pi' ] = 'B_{c}#rightarrowJ/#Psi3#pi'
 titles['jpsi_hc'  ] = 'B_{c}#rightarrowJ/#PsiH_{c}'
-titles['data'     ] = 'observed'
    
 preselection = ' & '.join([
     'mu1pt>3'               ,
@@ -77,27 +55,22 @@ preselection = ' & '.join([
     'Bmass<6.3'             ,
     'mu1_mediumID>0.5'      ,
     'mu2_mediumID>0.5'      ,
-    'k_mediumID>0.5'        ,
+#     'k_mediumID>0.5'        ,
     'Bpt_reco>15'           ,
     'abs(mu1_dz-mu2_dz)<0.4', 
     'abs(mu1_dz-k_dz)<0.4'  ,
     'abs(mu2_dz-k_dz)<0.4'  ,
-    
-    'bdt_bkg<0.04'          ,
-    'bdt_tau>0.05'          ,
 ])
 
-preselection_mc = ' & '.join([preselection, 'abs(k_genpdgId)==13'])
+# preselection_mc = ' & '.join([preselection, 'abs(k_genpdgId)==13'])
 
 samples = dict()
-# for isample_name in sample_names:
-#     samples[isample_name] = ROOT.RDataFrame('BTommm', '../samples_20_novembre/samples/BcToXToJpsi_is_%s_merged.root' %isample_name).Filter(preselection_mc)
-# 
-# samples['data'] = ROOT.RDataFrame('BTommm', '../samples_20_novembre/samples/data_bc_mmm.root').Filter(preselection)
-
 for isample_name in sample_names:
-    filter = preselection_mc if isample_name!='data' else preselection
-    samples[isample_name] = ROOT.RDataFrame('BTommm', '../samples_20_novembre/samples/BcToXToJpsi_is_%s_enriched.root' %isample_name).Filter(filter)
+    if isample_name=='bkg':
+        continue
+    samples[isample_name] = ROOT.RDataFrame('BTommm', '../samples_20_novembre/samples/BcToXToJpsi_is_%s_merged.root' %isample_name).Filter(preselection)
+
+samples['bkg'] = ROOT.RDataFrame('BTommm', '../dataframes_2020Oct19/Onia_merged.root').Filter(preselection) 
 
 to_define = [
     ('abs_mu1_dxy' , 'abs(mu1_dxy)'         ),
@@ -112,7 +85,7 @@ to_define = [
     ('k_iso03_rel' , 'k_iso03/kpt'          ),
     ('k_iso04_rel' , 'k_iso04/kpt'          ),
     ('l1_iso03_rel', 'l1_iso03/mu1pt'       ),
-    ('l1_iso04_rel', 'l1_iso04/mu2pt'       ),
+    ('l1_iso04_rel', 'l1_iso04/mu1pt'       ),
     ('l2_iso03_rel', 'l2_iso03/mu2pt'       ),
     ('l2_iso04_rel', 'l2_iso04/mu2pt'       ),
     ('mu1_p4'      , 'ROOT::Math::PtEtaPhiMVector(mu1pt, mu1eta, mu1phi, mu1mass)'),
@@ -133,12 +106,7 @@ to_define = [
 ]
 
 for k, v in samples.items():
-    samples[k] = samples[k].Define('br_weight', '%f' %weights[k])
-#     samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight*weightGen')
-    samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight' if k!='data' else 'br_weight') # weightGen is suposed to be the lifetime reweigh, but it's broken
     for new_column, new_definition in to_define:
-        if samples[k].HasColumn(new_column):
-            continue
         samples[k] = samples[k].Define(new_column, new_definition)
 
 # better for categorical data
@@ -161,26 +129,33 @@ c1.Draw()
 # first create all the pointers
 print('====> creating pointers to histo')
 temp_hists = {}
+to_skip = []
 for k, v in histos.items():    
     temp_hists[k] = {}
     for kk, vv in samples.items():
-        temp_hists[k]['%s_%s' %(k, kk)] = vv.Histo1D(v[0], k, 'total_weight')
-
+        try:
+            temp_hists[k]['%s_%s' %(k, kk)] = vv.Histo1D(v[0], k, 'puWeight')
+        except:
+            print('problem with', k, 'skipping...')
+            to_skip.append(k)
+            
 print('====> now looping')
 # then let RDF lazyness work 
 for k, v in histos.items():
 
-    c1.SetLogy(False)
-
+    if k in to_skip:
+        continue
+        
     leg = ROOT.TLegend(0.22,.74,.93,.90)
     leg.SetBorderSize(0)
     leg.SetFillColor(0)
     leg.SetFillStyle(0)
     leg.SetTextFont(42)
     leg.SetTextSize(0.035)
-    leg.SetNColumns(3)
+    leg.SetNColumns(2)
+    
     for kk, vv in samples.items():
-        leg.AddEntry(temp_hists[k]['%s_%s' %(k, kk)].GetValue(), titles[kk], 'F' if kk!='data' else 'EP')
+        leg.AddEntry(temp_hists[k]['%s_%s' %(k, kk)].GetValue(), titles[kk], 'L')
 
     maxima = []
     data_max = 0.
@@ -189,70 +164,36 @@ for k, v in histos.items():
         ihist = kv[1]
         ihist.GetXaxis().SetTitle(v[1])
         ihist.GetYaxis().SetTitle('a.u.')
-#         ihist.Scale(1./ihist.Integral())
-        ihist.SetLineColor(colours[i] if key!='%s_data'%k else ROOT.kBlack)
-        ihist.SetFillColor(colours[i] if key!='%s_data'%k else ROOT.kWhite)
-        if key!='%s_data'%k:
-            maxima.append(ihist.GetMaximum())
-        else:
-            data_max = ihist.GetMaximum()
+        ihist.Scale(1./ihist.Integral())
+        ihist.SetLineColor(colours[i])
+        ihist.SetFillColor(colours[i])
+        ihist.SetFillStyle(0) # hollow
+        maxima.append(ihist.GetMaximum())
     
-    ths1 = ROOT.THStack('stack', '')
+    c1.SetLogy(v[2])
 
     for i, kv in enumerate(temp_hists[k].items()):
         key = kv[0]
         if key=='%s_data'%k: continue
         ihist = kv[1]
         ihist.SetMaximum(2.*max(maxima))
-        # ihist.SetMinimum(0.)
+        if not v[2]:
+            ihist.SetMinimum(0.)
         ihist.Draw('hist' + 'same'*(i>0))
-        ths1.Add(ihist.GetValue())
 
-    ths1.Draw('hist')
-    ths1.GetXaxis().SetTitle(v[1])
-#     ths1.GetYaxis().SetTitle('a.u.')
-    ths1.GetYaxis().SetTitle('events')
-    ths1.SetMaximum(1.5*max(sum(maxima), data_max))
-    ths1.SetMinimum(0.)
+        if v[2]:
+            ihist.SetMaximum(20*max(maxima))
+        else:
+            ihist.SetMaximum(1.5*max(maxima))
 
     leg.Draw('same')
-    
-    temp_hists[k]['%s_data'%k].Draw('EP SAME')
-        
+            
     CMS_lumi(c1, 4, 0, cmsText = 'CMS', extraText = '   Simulation', lumi_13TeV = '')
 
     c1.cd()
-    rjpsi_value = ROOT.TPaveText(0.7, 0.68, 0.88, 0.72, 'nbNDC')
-    rjpsi_value.AddText('R(J/#Psi) = %.2f' %weights['jpsi_tau'])
-#     rjpsi_value.SetTextFont(62)
-    rjpsi_value.SetFillColor(0)
-    rjpsi_value.Draw()
 
     c1.Modified()
     c1.Update()
-    c1.SaveAs('plots/pdf/lin/%s.pdf' %k)
-    c1.SaveAs('plots/png/lin/%s.png' %k)
+    c1.SaveAs('plots_shapes_bkg/pdf/%s.pdf' %k)
+    c1.SaveAs('plots_shapes_bkg/png/%s.png' %k)
     
-    ths1.SetMaximum(20*max(sum(maxima), data_max))
-    ths1.SetMinimum(10)
-    c1.SetLogy(True)
-    c1.Modified()
-    c1.Update()
-    c1.SaveAs('plots/pdf/log/%s.pdf' %k)
-    c1.SaveAs('plots/png/log/%s.png' %k)
-
-
-# yields
-with open('plots/yields.txt', 'w') as ff:
-    for kk, vv in temp_hists[k].items(): 
-        print(kk.replace(k, '')[1:], '\t\t%.1f' %vv.Integral(), file=ff)
-#     bdt_bkg_jpsi_tau 3948.9365414152853
-#     bdt_bkg_jpsi_mu 94574.23172625527
-#     bdt_bkg_psi2s_mu 2706.268623426849
-#     bdt_bkg_chic0_mu 123.95937895825925
-#     bdt_bkg_chic1_mu 3749.351849318308
-#     bdt_bkg_chic2_mu 2166.6999011308308
-#     bdt_bkg_hc_mu 153.63938793882727
-#     bdt_bkg_psi2s_tau 44.34575448272228
-#     bdt_bkg_jpsi_hc 1599.6847955062985
-#     bdt_bkg_data 230350.0
