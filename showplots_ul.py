@@ -6,10 +6,10 @@ from histos import histos
 from cmsstyle import CMS_lumi
 import pickle
 
-os.system('mkdir -p plots_private/pdf/lin/')
-os.system('mkdir -p plots_private/pdf/log/')
-os.system('mkdir -p plots_private/png/lin/')
-os.system('mkdir -p plots_private/png/log/')
+os.system('mkdir -p plots_ul/pdf/lin/')
+os.system('mkdir -p plots_ul/pdf/log/')
+os.system('mkdir -p plots_ul/png/lin/')
+os.system('mkdir -p plots_ul/png/log/')
 
 from officialStyle import officialStyle
 officialStyle(ROOT.gStyle)
@@ -104,14 +104,16 @@ preselection = ' & '.join([
 preselection_mc = ' & '.join([preselection, 'abs(k_genpdgId)==13'])
 
 samples = dict()
-# for isample_name in sample_names:
-#     samples[isample_name] = ROOT.RDataFrame('BTommm', '../samples_20_novembre/samples/BcToXToJpsi_is_%s_merged.root' %isample_name).Filter(preselection_mc)
-# 
-# samples['data'] = ROOT.RDataFrame('BTommm', '../samples_20_novembre/samples/data_bc_mmm.root').Filter(preselection)
 
 for isample_name in sample_names:
     filter = preselection_mc if isample_name!='data' else preselection
-    samples[isample_name] = ROOT.RDataFrame('BTommm', '../samples_20_novembre/samples/BcToXToJpsi_is_%s_enriched.root' %isample_name).Filter(filter)
+    if isample_name=='jpsi_tau':
+        samples[isample_name] = ROOT.RDataFrame('BTommm', ['/Users/manzoni/Documents/RJPsi/dataframes_2020Nov24/BcToJpsiTauNu/BcToJpsiTauNu_UL_0_ptmax.root']).Filter(filter)
+    elif isample_name=='jpsi_mu':
+        samples[isample_name] = ROOT.RDataFrame('BTommm', ['/Users/manzoni/Documents/RJPsi/dataframes_2020Nov24/BcToJpsiMuNu/BcToJpsiMuNu_UL_0_ptmax.root',
+                                                           '/Users/manzoni/Documents/RJPsi/dataframes_2020Nov24/BcToJpsiMuNu/BcToJpsiMuNu_UL_1_ptmax.root']).Filter(filter)
+    else:
+        samples[isample_name] = ROOT.RDataFrame('BTommm', '../samples_20_novembre/samples/BcToXToJpsi_is_%s_enriched.root' %isample_name).Filter(filter)
 
 to_define = [
     ('abs_mu1_dxy'  , 'abs(mu1_dxy)'           ),
@@ -163,8 +165,12 @@ to_define = [
 
 for k, v in samples.items():
     samples[k] = samples[k].Define('br_weight', '%f' %weights[k])
-#     samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight*weightGen')
-    samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight' if k!='data' else 'br_weight') # weightGen is suposed to be the lifetime reweigh, but it's broken
+    if k=='jpsi_tau':
+       samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight*290620./500805.')
+    elif k=='jpsi_mu':
+       samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight*24433./38658.')
+    else:
+        samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight' if k!='data' else 'br_weight') # weightGen is suposed to be the lifetime reweigh, but it's broken
     for new_column, new_definition in to_define:
         if samples[k].HasColumn(new_column):
             continue
@@ -264,19 +270,19 @@ for k, v in histos.items():
 
     c1.Modified()
     c1.Update()
-    c1.SaveAs('plots_private/pdf/lin/%s.pdf' %k)
-    c1.SaveAs('plots_private/png/lin/%s.png' %k)
+    c1.SaveAs('plots_ul/pdf/lin/%s.pdf' %k)
+    c1.SaveAs('plots_ul/png/lin/%s.png' %k)
     
     ths1.SetMaximum(20*max(sum(maxima), data_max))
     ths1.SetMinimum(10)
     c1.SetLogy(True)
     c1.Modified()
     c1.Update()
-    c1.SaveAs('plots_private/pdf/log/%s.pdf' %k)
-    c1.SaveAs('plots_private/png/log/%s.png' %k)
+    c1.SaveAs('plots_ul/pdf/log/%s.pdf' %k)
+    c1.SaveAs('plots_ul/png/log/%s.png' %k)
 
 # yields
-with open('plots_private/yields.txt', 'w') as ff:
+with open('plots_ul/yields.txt', 'w') as ff:
     total_expected = 0.
     for kk, vv in temp_hists[k].items(): 
         if 'data' not in kk:
