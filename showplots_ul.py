@@ -75,30 +75,39 @@ preselection = ' & '.join([
     'abs(mu1eta)<2.5'       ,
     'abs(mu2eta)<2.5'       ,
     'abs(keta)<2.5'         ,
-    'Bsvprob>1e-7'          ,
+#     'Bsvprob>1e-7'          ,
     'abs(k_dxy)<0.2'        ,
     'abs(mu1_dxy)<0.2'      ,
     'abs(mu2_dxy)<0.2'      ,
-    'Bcos2D>0.95'           ,
+#     'Bcos2D>0.95'           ,
     'Bmass<6.3'             ,
     'mu1_mediumID>0.5'      ,
     'mu2_mediumID>0.5'      ,
     'k_mediumID>0.5'        ,
-    'Bpt_reco>15'           ,
+#     'Bpt_reco>15'           ,
     'abs(mu1_dz-mu2_dz)<0.4', 
     'abs(mu1_dz-k_dz)<0.4'  ,
     'abs(mu2_dz-k_dz)<0.4'  ,
     
 #     'bdt_bkg<0.04'          ,
 #     'bdt_tau>0.05'          ,
-    'Bsvprob>0.8'          ,
-    'Blxy<0.4'             ,
-#     'abs(mu1_dz-mu2_dz)<0.2', 
-#     'abs(mu1_dz-k_dz)<0.2'  ,
-#     'abs(mu2_dz-k_dz)<0.2'  ,
-#     'abs(k_dxy)<0.1'        ,
-#     'abs(mu1_dxy)<0.1'      ,
-#     'abs(mu2_dxy)<0.1'      ,
+#     'Bsvprob>0.8'           ,
+#     'Blxy<0.4'              ,
+    'abs(mu1_dz-mu2_dz)<0.2', 
+    'abs(mu1_dz-k_dz)<0.2'  ,
+    'abs(mu2_dz-k_dz)<0.2'  ,
+    'abs(k_dxy)<0.05'       ,
+    'abs(mu1_dxy)<0.05'     ,
+    'abs(mu2_dxy)<0.05'     ,
+    'mu1pt>6'               ,
+    'mu2pt>6'               ,
+    'kpt>10'                 ,
+#     'Bcos2D>0.995'          ,
+#     'abs(jpsiK_mass-5.27929)>0.060',
+#     'abs(jpsipi_mass-5.27929)>0.060',
+#     'abs(Beta)>1.5'         ,
+    'jpsi_pt<20',
+    'm_miss_sq>0.5',
 ])
 
 preselection_mc = ' & '.join([preselection, 'abs(k_genpdgId)==13'])
@@ -106,14 +115,13 @@ preselection_mc = ' & '.join([preselection, 'abs(k_genpdgId)==13'])
 samples = dict()
 
 for isample_name in sample_names:
-    filter = preselection_mc if isample_name!='data' else preselection
     if isample_name=='jpsi_tau':
-        samples[isample_name] = ROOT.RDataFrame('BTommm', ['/Users/manzoni/Documents/RJPsi/dataframes_2020Nov24/BcToJpsiTauNu/BcToJpsiTauNu_UL_0_ptmax.root']).Filter(filter)
+        samples[isample_name] = ROOT.RDataFrame('BTommm', ['/Users/manzoni/Documents/RJPsi/dataframes_2020Nov24/BcToJpsiTauNu/BcToJpsiTauNu_UL_0_ptmax.root'])
     elif isample_name=='jpsi_mu':
         samples[isample_name] = ROOT.RDataFrame('BTommm', ['/Users/manzoni/Documents/RJPsi/dataframes_2020Nov24/BcToJpsiMuNu/BcToJpsiMuNu_UL_0_ptmax.root',
-                                                           '/Users/manzoni/Documents/RJPsi/dataframes_2020Nov24/BcToJpsiMuNu/BcToJpsiMuNu_UL_1_ptmax.root']).Filter(filter)
+                                                           '/Users/manzoni/Documents/RJPsi/dataframes_2020Nov24/BcToJpsiMuNu/BcToJpsiMuNu_UL_1_ptmax.root'])
     else:
-        samples[isample_name] = ROOT.RDataFrame('BTommm', '../samples_20_novembre/samples/BcToXToJpsi_is_%s_enriched.root' %isample_name).Filter(filter)
+        samples[isample_name] = ROOT.RDataFrame('BTommm', '../samples_20_novembre/samples/BcToXToJpsi_is_%s_enriched.root' %isample_name)
 
 to_define = [
     ('abs_mu1_dxy'  , 'abs(mu1_dxy)'           ),
@@ -178,7 +186,7 @@ for k, v in samples.items():
 
 # apply filters on newly defined variables
 for k, v in samples.items():
-    filter = 'abs(jpsiK_mass-5.27929)>0.060 & abs(jpsipi_mass-5.27929)>0.060'
+    filter = preselection_mc if isample_name!='data' else preselection
     samples[k] = samples[k].Filter(filter)
 
 # better for categorical data
@@ -254,7 +262,18 @@ for k, v in histos.items():
     ths1.GetYaxis().SetTitle('events')
     ths1.SetMaximum(1.5*max(sum(maxima), data_max))
     ths1.SetMinimum(0.)
-
+    
+#     import pdb ; pdb.set_trace()
+    
+    # statistical uncertainty
+    stats = ths1.GetStack().Last()
+    stats.SetLineColor(0)
+    stats.SetFillColor(ROOT.kGray+1)
+    stats.SetFillStyle(3344)
+    stats.SetMarkerSize(0)
+    stats.Draw('E2 SAME')
+    leg.AddEntry(stats, 'stat. unc.', 'F')
+    
     leg.Draw('same')
     
     temp_hists[k]['%s_data'%k].Draw('EP SAME')
