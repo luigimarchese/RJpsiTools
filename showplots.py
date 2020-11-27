@@ -272,7 +272,7 @@ for k, v in histos.items():
     
     temp_hists[k]['%s_data'%k].Draw('EP SAME')
         
-    CMS_lumi(c1, 4, 0, cmsText = 'CMS', extraText = '   Simulation', lumi_13TeV = '')
+    CMS_lumi(c1, 4, 0, cmsText = 'CMS', extraText = '   Preliminary', lumi_13TeV = '')
 
     c1.cd()
     rjpsi_value = ROOT.TPaveText(0.7, 0.68, 0.88, 0.72, 'nbNDC')
