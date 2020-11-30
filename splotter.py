@@ -3,7 +3,7 @@ import os
 from cmsstyle import CMS_lumi
 from officialStyle import officialStyle
 officialStyle(ROOT.gStyle)
-ROOT.gStyle.SetTitleOffset(1.5, "Y")
+ROOT.gStyle.SetTitleOffset(1.4, "Y")
 ROOT.gStyle.SetTitleOffset(0.85, "X")
 ROOT.gStyle.SetPadLeftMargin(0.20)
 
@@ -25,14 +25,36 @@ if not os.path.isdir(plot_outdir):
    os.mkdir(plot_outdir)
 
 histos = dict()
-histos['Bpt'     ] = (ROOT.TH1F('Bpt'     , '', 15, 15,  60), '3#mu p_{T} (GeV)'                          )
-histos['Blxy_sig'] = (ROOT.TH1F('Blxy_sig', '', 20,  0, 100), 'L_{xy}/#sigma_{L_{xy}}'                    )
-histos['Bsvprob' ] = (ROOT.TH1F('Bsvprob' , '', 10,  0,   1), 'vtx(#mu_{1}, #mu_{2}, #mu_{3}) probability')
+histos['fit_Bmass'] = (ROOT.TH1F('fit_Bmass', '', 80,  6    ,   6.6), 'J/#Psi#pi mass (GeV)'                  )
+histos['Bpt'      ] = (ROOT.TH1F('Bpt'      , '', 15, 15    ,  60  ), 'J/#Psi#pi p_{T} (GeV)'                 )
+histos['Blxy_sig' ] = (ROOT.TH1F('Blxy_sig' , '', 20,  0    , 100  ), 'L_{xy}/#sigma_{L_{xy}}'                )
+histos['Bsvprob'  ] = (ROOT.TH1F('Bsvprob'  , '', 10,  0    ,   1  ), 'vtx(#mu_{1}, #mu_{2}, #pi) probability')
+histos['Bcos2D'   ] = (ROOT.TH1F('Bcos2D'   , '', 10,  0.999,   1  ), '2D cos#alpha'                          )
+histos['mu1pt'    ] = (ROOT.TH1F('mu1pt'    , '', 15,  5    ,  40  ), '#mu_{1} p_{T} (GeV)'                   )
+histos['mu2pt'    ] = (ROOT.TH1F('mu2pt'    , '', 15,  5    ,  20  ), '#mu_{2} p_{T} (GeV)'                   )
+histos['kpt'      ] = (ROOT.TH1F('kpt'      , '', 15,  2    ,  30  ), '#pi p_{T} (GeV)'                       )
 
 c1 = ROOT.TCanvas('c1', '', 700, 700)
 c1.Draw()
 
 for k, v in histos.items():
+
+
+    correlation_histo = ROOT.TH2F('%s_vs_mass' %(k), '', 80, 6., 6.6, v[0].GetNbinsX(), v[0].GetXaxis().GetXmin(), v[0].GetXaxis().GetXmax())
+    tree.Draw('%s:fit_Bmass >> %s' %(k, correlation_histo.GetName()), '', '')
+    
+    correlation_histo.GetYaxis().SetTitle(v[1])
+    correlation_histo.GetXaxis().SetTitle('J/#Psi#pi mass (GeV)')
+    correlation_histo.SetMarkerStyle(6)
+
+    CMS_lumi(c1, 4, 0, cmsText = 'CMS', extraText = '   Preliminary', lumi_13TeV = '')
+    
+    c1.Modified()
+    c1.Update()
+    
+    c1.SaveAs('%s/%s_vs_mass_correlation.png' %(plot_outdir, k))
+    c1.SaveAs('%s/%s_vs_mass_correlation.pdf' %(plot_outdir, k))
+
 
     v[0].GetXaxis().SetTitle(v[1])
     v[0].GetYaxis().SetTitle('events')
@@ -88,7 +110,11 @@ for k, v in histos.items():
     c1.Modified()
     c1.Update()
     
+    c1.SaveAs('%s/%s_splot.png' %(plot_outdir, k))
     c1.SaveAs('%s/%s_splot.pdf' %(plot_outdir, k))
+
+#     if k=='fit_Bmass':
+#         break
 
     # now compare signal from data (via sPlot) and MC
     treemc.Draw('%s >> %s' %(k, h_mc.GetName()), '', 'hist')
@@ -127,5 +153,6 @@ for k, v in histos.items():
     c1.Modified()
     c1.Update()
     
+    c1.SaveAs('%s/%s_shapes_splot.png' %(plot_outdir, k))
     c1.SaveAs('%s/%s_shapes_splot.pdf' %(plot_outdir, k))
-
+            
