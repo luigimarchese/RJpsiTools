@@ -17,9 +17,10 @@ os.system('mkdir -p plots_ul/%s/png/log/' %label)
 
 from officialStyle import officialStyle
 officialStyle(ROOT.gStyle)
-ROOT.gStyle.SetTitleOffset(1.5, "Y")
-ROOT.gStyle.SetTitleOffset(0.85, "X")
+ROOT.gStyle.SetTitleOffset(1.5, 'Y')
+ROOT.gStyle.SetTitleOffset(0.85, 'X')
 ROOT.gStyle.SetPadLeftMargin(0.20)
+ROOT.TGaxis.SetExponentOffset(-0.065, 0.01, 'y')
 
 ROOT.EnableImplicitMT()
 ROOT.gStyle.SetOptStat(0)
@@ -101,24 +102,24 @@ preselection = ' & '.join([
 #     'bdt_tau>0.05'          ,
 #     'Bsvprob>0.8'           ,
 #     'Blxy<0.4'              ,
-#     'abs(mu1_dz-mu2_dz)<0.2', 
-#     'abs(mu1_dz-k_dz)<0.2'  ,
-#     'abs(mu2_dz-k_dz)<0.2'  ,
-#     'abs(k_dxy)<0.05'       ,
-#     'abs(mu1_dxy)<0.05'     ,
-#     'abs(mu2_dxy)<0.05'     ,
+    'abs(mu1_dz-mu2_dz)<0.2', # *
+    'abs(mu1_dz-k_dz)<0.2'  , # *
+    'abs(mu2_dz-k_dz)<0.2'  , # *
+    'abs(k_dxy)<0.05'       , # *
+    'abs(mu1_dxy)<0.05'     , # *
+    'abs(mu2_dxy)<0.05'     , # *
 #     'mu1pt>6'               ,
 #     'mu2pt>6'               ,
 #     'kpt>10'                 ,
-#     'Bcos2D>0.995'          ,
+    'Bcos2D>0.995'          , # *
 #     'abs(jpsiK_mass-5.27929)>0.060',
 #     'abs(jpsipi_mass-5.27929)>0.060',
 #     'abs(Beta)>1.5'         ,
 #     'jpsi_pt<20',
-#     'm_miss_sq>0.5',
-#     'b_iso03_rel<0.3'       ,
-#     'abs(jpsi_mass-3.0969)<0.1',
-#     'k_tightID>0.5'         ,
+    'm_miss_sq>0.5'         , # *
+    'b_iso03_rel<0.3'       , # *
+    'abs(jpsi_mass-3.0969)<0.1', # *
+    'k_tightID>0.5'         , # *
 #     '(k_tightID<0.5 & k_mediumID<0.5)'        ,
 ])
 
@@ -186,6 +187,12 @@ to_define = [
     ('maxdr'        , 'dr12*(dr12>dr13 & dr12>dr23) + dr13*(dr13>dr12 & dr13>dr23) + dr23*(dr23>dr12 & dr23>dr13)'),
     ('mindr'        , 'dr12*(dr12<dr13 & dr12<dr23) + dr13*(dr13<dr12 & dr13<dr23) + dr23*(dr23<dr12 & dr23<dr13)'),
     ('norm'         , '0.5'                      ),
+    ('Bdirection'   , 'ROOT::Math::XYZVector((Bvtx_x - pv_x), (Bvtx_y - pv_y), (Bvtx_z - pv_z))'),
+    ('Bdir_eta'     , 'Bdirection.eta()'         ),
+    ('Bdir_phi'     , 'Bdirection.phi()'         ),
+    ('mmm_p4_par'   , 'mmm_p4.Vect().Dot(Bdirection)/sqrt(Bdirection.Mag2())'),
+    ('mmm_p4_perp'  , 'sqrt(mmm_p4.Vect().Mag2()-mmm_p4_par*mmm_p4_par)'     ),
+    ('mcorr'        , 'sqrt(mmm_p4.mass()*mmm_p4.mass() + mmm_p4_perp*mmm_p4_perp) + mmm_p4_perp'), # Eq. 3 https://cds.cern.ch/record/2697350/files/1910.13404.pdf
 ]
 
 for k, v in samples.items():
@@ -300,9 +307,7 @@ for k, v in histos.items():
     ths1.GetYaxis().SetTitle('events')
     ths1.SetMaximum(1.5*max(sum(maxima), data_max))
     ths1.SetMinimum(0.)
-    
-#     import pdb ; pdb.set_trace()
-    
+        
     # statistical uncertainty
     stats = ths1.GetStack().Last()
     stats.SetLineColor(0)
@@ -332,8 +337,8 @@ for k, v in histos.items():
     ratio_stats = stats.Clone()
     ratio_stats.SetName(ratio.GetName()+'_ratiostats')
     ratio_stats.Divide(stats)
-    ratio_stats.SetMaximum(2.)
-    ratio_stats.SetMinimum(0.)
+    ratio_stats.SetMaximum(1.999) # avoid displaying 2, that overlaps with 0 in the main_pad
+    ratio_stats.SetMinimum(0.001) # and this is for symmetry
     ratio_stats.GetYaxis().SetTitle('obs/exp')
     ratio_stats.GetYaxis().SetTitleOffset(0.5)
     ratio_stats.GetYaxis().SetNdivisions(405)
