@@ -187,10 +187,11 @@ to_define = [
     ('maxdr'        , 'dr12*(dr12>dr13 & dr12>dr23) + dr13*(dr13>dr12 & dr13>dr23) + dr23*(dr23>dr12 & dr23>dr13)'),
     ('mindr'        , 'dr12*(dr12<dr13 & dr12<dr23) + dr13*(dr13<dr12 & dr13<dr23) + dr23*(dr23<dr12 & dr23<dr13)'),
     ('norm'         , '0.5'                      ),
-    ('Bdirection'   , 'ROOT::Math::XYZVector((Bvtx_x - pv_x), (Bvtx_y - pv_y), (Bvtx_z - pv_z))'),
+    ('pv_to_sv'     , 'ROOT::Math::XYZVector((Bvtx_x - pv_x), (Bvtx_y - pv_y), (Bvtx_z - pv_z))'),
+    ('Bdirection'   , 'pv_to_sv/sqrt(pv_to_sv.Mag2())'),    
     ('Bdir_eta'     , 'Bdirection.eta()'         ),
     ('Bdir_phi'     , 'Bdirection.phi()'         ),
-    ('mmm_p4_par'   , 'mmm_p4.Vect().Dot(Bdirection)/sqrt(Bdirection.Mag2())'),
+    ('mmm_p4_par'   , 'mmm_p4.Vect().Dot(Bdirection)'),
     ('mmm_p4_perp'  , 'sqrt(mmm_p4.Vect().Mag2()-mmm_p4_par*mmm_p4_par)'     ),
     ('mcorr'        , 'sqrt(mmm_p4.mass()*mmm_p4.mass() + mmm_p4_perp*mmm_p4_perp) + mmm_p4_perp'), # Eq. 3 https://cds.cern.ch/record/2697350/files/1910.13404.pdf
 ]
