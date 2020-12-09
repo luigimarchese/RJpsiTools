@@ -56,9 +56,9 @@ Enddecay
 
 Decay MyB+  # original total forced BR = 0.0175696
 0.0977432 MyJ/psi K+ SVS; # 
-0.1378430 MyJ/psi K*+ SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHmin; # 
+0.1378430 MyJ/psi K*+ SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus; # 
 0.0047233 MyJ/psi pi+ SVS; # 
-0.0048197 MyJ/psi rho+ SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHmin; # 
+0.0048197 MyJ/psi rho+ SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus; # 
 0.0192787 MyJ/psi K0 pi+ PHSP; # 
 0.0096394 MyJ/psi K+ pi0 PHSP; # 
 0.0096394 MyJ/psi K'_1+ SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0; # 
@@ -70,7 +70,7 @@ Decay MyB+  # original total forced BR = 0.0175696
 0.0337378 MyJ/psi omega K+ PHSP; # 
 0.0011374 MyJ/psi p+ anti-Lambda0 PHSP; # 
 0.0371888 Mypsi(2S) K+ SVS; # 
-0.0356920 Mypsi(2S) K*+ SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHmin; # 
+0.0356920 Mypsi(2S) K*+ SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus; # 
 0.0230271 Mypsi(2S) K0 pi+ PHSP; # 
 0.0115136 Mypsi(2S) K+ pi0 PHSP; # 
 0.1093787 Mypsi(2S) K+ pi- pi+ PHSP; # 
@@ -94,7 +94,7 @@ Decay MyB+  # original total forced BR = 0.0175696
 0.0001118 Mychi_c0 K+ pi0 pi0 PHSP; # 
 0.0001118 Mychi_c0 K0 pi+ pi0 PHSP; # 
 0.0152533 Mychi_c1 K+ SVS; # 
-0.0099478 Mychi_c1 K*+ SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHmin; # 
+0.0099478 Mychi_c1 K*+ SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus; # 
 0.0132638 Mychi_c1 K0 pi+ PHSP; # 
 0.0066319 Mychi_c1 K+ pi0 PHSP; # 
 0.0132638 Mychi_c1 K+ pi- pi+ PHSP; # 
