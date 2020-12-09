@@ -35,4 +35,9 @@ cmsDriver.py Configuration/GenProduction/python/RJpsi-BPlusToJpsiMuMuX-NoKinCuts
 # now run
 cmsRun RJpsi-BPlusToJpsiMuMuX-NoKinCuts-RunIISummer19UL18GEN_cfg.py
 
+
+# and inspect the file you produced
+ipython -i -- inspector.py --verbose
+
+
 ```
