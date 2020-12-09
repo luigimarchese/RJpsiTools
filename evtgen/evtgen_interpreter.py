@@ -427,8 +427,8 @@ if __name__ == '__main__':
         print('Alias      MyB-             B-'             , file=ff)
         print('Alias      Myanti-B0        anti-B0'        , file=ff)
         print('Alias      MyB0             B0'             , file=ff)
-        print('Alias      Myanti-Bs        anti-Bs'        , file=ff)
-        print('Alias      MyBs             Bs'             , file=ff)
+        print('Alias      Myanti-Bs        anti-B_s0'      , file=ff)
+        print('Alias      MyBs             B_s0'           , file=ff)
   
         print('Alias      MyLambda_b0      Lambda_b0'      , file=ff)
         print('Alias      MyXi_b-          Xi_b-'          , file=ff)
