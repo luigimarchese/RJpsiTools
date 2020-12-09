@@ -14,12 +14,13 @@ class Decay():
         return ' '.join(mystr) + '; # ' + self.comment
 
 class Particle():
-    def __init__(self, name, decays=[]):
+    def __init__(self, name, decays=[], charge_conjugate=None):
         self.name = name
         self.decays = decays
         self.initial_total_br = self.total_br() if len(decays) else 1.
         self._is_total_br_already_normalised = False
         self._are_forced_decays_already_factored_in = False
+        self.charge_conjugate = charge_conjugate
     
     def total_br(self):
         if not len(self.decays): return 1.
@@ -56,8 +57,12 @@ class Particle():
             self._is_total_br_already_normalised = True
             
     def __str__(self):
-        mystr = ['Decay %s  # original total forced BR = %.7f' %(self.name, self.initial_total_br)]
-        return '\n'.join(mystr + [idecay.__str__() for idecay in self.decays] + ['Enddecay'])        
+        mystr  = ['Decay %s  # original total forced BR = %.7f' %(self.name, self.initial_total_br)]
+        mystr += [idecay.__str__() for idecay in self.decays]
+        mystr += ['Enddecay']
+        if self.charge_conjugate:
+             mystr += ['CDecay %s' %self.charge_conjugate]
+        return '\n'.join(mystr)        
 
 class particles_dict(defaultdict):
     '''
@@ -191,31 +196,87 @@ if __name__ == '__main__':
             Decay(0.0002        , [particles['Mychi_c2'   ], particles['K+'      ], particles['pi-'], particles['pi+']], 'PHSP'                                                            ),
             Decay(0.0001        , [particles['Mychi_c2'   ], particles['K+'      ], particles['pi0'], particles['pi0']], 'PHSP'                                                            ),
             Decay(0.0001        , [particles['Mychi_c2'   ], particles['K0'      ], particles['pi+'], particles['pi0']], 'PHSP'                                                            ),
-        ]
+        ],
+        charge_conjugate = 'MyB-'
     )
 
-    mypsi2s = particles['Mypsi(2S)']
-    print('\n\n')  
-    print(mypsi2s)  
-    print('\n\n')  
-    mypsi2s.factor_in_forced_decays()
-    print('\n\n')  
-    print(mypsi2s)
+#     mypsi2s = particles['Mypsi(2S)']
+#     print('\n\n')  
+#     print(mypsi2s)  
+#     print('\n\n')  
+#     mypsi2s.factor_in_forced_decays()
+#     print('\n\n')  
+#     print(mypsi2s)
 #     mypsi2s.normalise_total_br()
 #     print('\n\n')  
 #     print(mypsi2s)    
 
-    mychic0 = particles['Mychi_c0']
-    print('\n\n')  
-    print(mychic0)
+#     mychic0 = particles['Mychi_c0']
+#     print('\n\n')  
+#     print(mychic0)
+# 
+#     mybplus = particles['MyB+']
+#     print('\n\n')  
+#     print(mybplus)
+#     print('\n\n')  
+#     mybplus.factor_in_forced_decays()
+#     print('\n\n')  
+#     print(mybplus)
+#     mybplus.normalise_total_br()
+#     print('\n\n')  
+#     print(mybplus)    
 
-    mybplus = particles['MyB+']
-    print('\n\n')  
-    print(mybplus)
-    print('\n\n')  
-    mybplus.factor_in_forced_decays()
-    print('\n\n')  
-    print(mybplus)
-    mybplus.normalise_total_br()
-    print('\n\n')  
-    print(mybplus)    
+    # now let's create the .dec file
+    particles_to_print_in_dec_file = []
+    
+    particles_to_print_in_dec_file.append(particles['MyJ/psi'    ])
+    particles_to_print_in_dec_file.append(particles['Mychi_c0'   ])
+    particles_to_print_in_dec_file.append(particles['Mychi_c1'   ])
+    particles_to_print_in_dec_file.append(particles['Mychi_c2'   ])
+    particles_to_print_in_dec_file.append(particles['Mypsi(2S)'  ])
+    particles_to_print_in_dec_file.append(particles['Mypsi(3770)'])
+    particles_to_print_in_dec_file.append(particles['Myh_c'      ])
+    particles_to_print_in_dec_file.append(particles['MyB+'       ])
+
+    for iparticle in particles_to_print_in_dec_file:
+        iparticle.factor_in_forced_decays()
+        
+    # WARNING! the normalisation MUST happen only as last step!
+    for iparticle in particles_to_print_in_dec_file:
+        iparticle.normalise_total_br()
+    
+    with open('BToJpsiMuMuInclusive.dec', 'w') as ff:
+        # Preamble and Aliases
+        
+        # Charmonium states
+        print('Alias      MyJ/psi      J/psi    ', file=ff)
+        print('Alias      Mypsi(2S)    psi(2S)  ', file=ff)
+        print('Alias      Mypsi(3770)  psi(3770)', file=ff)
+        print('Alias      Mychi_c0     chi_c0   ', file=ff)
+        print('Alias      Mychi_c1     chi_c1   ', file=ff)
+        print('Alias      Mychi_c2     chi_c2   ', file=ff)
+        print('Alias      Myh_c        h_c      ', file=ff)
+        
+        print('\n')
+
+        # B mesons
+        print('Alias      MyB+         B+'       , file=ff)
+        print('ChargeConj MyB-         MyB+'     , file=ff)
+
+        for iparticle in particles_to_print_in_dec_file:
+            print('\n', file=ff)  
+            print(iparticle, file=ff)    
+
+        print('\n')
+
+
+
+
+
+
+
+
+
+
+
+
