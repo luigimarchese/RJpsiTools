@@ -11,9 +11,9 @@ class Decay():
         mystr.append('%.7f' %self.br)
         mystr.append(' '.join([iparticle.name for iparticle in self.final_state]))
         mystr.append(self.model) 
-        final_str = ' '.join(mystr)
+        final_str = ' '.join(mystr) + ';'
         if len(self.comment):
-            final_str += '; # ' + self.comment
+            final_str += ' # ' + self.comment
         return final_str 
 
 class Particle():
@@ -439,8 +439,8 @@ if __name__ == '__main__':
         print('Alias      Myanti-Omega_b+  anti-Omega_b+'  , file=ff)
 
         print('ChargeConj MyB-             MyB+'           , file=ff)
-        print('ChargeConj Myanti-B0        anti-B0'        , file=ff)
-        print('ChargeConj Myanti-Bs        anti-Bs'        , file=ff)
+        print('ChargeConj Myanti-B0        MyB0'           , file=ff)
+        print('ChargeConj Myanti-Bs        MyBs'           , file=ff)
     
         print('ChargeConj MyXi_b-          Myanti-Xi_b+'   , file=ff)
         print('ChargeConj MyXi_b0          Myanti-Xi_b0'   , file=ff)
