@@ -109,3 +109,6 @@ Decay MyB+  # original total forced BR = 0.0175696
 0.0018797 Mychi_c2 K0 pi+ pi0 PHSP; # 
 Enddecay
 CDecay MyB-
+
+End
+

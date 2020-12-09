@@ -257,8 +257,6 @@ if __name__ == '__main__':
         print('Alias      Mychi_c2     chi_c2   ', file=ff)
         print('Alias      Myh_c        h_c      ', file=ff)
         
-        print('\n')
-
         # B mesons
         print('Alias      MyB+         B+'       , file=ff)
         print('ChargeConj MyB-         MyB+'     , file=ff)
@@ -267,7 +265,7 @@ if __name__ == '__main__':
             print('\n', file=ff)  
             print(iparticle, file=ff)    
 
-        print('\n')
+        print('\nEnd\n', file=ff)
 
 
 
