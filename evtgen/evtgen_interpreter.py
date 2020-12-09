@@ -259,6 +259,7 @@ if __name__ == '__main__':
         
         # B mesons
         print('Alias      MyB+         B+'       , file=ff)
+        print('Alias      MyB-         B-'       , file=ff)
         print('ChargeConj MyB-         MyB+'     , file=ff)
 
         for iparticle in particles_to_print_in_dec_file:
