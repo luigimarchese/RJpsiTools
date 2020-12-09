@@ -85,7 +85,7 @@ if __name__ == '__main__':
     particles['MyJ/psi'] = Particle(
         'MyJ/psi',
         [
-            Decay(0.0593, [particles['mu+'], particles['mu+']], 'PHOTOS  VLL', ''),
+            Decay(0.0593, [particles['mu+'], particles['mu-']], 'PHOTOS  VLL', ''),
         ]
     )
     

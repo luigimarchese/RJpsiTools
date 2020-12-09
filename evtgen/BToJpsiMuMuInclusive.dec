@@ -11,7 +11,7 @@ ChargeConj MyB-         MyB+
 
 
 Decay MyJ/psi  # original total forced BR = 0.0593000
-1.0000000 mu+ mu+ PHOTOS  VLL; # 
+1.0000000 mu+ mu- PHOTOS  VLL; # 
 Enddecay
 
 
