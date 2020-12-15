@@ -8,7 +8,7 @@ class Decay():
         self.comment = comment
     def __str__(self):
         mystr = []
-        mystr.append('%.7f' %self.br)
+        mystr.append('%.8f' %self.br)
         mystr.append(' '.join([iparticle.name for iparticle in self.final_state]))
         mystr.append(self.model) 
         final_str = ' '.join(mystr) + ';'
@@ -60,7 +60,7 @@ class Particle():
             self._is_total_br_already_normalised = True
             
     def __str__(self):
-        mystr  = ['Decay %s  # original total forced BR = %.7f' %(self.name, self.initial_total_br)]
+        mystr  = ['Decay %s  # original total forced BR = %.8f' %(self.name, self.initial_total_br)]
         mystr += [idecay.__str__() for idecay in self.decays]
         mystr += ['Enddecay']
         if self.charge_conjugate:
@@ -501,7 +501,7 @@ if __name__ == '__main__':
     for iparticle in particles_to_print_in_dec_file:
         iparticle.normalise_total_br()
     
-    with open('BToJpsiMuMuInclusive.dec', 'w') as ff:
+    with open('HbToJpsiMuMuInclusive.dec', 'w') as ff:
         # Preamble and Aliases
                 
         # Charmonium states
