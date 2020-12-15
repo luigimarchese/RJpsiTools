@@ -48,7 +48,7 @@ generator = cms.EDFilter("Pythia8GeneratorFilter",
             ),        
             operates_on_particles  = cms.vint32(),    
             convertPythiaCodes     = cms.untracked.bool(False),
-            user_decay_file         = cms.vstring('GeneratorInterface/ExternalDecays/data/BToJpsiMuMuInclusive.dec'),
+            user_decay_file        = cms.vstring('GeneratorInterface/ExternalDecays/data/HbToJpsiMuMuInclusive.dec'),
         ),
         parameterSets = cms.vstring('EvtGen130'),
     ),
@@ -65,8 +65,8 @@ jpsi_from_b_hadron_filter = cms.EDFilter(
     DaughterIDs     = cms.untracked.vint32([-13, 13]),
     DaughterMinPts  = cms.untracked.vdouble([ 2.6 , 2.6  ]),
     DaughterMaxPts  = cms.untracked.vdouble([ 1.e6,  1.e6]),
-    DaughterMinEtas = cms.untracked.vdouble([-2.5 , -2.5 ]),
-    DaughterMaxEtas = cms.untracked.vdouble([ 2.5 ,  2.5 ]),
+    DaughterMinEtas = cms.untracked.vdouble([-2.55 , -2.55 ]),
+    DaughterMaxEtas = cms.untracked.vdouble([ 2.55 ,  2.55 ]),
 )
 
 configurationMetadata = cms.untracked.PSet(
@@ -74,7 +74,7 @@ configurationMetadata = cms.untracked.PSet(
     name = cms.untracked.string('\$Source$'),
     annotation = cms.untracked.string(
         'QCD bbbar production, '\
-        'Jpsi (no kin cuts) from B+ hadron (either directly or feeddown), '\
+        'Jpsi from any b-hadron (either directly or feeddown), '\
         'Jpsi->mumu (no  kin cuts on muons), '\
         '13 TeV, '\
         'TuneCP5'
