@@ -100,7 +100,7 @@ mu_mu_same_charge_filter = cms.EDFilter(
     "MCParticlePairFilter",
     ParticleID1    = cms.untracked.vint32(13), # mu
     ParticleID2    = cms.untracked.vint32(13), # mu
-    ParticleCharge = cms.untracked.int32(-1), # same charge
+    ParticleCharge = cms.untracked.int32(1), # same charge
     MaxInvMass     = cms.untracked.double(10.),
     MinPt          = cms.untracked.vdouble(2.8, 2.),
     MinEta         = cms.untracked.vdouble(-2.52, -2.52),
