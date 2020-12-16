@@ -79,18 +79,33 @@ three_mu_filter = cms.EDFilter(
     Status      = cms.vint32(1),
 )
 
-jpsi_mu_filter = cms.EDFilter(
+# jpsi_mu_filter = cms.EDFilter(
+#     "MCParticlePairFilter",
+#     particleID1    = cms.untracked.vint32(443), # jpsi
+#     particleID2    = cms.untracked.vint32(13), # mu
+#     ParticleCharge = cms.untracked.int32(1), # faulty logic, cases with one neutral and one charged particle not considered https://github.com/cms-sw/cmssw/blob/master/GeneratorInterface/GenFilters/plugins/MCParticlePairFilter.cc#L229 https://github.com/cms-sw/cmssw/blob/master/GeneratorInterface/GenFilters/plugins/MCParticlePairFilter.cc#L240
+#     MinInvMass     = cms.untracked.double(3.097 + 0.105 + 0.05), # minimum invariant mass must be > mass(jpsi) + mass(mu) + epsilon, otherwise it always picks one of the jpsi's muons
+#     MaxInvMass     = cms.untracked.double(10.),
+#     MinDeltaR      = cms.untracked.double(0.01),
+#     MinPt          = cms.untracked.vdouble(6., 2.),
+#     MinEta         = cms.untracked.vdouble(-3., -2.52),
+#     MaxEta         = cms.untracked.vdouble( 3.,  2.52),
+#     Status         = cms.untracked.vint32(2, 1),
+# )
+
+# two OS muons make the Jpsi, so, if  there's an additional muon around
+# it must have the same charge as that of to one of the Jpsi muons.
+# In addition, the invariant mass of these two can't be too large 
+mu_mu_same_charge_filter = cms.EDFilter(
     "MCParticlePairFilter",
-    particleID1    = cms.untracked.vint32(443), # jpsi
+    particleID1    = cms.untracked.vint32(13), # mu
     particleID2    = cms.untracked.vint32(13), # mu
-    ParticleCharge = cms.untracked.int32(1), # faulty logic, cases with one neutral and one charged particle not considered https://github.com/cms-sw/cmssw/blob/master/GeneratorInterface/GenFilters/plugins/MCParticlePairFilter.cc#L229 https://github.com/cms-sw/cmssw/blob/master/GeneratorInterface/GenFilters/plugins/MCParticlePairFilter.cc#L240
-    MinInvMass     = cms.untracked.double(3.097 + 0.105 + 0.05), # minimum invariant mass must be > mass(jpsi) + mass(mu) + epsilon, otherwise it always picks one of the jpsi's muons
+    ParticleCharge = cms.untracked.int32(-1), # same charge
     MaxInvMass     = cms.untracked.double(10.),
-    MinDeltaR      = cms.untracked.double(0.01),
-    MinPt          = cms.untracked.vdouble(6., 2.),
-    MinEta         = cms.untracked.vdouble(-3., -2.52),
-    MaxEta         = cms.untracked.vdouble( 3.,  2.52),
-    Status         = cms.untracked.vint32(2, 1),
+    MinPt          = cms.untracked.vdouble(2., 2.),
+    MinEta         = cms.untracked.vdouble(-2.52., -2.52),
+    MaxEta         = cms.untracked.vdouble( 2.52.,  2.52),
+    Status         = cms.untracked.vint32(1, 1),
 )
 
 configurationMetadata = cms.untracked.PSet(
