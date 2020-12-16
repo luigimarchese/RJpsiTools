@@ -74,6 +74,7 @@ jpsi_mu_filter = cms.EDFilter(
     particleID1    = cms.untracked.vint32(443), # jpsi
     particleID2    = cms.untracked.vint32(13), # mu
     ParticleCharge = cms.untracked.int32(1),
+    MinInvMass     = cms.untracked.double(3.097 + 0.105 + 0.05), # minimum invariant mass must be > mass(jpsi) + mass(mu) + epsilon, otherwise it always picks one of the jpsi's muons
     MaxInvMass     = cms.untracked.double(10.),
     MinPt          = cms.untracked.vdouble(6., 2.),
     MinEta         = cms.untracked.vdouble(-3., -2.52),
