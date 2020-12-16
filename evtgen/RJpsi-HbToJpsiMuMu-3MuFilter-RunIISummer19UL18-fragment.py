@@ -74,9 +74,9 @@ three_mu_filter = cms.EDFilter(
     NumRequired = cms.int32(3),
     AcceptMore  = cms.bool(True),
     ParticleID  = cms.vint32(13,13,13),
-    PtMin       = cms.vdouble(2.),
-    EtaMax      = cms.vdouble(2.52),
-    Status      = cms.vint32(1),
+    PtMin       = cms.vdouble(2.8, 2.8, 2.),
+    EtaMax      = cms.vdouble(2.52, 2.52, 2.52),
+    Status      = cms.vint32(1, 1, 1),
 )
 
 # jpsi_mu_filter = cms.EDFilter(
@@ -102,7 +102,7 @@ mu_mu_same_charge_filter = cms.EDFilter(
     particleID2    = cms.untracked.vint32(13), # mu
     ParticleCharge = cms.untracked.int32(-1), # same charge
     MaxInvMass     = cms.untracked.double(10.),
-    MinPt          = cms.untracked.vdouble(2., 2.),
+    MinPt          = cms.untracked.vdouble(2.8, 2.),
     MinEta         = cms.untracked.vdouble(-2.52, -2.52),
     MaxEta         = cms.untracked.vdouble( 2.52,  2.52),
     Status         = cms.untracked.vint32(1, 1),
