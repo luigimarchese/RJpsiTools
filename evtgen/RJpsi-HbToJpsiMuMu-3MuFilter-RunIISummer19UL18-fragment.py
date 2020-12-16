@@ -69,13 +69,24 @@ jpsi_from_b_hadron_filter = cms.EDFilter(
     DaughterMaxEtas = cms.untracked.vdouble([ 2.52 ,  2.52 ]),
 )
 
+three_mu_filter = cms.EDFilter(
+    "MCMultiParticleFilter",
+    NumRequired = cms.int32(3),
+    AcceptMore  = cms.bool(True),
+    ParticleID  = cms.vint32(13,13,13),
+    PtMin       = cms.vdouble(2.),
+    EtaMax      = cms.vdouble(2.52),
+    Status      = cms.vint32(1),
+)
+
 jpsi_mu_filter = cms.EDFilter(
     "MCParticlePairFilter",
     particleID1    = cms.untracked.vint32(443), # jpsi
     particleID2    = cms.untracked.vint32(13), # mu
-    ParticleCharge = cms.untracked.int32(1),
+    ParticleCharge = cms.untracked.int32(1), # faulty logic, cases with one neutral and one charged particle not considered https://github.com/cms-sw/cmssw/blob/master/GeneratorInterface/GenFilters/plugins/MCParticlePairFilter.cc#L229 https://github.com/cms-sw/cmssw/blob/master/GeneratorInterface/GenFilters/plugins/MCParticlePairFilter.cc#L240
     MinInvMass     = cms.untracked.double(3.097 + 0.105 + 0.05), # minimum invariant mass must be > mass(jpsi) + mass(mu) + epsilon, otherwise it always picks one of the jpsi's muons
     MaxInvMass     = cms.untracked.double(10.),
+    MinDeltaR      = cms.untracked.double(0.01),
     MinPt          = cms.untracked.vdouble(6., 2.),
     MinEta         = cms.untracked.vdouble(-3., -2.52),
     MaxEta         = cms.untracked.vdouble( 3.,  2.52),
@@ -96,4 +107,5 @@ configurationMetadata = cms.untracked.PSet(
     )
 )
 
-ProductionFilterSequence = cms.Sequence(generator*jpsi_from_b_hadron_filter*jpsi_mu_filter)
+ProductionFilterSequence = cms.Sequence(generator*jpsi_from_b_hadron_filter*three_mu_filter*jpsi_mu_filter)
+# ProductionFilterSequence = cms.Sequence(generator*jpsi_from_b_hadron_filter*jpsi_mu_filter)
