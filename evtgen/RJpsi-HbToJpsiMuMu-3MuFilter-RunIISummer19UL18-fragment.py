@@ -98,8 +98,8 @@ three_mu_filter = cms.EDFilter(
 # In addition, the invariant mass of these two can't be too large 
 mu_mu_same_charge_filter = cms.EDFilter(
     "MCParticlePairFilter",
-    particleID1    = cms.untracked.vint32(13), # mu
-    particleID2    = cms.untracked.vint32(13), # mu
+    ParticleID1    = cms.untracked.vint32(13), # mu
+    ParticleID2    = cms.untracked.vint32(13), # mu
     ParticleCharge = cms.untracked.int32(-1), # same charge
     MaxInvMass     = cms.untracked.double(10.),
     MinPt          = cms.untracked.vdouble(2.8, 2.),
