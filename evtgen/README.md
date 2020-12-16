@@ -14,8 +14,12 @@ git-cms-merge-topic rmanzoni:from-CMSSW_10_6_X_2020-12-02-2300
 # get the EvtGen .dec file
 curl -s --insecure https://raw.githubusercontent.com/rmanzoni/RJpsiTools/main/evtgen/HbToJpsiMuMuInclusive.dec -o GeneratorInterface/ExternalDecays/data/HbToJpsiMuMuInclusive.dec
 
-# get the gen fragment
+# get the gen fragments
+# Jpsi + X
 curl -s --insecure https://raw.githubusercontent.com/rmanzoni/RJpsiTools/main/evtgen/RJpsi-HbToJpsiMuMu-RunIISummer19UL18-fragment.py --create-dirs -o Configuration/GenProduction/python/RJpsi-HbToJpsiMuMu-RunIISummer19UL18-fragment.py
+# Jpsi + mu, mass(mu,mu,mu)<10
+curl -s --insecure https://raw.githubusercontent.com/rmanzoni/RJpsiTools/main/evtgen/RJpsi-HbToJpsiMuMu-3MuFilter-RunIISummer19UL18-fragment.py
+ --create-dirs -o Configuration/GenProduction/python/RJpsi-HbToJpsiMuMu-3MuFilter-RunIISummer19UL18-fragment.py
 
 # compile
 scram b -rj16
