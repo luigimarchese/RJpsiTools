@@ -20,7 +20,7 @@ curl -s --insecure https://raw.githubusercontent.com/rmanzoni/RJpsiTools/main/ev
 # compile
 scram b -rj16
 
-# get the cmsdriver command
+# get the cmsdriver command for the JPsi(mm) + X sample
 cmsDriver.py Configuration/GenProduction/python/RJpsi-HbToJpsiMuMu-RunIISummer19UL18-fragment.py \
 --fileout file:RJpsi-HbToJpsiMuMu-RunIISummer19UL18GEN.root \
 --mc \
@@ -38,6 +38,25 @@ cmsDriver.py Configuration/GenProduction/python/RJpsi-HbToJpsiMuMu-RunIISummer19
 
 # now run
 cmsRun RJpsi-HbToJpsiMuMu-RunIISummer19UL18GEN_cfg.py
+
+# get the cmsdriver command for the JPsi(mm) + mu, mass(mu,mu,mu)<10 sample
+cmsDriver.py Configuration/GenProduction/python/RJpsi-HbToJpsiMuMu-3MuFilter-RunIISummer19UL18-fragment.py \
+--fileout file:RJpsi-HbToJpsiMuMu-3MuFilter-RunIISummer19UL18GEN.root \
+--mc \
+--eventcontent RAWSIM \
+--datatier GEN \
+--conditions 106X_upgrade2018_realistic_v11_L1v1 \
+--beamspot Realistic25ns13TeVEarly2018Collision \
+--step GEN \
+--geometry DB:Extended \
+--era Run2_2018 \
+--python_filename RJpsi-HbToJpsiMuMu-3MuFilter-RunIISummer19UL18GEN_cfg.py \
+--no_exec \
+--customise Configuration/DataProcessing/Utils.addMonitoring \
+-n -1
+
+# now run
+cmsRun RJpsi-HbToJpsiMuMu-3MuFilter-RunIISummer19UL18GEN_cfg.py
 
 
 # and inspect the file you produced
