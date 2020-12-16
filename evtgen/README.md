@@ -18,8 +18,7 @@ curl -s --insecure https://raw.githubusercontent.com/rmanzoni/RJpsiTools/main/ev
 # Jpsi + X
 curl -s --insecure https://raw.githubusercontent.com/rmanzoni/RJpsiTools/main/evtgen/RJpsi-HbToJpsiMuMu-RunIISummer19UL18-fragment.py --create-dirs -o Configuration/GenProduction/python/RJpsi-HbToJpsiMuMu-RunIISummer19UL18-fragment.py
 # Jpsi + mu, mass(mu,mu,mu)<10
-curl -s --insecure https://raw.githubusercontent.com/rmanzoni/RJpsiTools/main/evtgen/RJpsi-HbToJpsiMuMu-3MuFilter-RunIISummer19UL18-fragment.py
- --create-dirs -o Configuration/GenProduction/python/RJpsi-HbToJpsiMuMu-3MuFilter-RunIISummer19UL18-fragment.py
+curl -s --insecure https://raw.githubusercontent.com/rmanzoni/RJpsiTools/main/evtgen/RJpsi-HbToJpsiMuMu-3MuFilter-RunIISummer19UL18-fragment.py --create-dirs -o Configuration/GenProduction/python/RJpsi-HbToJpsiMuMu-3MuFilter-RunIISummer19UL18-fragment.py
 
 # compile
 scram b -rj16
