@@ -103,8 +103,8 @@ mu_mu_same_charge_filter = cms.EDFilter(
     ParticleCharge = cms.untracked.int32(-1), # same charge
     MaxInvMass     = cms.untracked.double(10.),
     MinPt          = cms.untracked.vdouble(2., 2.),
-    MinEta         = cms.untracked.vdouble(-2.52., -2.52),
-    MaxEta         = cms.untracked.vdouble( 2.52.,  2.52),
+    MinEta         = cms.untracked.vdouble(-2.52, -2.52),
+    MaxEta         = cms.untracked.vdouble( 2.52,  2.52),
     Status         = cms.untracked.vint32(1, 1),
 )
 
@@ -122,5 +122,6 @@ configurationMetadata = cms.untracked.PSet(
     )
 )
 
-ProductionFilterSequence = cms.Sequence(generator*jpsi_from_b_hadron_filter*three_mu_filter*jpsi_mu_filter)
+ProductionFilterSequence = cms.Sequence(generator*jpsi_from_b_hadron_filter*three_mu_filter*mu_mu_same_charge_filter)
+# ProductionFilterSequence = cms.Sequence(generator*jpsi_from_b_hadron_filter*three_mu_filter*jpsi_mu_filter)
 # ProductionFilterSequence = cms.Sequence(generator*jpsi_from_b_hadron_filter*jpsi_mu_filter)
