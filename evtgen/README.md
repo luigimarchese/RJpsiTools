@@ -109,4 +109,7 @@ cmsRun RJpsi-BcToXToJpsiMuMu-RunIISummer19UL18GEN_cfg.py
 
 ```
 
-
+## LHE file for Bc sample stored at T2_CSCS
+```
+uberftp -ls gsiftp://storage01.lcg.cscs.ch/pnfs/lcg.cscs.ch/cms/trivcat/store/user/cgalloni/Bc_LHE_600M_Nov2020
+```
