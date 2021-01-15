@@ -46,28 +46,29 @@ Decay Myh_c  # original total forced BR = 0.01000000
 Enddecay
 
 
-Decay MyBc-  # original total forced BR = 3.40173500
-0.33758989 MyJ/psi mu- anti-nu_mu  PHOTOS BC_VMN 1; # from PDG 2020 https://bit.ly/30NDbWm
-0.01008069 Mypsi(2S) mu- anti-nu_mu  PHOTOS BC_VMN 1; # BR(J/Psi mu nu) = 1.95%, BR(Psi(2S) mu nu) = 0.1%, reported from various sources, summarised here https://bit.ly/3jLaZuO and in agreement with EvtGen defaults
-0.00042411 Mychi_c0 mu- anti-nu_mu  PHOTOS BC_SMN 3; # average from https://bit.ly/3jLaZuO table 2, then equally split by 3 for each chi_c species
-0.01257698 Mychi_c1 mu- anti-nu_mu  PHOTOS BC_VMN 3; # average from https://bit.ly/3jLaZuO table 2, then equally split by 3 for each chi_c species
-0.00712939 Mychi_c2 mu- anti-nu_mu  PHOTOS BC_TMN 3; # average from https://bit.ly/3jLaZuO table 2, then equally split by 3 for each chi_c species
-0.00051989 Myh_c mu- anti-nu_mu  PHOTOS PHSP; # average from https://bit.ly/3jLaZuO table 2
-0.33758989 MyJ/psi tau- anti-nu_tau PHOTOS BC_VMN 1; # Set to be equal to that of the muon channel. SM 0.25-0.29, LHCb 0.71 https://bit.ly/3deLlfr
-0.00084678 Mypsi(2S) tau- anti-nu_tau PHOTOS BC_VMN 1; # from EvtGen defaults, assumes SM R(J/Psi)=0.25
-0.01583297 MyJ/psi pi- PHOTOS SVS; # from PDG 2020 https://bit.ly/30NDbWm
-0.03799912 MyJ/psi pi- pi- pi+ PHOTOS BC_VNPI 1; # from PDG 2020 https://bit.ly/30NDbWm # https://bit.ly/2VDZ2Nn
-0.00125077 MyJ/psi K- PHOTOS SVS; # PDG https://pdglive.lbl.gov/BranchingRatio.action?desig=14&parCode=S091
-0.04591560 MyJ/psi D_s- PHOTOS SVS; # LHCb BR(J/Psi Ds)/BR(J/Psi pi) = 2.90  https://journals.aps.org/prd/abstract/10.1103/PhysRevD.87.112012, https://inspirehep.net/literature/1385102
-0.10881872 MyJ/psi D_s*- PHOTOS SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0; # LHCb BR(J/Psi Ds*)/BR(J/Psi Ds) = 2.37 https://journals.aps.org/prd/abstract/10.1103/PhysRevD.87.112012, https://inspirehep.net/literature/1385102
-0.00683957 MyJ/psi anti-D0 K- PHOTOS PHSP; # https://journals.aps.org/prd/pdf/10.1103/PhysRevD.95.032005
-0.03488316 MyJ/psi anti-D*0 K- PHOTOS PHSP; # https://journals.aps.org/prd/pdf/10.1103/PhysRevD.95.032005
-0.01436310 MyJ/psi D*- anti-K*0 PHOTOS PHSP; # https://journals.aps.org/prd/pdf/10.1103/PhysRevD.95.032005
-0.00430900 MyJ/psi D- anti-K*0 PHOTOS PHSP; # https://journals.aps.org/prd/pdf/10.1103/PhysRevD.95.032005
-0.00703537 MyJ/psi D-  PHOTOS SVS; # https://gitlab.cern.ch/lhcb-datapkg/Gen/DecFiles/-/blob/master/dkfiles/Bc_JpsiCharm2Body,mm,muX=JpsiLeptonInAcceptance.dec#L120-121
-0.00533730 MyJ/psi D*- PHOTOS SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0; # https://gitlab.cern.ch/lhcb-datapkg/Gen/DecFiles/-/blob/master/dkfiles/Bc_JpsiCharm2Body,mm,muX=JpsiLeptonInAcceptance.dec#L120-121
-0.00226523 MyJ/psi p+ anti-p- pi- PHOTOS PHSP; # https://inspirehep.net/literature/1309880
-0.00839248 MyJ/psi K+ K- pi- PHOTOS PHSP; # https://inspirehep.net/literature/1252556
+Decay MyBc-  # original total forced BR = 3.48334100
+0.32853885 MyJ/psi mu- anti-nu_mu  PHOTOS BC_VMN 1; # from PDG 2020 https://bit.ly/30NDbWm
+0.00981042 Mypsi(2S) mu- anti-nu_mu  PHOTOS BC_VMN 1; # BR(J/Psi mu nu) = 1.95%, BR(Psi(2S) mu nu) = 0.1%, reported from various sources, summarised here https://bit.ly/3jLaZuO and in agreement with EvtGen defaults
+0.00041274 Mychi_c0 mu- anti-nu_mu  PHOTOS BC_SMN 3; # average from https://bit.ly/3jLaZuO table 2, then equally split by 3 for each chi_c species
+0.01223978 Mychi_c1 mu- anti-nu_mu  PHOTOS BC_VMN 3; # average from https://bit.ly/3jLaZuO table 2, then equally split by 3 for each chi_c species
+0.00693825 Mychi_c2 mu- anti-nu_mu  PHOTOS BC_TMN 3; # average from https://bit.ly/3jLaZuO table 2, then equally split by 3 for each chi_c species
+0.00050595 Myh_c mu- anti-nu_mu  PHOTOS PHSP; # average from https://bit.ly/3jLaZuO table 2
+0.32853885 MyJ/psi tau- anti-nu_tau PHOTOS BC_VMN 1; # Set to be equal to that of the muon channel. SM 0.25-0.29, LHCb 0.71 https://bit.ly/3deLlfr
+0.00082407 Mypsi(2S) tau- anti-nu_tau PHOTOS BC_VMN 1; # from EvtGen defaults, assumes SM R(J/Psi)=0.25
+0.01540847 MyJ/psi pi- PHOTOS SVS; # from PDG 2020 https://bit.ly/30NDbWm
+0.03698033 MyJ/psi pi- pi- pi+ PHOTOS BC_VNPI 1; # from PDG 2020 https://bit.ly/30NDbWm # https://bit.ly/2VDZ2Nn
+0.02681074 MyJ/psi pi- pi- pi+ pi- pi+ PHOTOS BC_VNPI 1; # https://inspirehep.net/literature/1288067
+0.00121724 MyJ/psi K- PHOTOS SVS; # PDG https://pdglive.lbl.gov/BranchingRatio.action?desig=14&parCode=S091
+0.04468457 MyJ/psi D_s- PHOTOS SVS; # LHCb BR(J/Psi Ds)/BR(J/Psi pi) = 2.90  https://journals.aps.org/prd/abstract/10.1103/PhysRevD.87.112012, https://inspirehep.net/literature/1385102
+0.10590121 MyJ/psi D_s*- PHOTOS SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0; # LHCb BR(J/Psi Ds*)/BR(J/Psi Ds) = 2.37 https://journals.aps.org/prd/abstract/10.1103/PhysRevD.87.112012, https://inspirehep.net/literature/1385102
+0.00665620 MyJ/psi anti-D0 K- PHOTOS PHSP; # https://journals.aps.org/prd/pdf/10.1103/PhysRevD.95.032005
+0.03394792 MyJ/psi anti-D*0 K- PHOTOS PHSP; # https://journals.aps.org/prd/pdf/10.1103/PhysRevD.95.032005
+0.01397801 MyJ/psi D*- anti-K*0 PHOTOS PHSP; # https://journals.aps.org/prd/pdf/10.1103/PhysRevD.95.032005
+0.00419347 MyJ/psi D- anti-K*0 PHOTOS PHSP; # https://journals.aps.org/prd/pdf/10.1103/PhysRevD.95.032005
+0.00684675 MyJ/psi D-  PHOTOS SVS; # https://gitlab.cern.ch/lhcb-datapkg/Gen/DecFiles/-/blob/master/dkfiles/Bc_JpsiCharm2Body,mm,muX=JpsiLeptonInAcceptance.dec#L120-121
+0.00519420 MyJ/psi D*- PHOTOS SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0; # https://gitlab.cern.ch/lhcb-datapkg/Gen/DecFiles/-/blob/master/dkfiles/Bc_JpsiCharm2Body,mm,muX=JpsiLeptonInAcceptance.dec#L120-121
+0.00220450 MyJ/psi p+ anti-p- pi- PHOTOS PHSP; # https://inspirehep.net/literature/1309880
+0.00816748 MyJ/psi K+ K- pi- PHOTOS PHSP; # https://inspirehep.net/literature/1252556
 Enddecay
 CDecay MyBc+
 

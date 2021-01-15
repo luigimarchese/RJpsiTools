@@ -1,5 +1,5 @@
 import FWCore.ParameterSet.Config as cms
-
+from GeneratorInterface.EvtGenInterface.EvtGenSetting_cff import *
 from Configuration.Generator.Pythia8CommonSettings_cfi import *
 from Configuration.Generator.MCTunes2017.PythiaCP5Settings_cfi import *
 
@@ -58,7 +58,7 @@ generator = cms.EDFilter("Pythia8GeneratorFilter",
 jpsi_from_b_hadron_filter = cms.EDFilter(
     "PythiaFilterMultiAncestor",
     ParticleID      = cms.untracked.int32 (443),
-    MinPt           = cms.untracked.double(6.),
+    MinPt           = cms.untracked.double( 6.),
     MinEta          = cms.untracked.double(-3.),
     MaxEta          = cms.untracked.double( 3.),
     MotherIDs       = cms.untracked.vint32([5]),
