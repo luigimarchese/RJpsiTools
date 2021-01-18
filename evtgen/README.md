@@ -88,7 +88,7 @@ scram b -rj16
 
 # get the cmsdriver command for the JPsi(mm) + X sample
 cmsDriver.py Configuration/GenProduction/python/RJpsi-BcToXToJpsiMuMu-RunIISummer19UL18GEN-fragment.py \
---filein root://t3dcachedb.psi.ch:1094///pnfs/psi.ch/cms/trivcat/store/user/manzoni/RJPsi_Bc_LHEGEN_11oct20_v3/RJpsi-BcToXToJpsiMuMu-RunIISummer19UL18GEN_step1_72.root \
+--filein file:/eos/home-m/manzoni/RJpsi-BcToXToJpsiMuMu-RunIISummer19UL18GEN_step1_72.root \
 --fileout file:RJpsi-BcToXToJpsiMuMu-RunIISummer19UL18GEN.root \
 --mc \
 --eventcontent RAWSIM \
@@ -109,4 +109,7 @@ cmsRun RJpsi-BcToXToJpsiMuMu-RunIISummer19UL18GEN_cfg.py
 
 ```
 
-
+## LHE file for Bc sample stored at T2_CSCS
+```
+uberftp -ls gsiftp://storage01.lcg.cscs.ch/pnfs/lcg.cscs.ch/cms/trivcat/store/user/cgalloni/Bc_LHE_600M_Nov2020
+```
