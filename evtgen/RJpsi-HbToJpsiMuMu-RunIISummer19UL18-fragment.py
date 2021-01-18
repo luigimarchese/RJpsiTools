@@ -63,10 +63,10 @@ jpsi_from_b_hadron_filter = cms.EDFilter(
     MaxEta          = cms.untracked.double( 3.),
     MotherIDs       = cms.untracked.vint32([5]),
     DaughterIDs     = cms.untracked.vint32([-13, 13]),
-    DaughterMinPts  = cms.untracked.vdouble([ 2.6 , 2.6  ]),
+    DaughterMinPts  = cms.untracked.vdouble([ 3.8 , 3.8  ]),
     DaughterMaxPts  = cms.untracked.vdouble([ 1.e6,  1.e6]),
-    DaughterMinEtas = cms.untracked.vdouble([-2.55 , -2.55 ]),
-    DaughterMaxEtas = cms.untracked.vdouble([ 2.55 ,  2.55 ]),
+    DaughterMinEtas = cms.untracked.vdouble([-2.52 , -2.52 ]),
+    DaughterMaxEtas = cms.untracked.vdouble([ 2.52 ,  2.52 ]),
 )
 
 configurationMetadata = cms.untracked.PSet(
