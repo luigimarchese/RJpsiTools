@@ -6,10 +6,8 @@ e0, e1   correspond to the eigenvector space a0...d2
 
 import numpy as np
 
-import seaborn as sns
 from matplotlib import pyplot as plt
 from scipy.stats import multivariate_normal
-from mpl_toolkits.mplot3d import Axes3D
 
 names_param = [
     'param0',
@@ -22,8 +20,8 @@ names_eigen = [
 ]
 
 cval = np.array([
-    0.,
-    0.,
+    2.,
+    1.,
 ])
 
 uncs = np.array([
@@ -34,6 +32,8 @@ uncs = np.array([
 corr = np.array([
     [ 1.  , 0.5 ],
     [ 0.5 , 1.  ],
+#     [ 1.  , 0.  ],
+#     [ 0.  , 1.  ],
 ]).astype(np.float64)
 
 # here we need elementwise multiplication, not matrix multiplication
@@ -41,6 +41,12 @@ corr = np.array([
 cov = np.atleast_2d(uncs).T * corr * uncs
 print('covariance matrix')
 print(cov)
+
+# cov = np.array([[ 6.83220488e-07, -1.03820760e-05],
+#                 [-1.03820760e-05,  4.82456839e-04]])
+# 
+# cval = np.array([ 0.00469806, -0.02218348])
+# uncs = np.array([0.00082657, 0.0219649 ])
 
 # Get Eigenvectors and eigenvalues of the covariance matrix
 eVals, eVecs = np.linalg.eig(cov)    
@@ -50,7 +56,7 @@ for i, iev in enumerate(eVecs):
     print(i, iev)
 
 # eigenvalues matrix
-diag = np.identity(2) * eVals
+diag = np.identity(len(cval)) * eVals
 print('eigenvalues matrix W')
 print(diag)
 
@@ -68,7 +74,6 @@ principal_comp = np.atleast_2d(eUncs*eVecs).T
 print(principal_comp)
 
 print('\n\n')
-
 
 variations = dict()
 
@@ -88,11 +93,6 @@ for iname in names_eigen:
 
 # now fill this dictionary
 for i in range(eUncs.shape[0]):
-#     print('eUncs: {:.3f}'.format(eUncs[i]))
-#     print('eVecs: ' + (len(eVecs)*' {:.3f}').format(*eVecs[:, i]))    
-#     print('move in the direction of each eigenvector by an amount corresponding to +/- sqrt of the corresponding eigenvalue')
-#     a = str(np.column_stack((eUncs[i]*eVecs[:, i], -eUncs[i]*eVecs[:, i])))
-#     print(a.replace('\n', ',').replace('[', '{').replace(']', '}'))
     for j in range(eVecs.shape[0]):
         variations[names_eigen[j]]['up'  ]['delta_'+names_param[i]] =  principal_comp[j, i]
         variations[names_eigen[j]]['down']['delta_'+names_param[i]] = -principal_comp[j, i]
@@ -102,10 +102,19 @@ for i in range(eUncs.shape[0]):
 print ('='*80+'\n\n')
 print(variations)
 
-xmin = -max(uncs) + cval[0]
-xmax =  max(uncs) + cval[0]
-ymin = xmin
-ymax = xmax
+plt.arrow(cval[0], cval[1], principal_comp[0][0], principal_comp[0][1], length_includes_head=True, width=1e-6, head_width=0., head_length=0., fc='k', ec='k', label='e0')
+plt.arrow(cval[0], cval[1], principal_comp[1][0], principal_comp[1][1], length_includes_head=True, width=1e-6, head_width=0., head_length=0., fc='k', ec='k', label='e1')
+
+# max_unc = min(uncs)
+max_unc = max(uncs)
+xmin = -2.*max_unc + cval[0]
+xmax =  2.*max_unc + cval[0]
+ymin = -2.*max_unc + cval[1]
+ymax =  2.*max_unc + cval[1]
+# xmin = -2.*uncs[0] + cval[0]
+# xmax =  2.*uncs[0] + cval[0]
+# ymin = -2.*uncs[1] + cval[1]
+# ymax =  2.*uncs[1] + cval[1]
 
 x = np.linspace(xmin, xmax, 500)
 y = np.linspace(ymin, ymax, 500)
@@ -115,30 +124,51 @@ pos[:, :, 0] = X;
 pos[:, :, 1] = Y
 rv = multivariate_normal(mean=cval, cov=cov)
 
-
 # 2D plot
 plt.clf()
 fig = plt.figure(figsize=(5,5))
-# ax0 = fig.add_subplot(111)
-# plt.contour(rv.pdf(pos).reshape(500,500))
-# plt.contour(rv.pdf(pos))
-plt.contourf(X, Y, rv.pdf(pos))
+aspect = abs(xmax-xmin)/abs(ymax-ymin)
+# aspect = 'equal'
+subplt = fig.add_subplot(111, aspect=aspect, box_aspect=1.)
+
+Z = rv.pdf(pos)
+
+plt.imshow(Z, origin='lower', extent=[xmin, xmax, ymin, ymax])
+
+levels = [
+    np.power(np.e, -9. ) * abs(np.max(Z)-np.min(Z))+np.min(Z),  # 3 sigma 
+    np.power(np.e, -2. ) * abs(np.max(Z)-np.min(Z))+np.min(Z),  # 2 sigma 
+    np.power(np.e, -0.5) * abs(np.max(Z)-np.min(Z))+np.min(Z),  # 1 sigma    
+    abs(np.max(Z))                                           ,  # max
+] 
+levels_str = [r'3 $\sigma$', r'2 $\sigma$', r'1 $\sigma$', r'0 $\sigma$']
+contours = subplt.contour(X, Y, Z, levels=levels, colors='silver')
+fmt = {}
+for l, s in zip(contours.levels, levels_str):
+    fmt[l] = s
+subplt.clabel(contours, contours.levels[:-1], inline=True, fmt=fmt)
 origin = np.array([np.ones(2)*cval[0], np.ones(2)*cval[1]])
-plt.quiver(*origin, principal_comp[:,0], principal_comp[:,1], color=['r','b'], scale=abs(xmin-xmax))
 
 plt.xlabel(names_param[0])
 plt.ylabel(names_param[1])
 
-for ix, iy in principal_comp+origin:
-    plt.text(ix, iy, '(%.2f, %.2f)'%(ix, iy))
+for ix, iy in (principal_comp+np.atleast_2d(origin).T):
+    plt.text(ix, iy, '(%.3f, %.3f)'%(ix, iy), c='silver')
 
-plt.scatter(*cval)
-plt.savefig('contour.pdf')
+subplt.scatter(*cval)
+plt.text(*cval, '({:.3f}, {:.3f})'.format(*cval), c='silver')
+
+subplt.quiver(*origin, principal_comp[:,0], principal_comp[:,1], units='xy', color=['r','b'], angles='xy', scale_units='xy', scale=1.)
+subplt.quiver(*origin, principal_comp[:,0], principal_comp[:,1], units='xy', color=['r','b'], angles='xy', scale_units='xy', scale=1.)
+
+plot_margin = 0.2
+plt.subplots_adjust(left=0+plot_margin, bottom=0+plot_margin)#, right=1, top=1, wspace=0, hspace=0)
+
+plt.savefig('contour_pre.pdf')
 
 # principal components + multivariate gaus mean
 print('principal components + multivariate gaus mean')
-print(principal_comp+origin)
-
+print(principal_comp+np.atleast_2d(origin).T)
 
 # save values of up/down variations
 with open('dummy_variations.py', 'w') as fout:
