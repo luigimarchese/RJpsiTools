@@ -3,6 +3,8 @@
 WORK IN PROGRESS: sucessfully installed in my area, now trying to recollect all the steps
 
 1. Use `conda` to create an independent environment that contains all the dependencies, in a consistent way https://conda.io/projects/conda/en/latest/user-guide/install/linux.html
+1.1 install conda in your work area, rather than default `$HOME` because some packages can be alrge and eat up space
+1.2 fiddle with conda config file. Add conda-forge channel, add your work installation as a place where to look for environments
 2. create a new conda environment USE YML FILE
 3. apply this patch to Hammer source code https://gitlab.com/mpapucci/Hammer/-/issues/68
 4. compile
