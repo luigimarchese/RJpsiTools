@@ -1,4 +1,6 @@
-# Install Conda
+# Hammer
+
+## Install Conda
 
 1. Get the installer from https://docs.conda.io/en/latest/miniconda.html
 
@@ -61,6 +63,7 @@ conda activate hammer3p8
 ## Download and install Hammer
 
 https://hammer.physics.lbl.gov/
+All the dependencies are taken care of by the conda environment.
 
 ```
 cd /afs/cern.ch/work/m/manzoni/
@@ -92,46 +95,75 @@ cmake -DCMAKE_INSTALL_PREFIX=../Hammer-install \
 
 make
 
-# if you get a crash related to 
-
 make install
 ```
 
+if you've made it thus far, you're all set and Hammer is installed.
 
 
+## Make Hammer available in python
+
+Hammer's python libraries are installed, but they need to be added to `PYTHONPATH` to make them easily available.
+Following the idea described here, when the `hammer3p8` environment is activated, `PYTHONPATH` is set automatically
+
+https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#macos-and-linux
 
 
+Example `env_vars.csh` to be put in `YOURPATHTOCONDA/miniconda3/envs/hammer3p8/etc/conda/activate.d`
 
-
-==============================================================================
-==============================================================================
-==============================================================================
-==============================================================================
-
-
-
-
-WORK IN PROGRESS: sucessfully installed in my area, now trying to recollect all the steps
-
-1. Use `conda` to create an independent environment that contains all the dependencies, in a consistent way https://conda.io/projects/conda/en/latest/user-guide/install/linux.html
-1.1 install conda in your work area, rather than default `$HOME` because some packages can be alrge and eat up space
-1.2 fiddle with conda config file. Add conda-forge channel, add your work installation as a place where to look for environments
-2. create a new conda environment USE YML FILE
-3. apply this patch to Hammer source code https://gitlab.com/mpapucci/Hammer/-/issues/68
-4. compile
 ```
-cmake -DCMAKE_INSTALL_PREFIX=../Hammer-install \
--DWITH_PYTHON=ON \
--DWITH_ROOT=ON \
--DWITH_EXAMPLES=ON \
--DWITH_EXAMPLES_EXTRA=ON \
--DFORCE_YAMLCPP_INSTALL=ON \
--DFORCE_HEPMC_INSTALL=ON \
--DCMAKE_CXX_FLAGS=`root-config --cflags` \
-../Hammer-1.1.0-Source
-
-make
-
-make install
+echo "Making Hammer python libraries known to python via settin  PYTHONPATH"
+echo ''
+if (! $?PYTHONPATH) then
+  setenv PYTHONPATH "/afs/cern.ch/work/m/manzoni/Hammer-install/lib64/python3.8/site-packages"
+  echo "PYTHONPATH was undefined, setting it to $PYTHONPATH"
+else
+  if ("$PYTHONPATH" == "")  then
+      setenv PYTHONPATH "/afs/cern.ch/work/m/manzoni/Hammer-install/lib64/python3.8/site-packages"
+      echo "PYTHONPATH was empty, setting it to $PYTHONPATH"
+  else
+      echo "PYTHONPATH contains $PYTHONPATH, appending..."
+      setenv OLDPYTHONPATH $PYTHONPATH
+      setenv PYTHONPATH "/afs/cern.ch/work/m/manzoni/Hammer-install/lib64/python3.8/site-packages:$PYTHONPATH"
+      echo "now PYTHONPATH is $PYTHONPATH"
+  endif
+endif
 ```
-5. add hammer's python libraries to python path, do it automatically whenever the conda environment is activated
+
+`env_vars.csh` example
+```
+#!/usr/local/bin/bash
+
+if [[ ! -v PYTHONPATH ]]; then
+    echo "PYTHONPATH is not set"
+    export PYTHONPATH="/Users/manzoni/Documents/hammer/Hammer-install/lib/python3.8/site-packages"
+    echo "PYTHONPATH has now the value: $PYTHONPATH"
+elif [[ -z "$PYTHONPATH" ]]; then
+    echo "PYTHONPATH is set to the empty string"
+    export PYTHONPATH="/Users/manzoni/Documents/hammer/Hammer-install/lib/python3.8/site-packages"
+    echo "PYTHONPATH has now the value: $PYTHONPATH"
+else
+    echo "PYTHONPATH has the value: $PYTHONPATH"
+    export PYTHONPATH="/Users/manzoni/Documents/hammer/Hammer-install/lib/python3.8/site-packages":$PYTHONPATH
+    echo "appending..."
+    echo "PYTHONPATH has now the value: $PYTHONPATH"
+fi
+```
+
+
+Example `env_vars.csh` to be put in `YOURPATHTOCONDA/miniconda3/envs/hammer3p8/etc/conda/deactivate.d`
+
+```
+echo "removing Hammer libs from PYTHONPATH"
+echo ''
+
+if ($?OLDPYTHONPATH) then
+    echo "tranferring OLDPYTHONPATH to PYTHONPATH"
+    setenv PYTHONPATH $OLDPYTHONPATH
+    echo "unsetenv OLDPYTHONPATH"
+    unsetenv OLDPYTHONPATH
+else
+    echo "unsetenv PYTHONPATH"
+    unsetenv PYTHONPATH
+endif
+```
