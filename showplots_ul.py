@@ -1,21 +1,26 @@
 import os
+import copy
 import ROOT
 import numpy as np
+from datetime import datetime
 from bokeh.palettes import viridis, all_palettes
 from histos import histos
 from cmsstyle import CMS_lumi
 import pickle
 
-os.system('mkdir -p plots_ul/pdf/lin/')
-os.system('mkdir -p plots_ul/pdf/log/')
-os.system('mkdir -p plots_ul/png/lin/')
-os.system('mkdir -p plots_ul/png/log/')
+label = datetime.now().strftime('%d%b%Y_%Hh%Mm%Ss')
+
+os.system('mkdir -p plots_ul/%s/pdf/lin/' %label)
+os.system('mkdir -p plots_ul/%s/pdf/log/' %label)
+os.system('mkdir -p plots_ul/%s/png/lin/' %label)
+os.system('mkdir -p plots_ul/%s/png/log/' %label)
 
 from officialStyle import officialStyle
 officialStyle(ROOT.gStyle)
-ROOT.gStyle.SetTitleOffset(1.5, "Y")
-ROOT.gStyle.SetTitleOffset(0.85, "X")
+ROOT.gStyle.SetTitleOffset(1.5, 'Y')
+ROOT.gStyle.SetTitleOffset(0.85, 'X')
 ROOT.gStyle.SetPadLeftMargin(0.20)
+ROOT.TGaxis.SetExponentOffset(-0.065, 0.01, 'y')
 
 ROOT.EnableImplicitMT()
 ROOT.gStyle.SetOptStat(0)
@@ -84,30 +89,38 @@ preselection = ' & '.join([
     'mu1_mediumID>0.5'      ,
     'mu2_mediumID>0.5'      ,
     'k_mediumID>0.5'        ,
-#     'Bpt_reco>15'           ,
+    'Bpt_reco>15'           ,
     'abs(mu1_dz-mu2_dz)<0.4', 
     'abs(mu1_dz-k_dz)<0.4'  ,
     'abs(mu2_dz-k_dz)<0.4'  ,
+    'dr12>0.01'             ,
+    'dr13>0.01'             ,
+    'dr23>0.01'             ,
+
     
 #     'bdt_bkg<0.04'          ,
 #     'bdt_tau>0.05'          ,
 #     'Bsvprob>0.8'           ,
 #     'Blxy<0.4'              ,
-    'abs(mu1_dz-mu2_dz)<0.2', 
-    'abs(mu1_dz-k_dz)<0.2'  ,
-    'abs(mu2_dz-k_dz)<0.2'  ,
-    'abs(k_dxy)<0.05'       ,
-    'abs(mu1_dxy)<0.05'     ,
-    'abs(mu2_dxy)<0.05'     ,
-    'mu1pt>6'               ,
-    'mu2pt>6'               ,
-    'kpt>10'                 ,
-#     'Bcos2D>0.995'          ,
+    'abs(mu1_dz-mu2_dz)<0.2', # *
+    'abs(mu1_dz-k_dz)<0.2'  , # *
+    'abs(mu2_dz-k_dz)<0.2'  , # *
+    'abs(k_dxy)<0.05'       , # *
+    'abs(mu1_dxy)<0.05'     , # *
+    'abs(mu2_dxy)<0.05'     , # *
+#     'mu1pt>6'               ,
+#     'mu2pt>6'               ,
+#     'kpt>10'                 ,
+    'Bcos2D>0.995'          , # *
 #     'abs(jpsiK_mass-5.27929)>0.060',
 #     'abs(jpsipi_mass-5.27929)>0.060',
 #     'abs(Beta)>1.5'         ,
-    'jpsi_pt<20',
-    'm_miss_sq>0.5',
+#     'jpsi_pt<20',
+    'm_miss_sq>0.5'         , # *
+    'b_iso03_rel<0.3'       , # *
+    'abs(jpsi_mass-3.0969)<0.1', # *
+    'k_tightID>0.5'         , # *
+#     '(k_tightID<0.5 & k_mediumID<0.5)'        ,
 ])
 
 preselection_mc = ' & '.join([preselection, 'abs(k_genpdgId)==13'])
@@ -115,13 +128,15 @@ preselection_mc = ' & '.join([preselection, 'abs(k_genpdgId)==13'])
 samples = dict()
 
 for isample_name in sample_names:
-    if isample_name=='jpsi_tau':
-        samples[isample_name] = ROOT.RDataFrame('BTommm', ['/Users/manzoni/Documents/RJPsi/dataframes_2020Nov24/BcToJpsiTauNu/BcToJpsiTauNu_UL_0_ptmax.root'])
-    elif isample_name=='jpsi_mu':
-        samples[isample_name] = ROOT.RDataFrame('BTommm', ['/Users/manzoni/Documents/RJPsi/dataframes_2020Nov24/BcToJpsiMuNu/BcToJpsiMuNu_UL_0_ptmax.root',
-                                                           '/Users/manzoni/Documents/RJPsi/dataframes_2020Nov24/BcToJpsiMuNu/BcToJpsiMuNu_UL_1_ptmax.root'])
-    else:
-        samples[isample_name] = ROOT.RDataFrame('BTommm', '../samples_20_novembre/samples/BcToXToJpsi_is_%s_enriched.root' %isample_name)
+#     if isample_name=='jpsi_tau':
+#         samples[isample_name] = ROOT.RDataFrame('BTommm', ['/Users/manzoni/Documents/RJPsi/dataframes_2020Nov24/BcToJpsiTauNu/BcToJpsiTauNu_UL_0_ptmax.root'])
+#     elif isample_name=='jpsi_mu':
+#         samples[isample_name] = ROOT.RDataFrame('BTommm', ['/Users/manzoni/Documents/RJPsi/dataframes_2020Nov24/BcToJpsiMuNu/BcToJpsiMuNu_UL_0_ptmax.root',
+#                                                            '/Users/manzoni/Documents/RJPsi/dataframes_2020Nov24/BcToJpsiMuNu/BcToJpsiMuNu_UL_1_ptmax.root'])
+#     else:
+#         samples[isample_name] = ROOT.RDataFrame('BTommm', '../samples_20_novembre/samples/BcToXToJpsi_is_%s_enriched.root' %isample_name)
+
+    samples[isample_name] = ROOT.RDataFrame('BTommm', '../dataframes_2020Nov26/BcToXToJpsi_is_%s_merged.root' %isample_name)
 
 to_define = [
     ('abs_mu1_dxy'  , 'abs(mu1_dxy)'           ),
@@ -146,6 +161,8 @@ to_define = [
     ('mu2_p4'       , 'ROOT::Math::PtEtaPhiMVector(mu2pt, mu2eta, mu2phi, mu2mass)'),
     ('mu3_p4'       , 'ROOT::Math::PtEtaPhiMVector(kpt, keta, kphi, kmass)'),
     ('kaon_p4'      , 'ROOT::Math::PtEtaPhiMVector(kpt, keta, kphi, 0.493677)'), # this is at the correct kaon mass
+    ('mmm_p4'       , 'mu1_p4+mu2_p4+mu3_p4'   ),
+    ('bct'          , 'Blxy*6.275/Bpt_reco'    ),
     ('jpsiK_p4'     , 'mu1_p4+mu2_p4+kaon_p4'  ),
     ('jpsiK_mass'   , 'jpsiK_p4.mass()'        ),
     ('jpsiK_pt'     , 'jpsiK_p4.pt()'          ),
@@ -169,16 +186,24 @@ to_define = [
     # is there a better way?
     ('maxdr'        , 'dr12*(dr12>dr13 & dr12>dr23) + dr13*(dr13>dr12 & dr13>dr23) + dr23*(dr23>dr12 & dr23>dr13)'),
     ('mindr'        , 'dr12*(dr12<dr13 & dr12<dr23) + dr13*(dr13<dr12 & dr13<dr23) + dr23*(dr23<dr12 & dr23<dr13)'),
+    ('norm'         , '0.5'                      ),
+    ('pv_to_sv'     , 'ROOT::Math::XYZVector((Bvtx_x - pv_x), (Bvtx_y - pv_y), (Bvtx_z - pv_z))'),
+    ('Bdirection'   , 'pv_to_sv/sqrt(pv_to_sv.Mag2())'),    
+    ('Bdir_eta'     , 'Bdirection.eta()'         ),
+    ('Bdir_phi'     , 'Bdirection.phi()'         ),
+    ('mmm_p4_par'   , 'mmm_p4.Vect().Dot(Bdirection)'),
+    ('mmm_p4_perp'  , 'sqrt(mmm_p4.Vect().Mag2()-mmm_p4_par*mmm_p4_par)'     ),
+    ('mcorr'        , 'sqrt(mmm_p4.mass()*mmm_p4.mass() + mmm_p4_perp*mmm_p4_perp) + mmm_p4_perp'), # Eq. 3 https://cds.cern.ch/record/2697350/files/1910.13404.pdf
 ]
 
 for k, v in samples.items():
     samples[k] = samples[k].Define('br_weight', '%f' %weights[k])
     if k=='jpsi_tau':
-       samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight*290620./500805.')
+       samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*290620./500805.')
     elif k=='jpsi_mu':
-       samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight*24433./38658.')
+       samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*24433./38658.')
     else:
-        samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight' if k!='data' else 'br_weight') # weightGen is suposed to be the lifetime reweigh, but it's broken
+        samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight' if k!='data' else 'br_weight') # weightGen is suposed to be the lifetime reweigh, but it's broken
     for new_column, new_definition in to_define:
         if samples[k].HasColumn(new_column):
             continue
@@ -200,6 +225,24 @@ print ('%'*80)
 
 c1 = ROOT.TCanvas('c1', '', 700, 700)
 c1.Draw()
+c1.cd()
+main_pad = ROOT.TPad('main_pad', '', 0., 0.25, 1. , 1.  )
+main_pad.Draw()
+c1.cd()
+ratio_pad = ROOT.TPad('ratio_pad', '', 0., 0., 1., 0.25)
+ratio_pad.Draw()
+main_pad.SetTicks(True)
+main_pad.SetBottomMargin(0.)
+# main_pad.SetTopMargin(0.3)   
+# main_pad.SetLeftMargin(0.15)
+# main_pad.SetRightMargin(0.15)
+# ratio_pad.SetLeftMargin(0.15)
+# ratio_pad.SetRightMargin(0.15)
+ratio_pad.SetTopMargin(0.)   
+ratio_pad.SetGridy()
+ratio_pad.SetBottomMargin(0.45)
+
+
 
 # CREATE THE SMART POINTERS IN ONE GO AND PRODUCE RESULTS IN ONE SHOT,
 # SEE MAX GALLI PRESENTATION
@@ -217,10 +260,9 @@ for k, v in histos.items():
 print('====> now looping')
 # then let RDF lazyness work 
 for k, v in histos.items():
-
-    c1.SetLogy(False)
-
-    leg = ROOT.TLegend(0.22,.74,.93,.90)
+    
+    c1.cd()
+    leg = ROOT.TLegend(0.24,.7,.95,.90)
     leg.SetBorderSize(0)
     leg.SetFillColor(0)
     leg.SetFillStyle(0)
@@ -229,6 +271,10 @@ for k, v in histos.items():
     leg.SetNColumns(3)
     for kk, vv in samples.items():
         leg.AddEntry(temp_hists[k]['%s_%s' %(k, kk)].GetValue(), titles[kk], 'F' if kk!='data' else 'EP')
+
+
+    main_pad.cd()
+    main_pad.SetLogy(False)
 
     maxima = []
     data_max = 0.
@@ -262,9 +308,7 @@ for k, v in histos.items():
     ths1.GetYaxis().SetTitle('events')
     ths1.SetMaximum(1.5*max(sum(maxima), data_max))
     ths1.SetMinimum(0.)
-    
-#     import pdb ; pdb.set_trace()
-    
+        
     # statistical uncertainty
     stats = ths1.GetStack().Last()
     stats.SetLineColor(0)
@@ -278,36 +322,70 @@ for k, v in histos.items():
     
     temp_hists[k]['%s_data'%k].Draw('EP SAME')
         
-    CMS_lumi(c1, 4, 0, cmsText = 'CMS', extraText = '   Simulation', lumi_13TeV = '')
+    CMS_lumi(main_pad, 4, 0, cmsText = 'CMS', extraText = ' Preliminary', lumi_13TeV = '')
 
-    c1.cd()
-    rjpsi_value = ROOT.TPaveText(0.7, 0.68, 0.88, 0.72, 'nbNDC')
+    main_pad.cd()
+    rjpsi_value = ROOT.TPaveText(0.7, 0.65, 0.88, 0.72, 'nbNDC')
     rjpsi_value.AddText('R(J/#Psi) = %.2f' %weights['jpsi_tau'])
 #     rjpsi_value.SetTextFont(62)
     rjpsi_value.SetFillColor(0)
-    rjpsi_value.Draw()
+    rjpsi_value.Draw('EP')
 
+    ratio_pad.cd()
+    ratio = temp_hists[k]['%s_data'%k].Clone()
+    ratio.SetName(ratio.GetName()+'_ratio')
+    ratio.Divide(stats)
+    ratio_stats = stats.Clone()
+    ratio_stats.SetName(ratio.GetName()+'_ratiostats')
+    ratio_stats.Divide(stats)
+    ratio_stats.SetMaximum(1.999) # avoid displaying 2, that overlaps with 0 in the main_pad
+    ratio_stats.SetMinimum(0.001) # and this is for symmetry
+    ratio_stats.GetYaxis().SetTitle('obs/exp')
+    ratio_stats.GetYaxis().SetTitleOffset(0.5)
+    ratio_stats.GetYaxis().SetNdivisions(405)
+    ratio_stats.GetXaxis().SetLabelSize(3.* ratio.GetXaxis().GetLabelSize())
+    ratio_stats.GetYaxis().SetLabelSize(3.* ratio.GetYaxis().GetLabelSize())
+    ratio_stats.GetXaxis().SetTitleSize(3.* ratio.GetXaxis().GetTitleSize())
+    ratio_stats.GetYaxis().SetTitleSize(3.* ratio.GetYaxis().GetTitleSize())
+
+    line = ROOT.TLine(ratio.GetXaxis().GetXmin(), 1., ratio.GetXaxis().GetXmax(), 1.)
+    line.SetLineColor(ROOT.kBlack)
+    line.SetLineWidth(1)
+    ratio_stats.Draw('E2')
+    line.Draw('same')
+    ratio.Draw('EP same')
+    
     c1.Modified()
     c1.Update()
-    c1.SaveAs('plots_ul/pdf/lin/%s.pdf' %k)
-    c1.SaveAs('plots_ul/png/lin/%s.png' %k)
+    c1.SaveAs('plots_ul/%s/pdf/lin/%s.pdf' %(label, k))
+    c1.SaveAs('plots_ul/%s/png/lin/%s.png' %(label, k))
     
     ths1.SetMaximum(20*max(sum(maxima), data_max))
     ths1.SetMinimum(10)
-    c1.SetLogy(True)
+    main_pad.SetLogy(True)
     c1.Modified()
     c1.Update()
-    c1.SaveAs('plots_ul/pdf/log/%s.pdf' %k)
-    c1.SaveAs('plots_ul/png/log/%s.png' %k)
+    c1.SaveAs('plots_ul/%s/pdf/log/%s.pdf' %(label, k))
+    c1.SaveAs('plots_ul/%s/png/log/%s.png' %(label, k))
 
-# yields
-with open('plots_ul/yields.txt', 'w') as ff:
+# save yields
+with open('plots_ul/%s/yields.txt' %label, 'w') as ff:
     total_expected = 0.
     for kk, vv in temp_hists[k].items(): 
         if 'data' not in kk:
             total_expected += vv.Integral()
         print(kk.replace(k, '')[1:], '\t\t%.1f' %vv.Integral(), file=ff)
     print('total expected', '\t%.1f' %total_expected, file=ff)
+
+
+# save selection
+with open('plots_ul/%s/selection.py' %label, 'w') as ff:
+    total_expected = 0.
+    print("selection = ' & '.join([", file=ff)
+    for isel in preselection.split(' & '): 
+        print("    '%s'," %isel, file=ff)
+    print('])', file=ff)
+
 
 ###### Jpsi Mu Nu
 ###### non UL sample 290620 events in the ntuples
