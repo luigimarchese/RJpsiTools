@@ -39,6 +39,7 @@ channels:
 envs_dirs:
   - /afs/cern.ch/work/m/manzoni/miniconda3
 ```
+8. Logout from lxplus and login again to apply the changes.
 
 ### now `conda` is ready!
 
@@ -80,7 +81,7 @@ git checkout 30a91bdc include/Hammer/Math/Utils.hh
 # create a build directory
 cd ..
 mkdir Hammer-build
-cd Hamemr-build
+cd Hammer-build
 
 # Here we decide to build Hammer with ROOT, Python, examples but no doxygen docs.
 cmake -DCMAKE_INSTALL_PREFIX=../Hammer-install \
