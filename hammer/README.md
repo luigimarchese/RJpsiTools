@@ -80,7 +80,7 @@ git checkout 30a91bdc include/Hammer/Math/Utils.hh
 # create a build directory
 cd ..
 mkdir Hammer-build
-cd Hamemr-build
+cd Hammer-build
 
 # Here we decide to build Hammer with ROOT, Python, examples but no doxygen docs.
 cmake -DCMAKE_INSTALL_PREFIX=../Hammer-install \
