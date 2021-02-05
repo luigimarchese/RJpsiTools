@@ -39,6 +39,7 @@ channels:
 envs_dirs:
   - /afs/cern.ch/work/m/manzoni/miniconda3
 ```
+8. Logout from lxplus and login again.
 
 ### now `conda` is ready!
 
