@@ -24,16 +24,36 @@ plot_outdir = 'sPlots'
 if not os.path.isdir(plot_outdir):
    os.mkdir(plot_outdir)
 
-histos = dict()
-histos['fit_Bmass'] = (ROOT.TH1F('fit_Bmass', '', 80,  6    ,   6.6), 'J/#Psi#pi mass (GeV)'                  )
-histos['Bpt'      ] = (ROOT.TH1F('Bpt'      , '', 15, 15    ,  60  ), 'J/#Psi#pi p_{T} (GeV)'                 )
-histos['Blxy_sig' ] = (ROOT.TH1F('Blxy_sig' , '', 20,  0    , 100  ), 'L_{xy}/#sigma_{L_{xy}}'                )
-histos['Bsvprob'  ] = (ROOT.TH1F('Bsvprob'  , '', 10,  0    ,   1  ), 'vtx(#mu_{1}, #mu_{2}, #pi) probability')
-histos['Bcos2D'   ] = (ROOT.TH1F('Bcos2D'   , '', 10,  0.999,   1  ), '2D cos#alpha'                          )
-histos['mu1pt'    ] = (ROOT.TH1F('mu1pt'    , '', 15,  5    ,  40  ), '#mu_{1} p_{T} (GeV)'                   )
-histos['mu2pt'    ] = (ROOT.TH1F('mu2pt'    , '', 15,  5    ,  20  ), '#mu_{2} p_{T} (GeV)'                   )
-histos['kpt'      ] = (ROOT.TH1F('kpt'      , '', 15,  2    ,  30  ), '#pi p_{T} (GeV)'                       )
+# 'mu1_mediumID'         
+# 'mu2_mediumID'         
+# 'mu1_dxy'              
+# 'mu2_dxy'              
+# 'k_dxy'                
+# 'mu1_dz'               
+# 'mu2_dz'               
+# 'k_dz'                 
 
+histos = dict()
+histos['bvtx_fit_mass'    ] = (ROOT.TH1F('bvtx_fit_mass'    , '', 80,  6    ,   6.6 ), 'J/#Psi#pi mass (GeV)'                             )
+histos['Bpt'              ] = (ROOT.TH1F('Bpt'              , '', 15, 15    ,  60   ), 'J/#Psi#pi p_{T} (GeV)'                            )
+histos['bvtx_lxy_sig'     ] = (ROOT.TH1F('bvtx_lxy_sig'     , '', 20,  0    , 100   ), 'vtx(#mu_{1}, #mu_{2}, #pi) L_{xy}/#sigma_{L_{xy}}')
+histos['bvtx_svprob'      ] = (ROOT.TH1F('bvtx_svprob'      , '', 10,  0    ,   1   ), 'vtx(#mu_{1}, #mu_{2}, #pi) probability'           )
+histos['bvtx_cos2D'       ] = (ROOT.TH1F('bvtx_cos2D'       , '', 10,  0.999,   1   ), 'vtx(#mu_{1}, #mu_{2}, #pi) 2D cos#alpha'          )
+histos['bvtx_chi2'        ] = (ROOT.TH1F('bvtx_chi2'        , '', 10,  0.   , 100   ), 'vtx(#mu_{1}, #mu_{2}, #pi) #chi^{2}'              )
+histos['bvtx_lxy_unc'     ] = (ROOT.TH1F('bvtx_lxy_unc'     , '', 50,  0.   ,   0.03), 'vtx(#mu_{1}, #mu_{2}, #pi) #sigma_{L_{xy}}'       )
+histos['jpsivtx_lxy_sig'  ] = (ROOT.TH1F('jpsivtx_lxy_sig'  , '', 20,  0    ,  50   ), 'vtx(#mu_{1}, #mu_{2}) L_{xy}/#sigma_{L_{xy}}'     )
+histos['jpsivtx_svprob'   ] = (ROOT.TH1F('jpsivtx_svprob'   , '', 10,  0    ,   1   ), 'vtx(#mu_{1}, #mu_{2}) probability'                )
+histos['jpsivtx_cos2D'    ] = (ROOT.TH1F('jpsivtx_cos2D'    , '', 10,  0.999,   1   ), 'vtx(#mu_{1}, #mu_{2}) 2D cos#alpha'               )
+histos['jpsivtx_chi2'     ] = (ROOT.TH1F('jpsivtx_chi2'     , '', 40,  0.   ,  10   ), 'vtx(#mu_{1}, #mu_{2}) #chi^{2}'                   )
+histos['jpsivtx_lxy_unc'  ] = (ROOT.TH1F('jpsivtx_lxy_unc'  , '', 50,  0.   ,   0.05), 'vtx(#mu_{1}, #mu_{2}) #sigma_{L_{xy}}'            )
+histos['mu1pt'            ] = (ROOT.TH1F('mu1pt'            , '', 15,  5    ,  40   ), '#mu_{1} p_{T} (GeV)'                              )
+histos['mu2pt'            ] = (ROOT.TH1F('mu2pt'            , '', 15,  5    ,  20   ), '#mu_{2} p_{T} (GeV)'                              )
+histos['kpt'              ] = (ROOT.TH1F('kpt'              , '', 15,  2    ,  30   ), '#pi p_{T} (GeV)'                                  )
+histos['mu1eta'           ] = (ROOT.TH1F('mu1eta'           , '', 15, -3    ,  3    ), '#mu_{1} #eta'                                     )
+histos['mu2eta'           ] = (ROOT.TH1F('mu2eta'           , '', 15, -3    ,  3    ), '#mu_{2} #eta'                                     )
+histos['keta'             ] = (ROOT.TH1F('keta'             , '', 15, -3    ,  3    ), '#pi #eta'                                         )
+histos['jpsivtx_fit_mass' ] = (ROOT.TH1F('jpsivtx_fit_mass' , '', 20,  2.8  ,  3.4  ), 'J/#Psi mass (GeV)'                                )
+histos['jpsivtx_fit_eta'  ] = (ROOT.TH1F('jpsivtx_fit_eta'  , '', 20, -3    ,  3    ), 'J/#Psi #eta'                                      )
 c1 = ROOT.TCanvas('c1', '', 700, 700)
 c1.Draw()
 
@@ -41,7 +61,7 @@ for k, v in histos.items():
 
 
     correlation_histo = ROOT.TH2F('%s_vs_mass' %(k), '', 80, 6., 6.6, v[0].GetNbinsX(), v[0].GetXaxis().GetXmin(), v[0].GetXaxis().GetXmax())
-    tree.Draw('%s:fit_Bmass >> %s' %(k, correlation_histo.GetName()), '', '')
+    tree.Draw('%s:bvtx_fit_mass >> %s' %(k, correlation_histo.GetName()), '', '')
     
     correlation_histo.GetYaxis().SetTitle(v[1])
     correlation_histo.GetXaxis().SetTitle('J/#Psi#pi mass (GeV)')

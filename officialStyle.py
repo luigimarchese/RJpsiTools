@@ -1,7 +1,13 @@
 from ROOT import kBlack, TPaveText
 
 
-def officialStyle(style):
+
+
+def officialStyle(style, tgaxis=None):
+
+    if tgaxis:
+        tgaxis.SetExponentOffset(-0.065, 0.01, 'y')
+
     style.SetCanvasColor(0)
     style.SetCanvasBorderSize(10)
     style.SetCanvasBorderMode(0)
@@ -19,7 +25,7 @@ def officialStyle(style):
     style.SetPadBorderMode(0)
     style.SetPadBottomMargin(0.16)
     style.SetPadTopMargin(0.08)
-    style.SetPadLeftMargin(0.15)
+    style.SetPadLeftMargin(0.2)
 #    style.SetPadRightMargin (0.3)
     style.SetPadRightMargin(0.05)
 #     style.SetPadGridX(1)
@@ -60,7 +66,8 @@ def officialStyle(style):
     style.SetTitleX(0.3)
 
     style.SetTitleSize(0.07, "X")
-    style.SetTitleOffset(1.200, "X")
+    style.SetTitleOffset(0.85, "X")
+
     style.SetLabelOffset(0.005, "X")
     style.SetLabelSize(0.045, "X")
     style.SetLabelFont(42, "X")
@@ -69,7 +76,7 @@ def officialStyle(style):
     style.SetLineStyleString(11, "20 10")
 
     style.SetTitleSize(0.07, "Y")
-    style.SetTitleOffset(1.100, "Y")
+    style.SetTitleOffset(1.500, "Y")
     style.SetLabelOffset(0.010, "Y")
     style.SetLabelSize(0.045, "Y")
     style.SetLabelFont(42, "Y")
