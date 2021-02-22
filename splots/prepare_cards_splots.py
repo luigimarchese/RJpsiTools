@@ -33,15 +33,16 @@ ROOT.RooAbsData.setDefaultStorageType(ROOT.RooAbsData.Tree)
 ##########################################################################################
 
 # data_files = ['data_ul.root']
-data_files = ['/Users/manzoni/Documents/RJPsi/samples_20_novembre/samples/data_bc_pmm.root']
+# data_files = ['/Users/manzoni/Documents/RJPsi/samples_20_novembre/samples/data_bc_pmm.root']
+data_files = ['/Users/manzoni/Documents/RJPsi/dataframes_december_2020/BcToXToJpsi_is_data_merged.root']
 
 data_tree = ROOT.TChain('BTopmm')
 for fname in data_files:
    data_tree.AddFile(fname)
 
 
-signal_files = ['/Users/manzoni/Documents/RJPsi/samples_20_novembre/samples/BcToXToJpsi_is_jpsi_pi_merged.root']
-
+# signal_files = ['/Users/manzoni/Documents/RJPsi/samples_20_novembre/samples/BcToXToJpsi_is_jpsi_pi_merged.root']
+signal_files = ['/Users/manzoni/Documents/RJPsi/dataframes_december_2020/BcToXToJpsi_is_jpsi_pi_merged.root']
 signal_tree = ROOT.TChain('BTopmm')
 for fname in signal_files:
    signal_tree.AddFile(fname)
@@ -50,41 +51,64 @@ for fname in signal_files:
 #      Mass type: choose whether bare or post vertex fit
 ##########################################################################################
 # mass_type = 'Bmass'
-mass_type = 'fit_Bmass'
+mass_type = 'bvtx_fit_mass'
 
 ##########################################################################################
 #      Variables and PDFs
 ##########################################################################################
-mass   = ROOT.RooRealVar(mass_type     , 'J/#psi#pi^{#pm} mass',   6.0,    6.6, 'GeV')
-mu1pt  = ROOT.RooRealVar('mu1pt'       , 'mu1pt'               ,   0. , 1000. , 'GeV')
-mu2pt  = ROOT.RooRealVar('mu2pt'       , 'mu2pt'               ,   0. , 1000. , 'GeV')
-mu1eta = ROOT.RooRealVar('mu1eta'      , 'mu1eta'              , -10. ,   10. )
-mu2eta = ROOT.RooRealVar('mu2eta'      , 'mu2eta'              , -10. ,   10. )
-bpt    = ROOT.RooRealVar('Bpt'         , 'Bpt'                 ,   0. , 9000. )
-lxy    = ROOT.RooRealVar('Blxy'        , 'Blxy'                ,   0. , 9000. )
-lovers = ROOT.RooRealVar('Blxy_sig'    , 'Blxy_sig'            ,   0. , 9000. )
-svprob = ROOT.RooRealVar('Bsvprob'     , 'Bsvprob'             ,   0. ,    1. )
-pipt   = ROOT.RooRealVar('kpt'         , 'kpt'                 ,   0. , 1000. , 'GeV')
-pieta  = ROOT.RooRealVar('keta'        , 'keta'                , -10. ,   10. )
-cos    = ROOT.RooRealVar('Bcos2D'      , 'Bcos2D'              ,   0. ,    1. )
-mu1id  = ROOT.RooRealVar('mu1_mediumID', 'mu1_mediumID'        ,   0. ,    2. )
-mu2id  = ROOT.RooRealVar('mu2_mediumID', 'mu2_mediumID'        ,   0. ,    2. )
-mu1dxy = ROOT.RooRealVar('mu1_dxy'     , 'mu1_dxy'             ,  -5. ,    5. , 'cm')
-mu2dxy = ROOT.RooRealVar('mu2_dxy'     , 'mu2_dxy'             ,  -5. ,    5. , 'cm')
-pidxy  = ROOT.RooRealVar('k_dxy'       , 'k_dxy'               ,  -5. ,    5. , 'cm')
-mu1dz  = ROOT.RooRealVar('mu1_dz'      , 'mu1_dz'              , -25. ,   25. , 'cm')
-mu2dz  = ROOT.RooRealVar('mu2_dz'      , 'mu2_dz'              , -25. ,   25. , 'cm')
-pidz   = ROOT.RooRealVar('k_dz'        , 'k_dz'                , -25. ,   25. , 'cm')
+myvars = dict()
+
+myvars['mass'       ] = ROOT.RooRealVar(mass_type              , 'J/#psi#pi^{#pm} mass',   6.0,    6.6, 'GeV')
+myvars['jpsi_mass'  ] = ROOT.RooRealVar('jpsivtx_fit_mass'     , 'J/#psi mass'         ,   0. ,    6.6, 'GeV')
+myvars['jpsi_eta'   ] = ROOT.RooRealVar('jpsivtx_fit_eta'      , 'J/#psi #eta'         ,  -10 ,   10  ,)
+myvars['mu1pt'      ] = ROOT.RooRealVar('mu1pt'                , 'mu1pt'               ,   0. , 1000. , 'GeV')
+myvars['mu2pt'      ] = ROOT.RooRealVar('mu2pt'                , 'mu2pt'               ,   0. , 1000. , 'GeV')
+myvars['mu1eta'     ] = ROOT.RooRealVar('mu1eta'               , 'mu1eta'              , -10. ,   10. )
+myvars['mu2eta'     ] = ROOT.RooRealVar('mu2eta'               , 'mu2eta'              , -10. ,   10. )
+myvars['bpt'        ] = ROOT.RooRealVar('Bpt'                  , 'Bpt'                 ,   0. , 9000. )
+myvars['blxy'       ] = ROOT.RooRealVar('bvtx_lxy'             , 'bvtx_lxy'            ,   0. , 9000. )
+myvars['blovers'    ] = ROOT.RooRealVar('bvtx_lxy_sig'         , 'bvtx_lxy_sig'        ,   0. , 9000. )
+myvars['bsvprob'    ] = ROOT.RooRealVar('bvtx_svprob'          , 'bvtx_svprob'         ,   0. ,    1. )
+myvars['bcos'       ] = ROOT.RooRealVar('bvtx_cos2D'           , 'bvtx_cos2D'          ,   0. ,    1. )
+myvars['bchi2'      ] = ROOT.RooRealVar('bvtx_chi2'            , 'bvtx_chi2'           ,   0. , 1000. )
+myvars['blxy_unc'   ] = ROOT.RooRealVar('bvtx_lxy_unc'         , 'bvtx_lxy_unc'        ,   0. , 1000. )
+myvars['jpsilxy'    ] = ROOT.RooRealVar('jpsivtx_lxy'          , 'bvtx_lxy'            ,   0. , 9000. )
+myvars['jpsilovers' ] = ROOT.RooRealVar('jpsivtx_lxy_sig'      , 'bvtx_lxy_sig'        ,   0. , 9000. )
+myvars['jpsisvprob' ] = ROOT.RooRealVar('jpsivtx_svprob'       , 'bvtx_svprob'         ,   0. ,    1. )
+myvars['jpsicos2D'  ] = ROOT.RooRealVar('jpsivtx_cos2D'        , 'jpsivtx_cos2D'       ,   0. ,    1. )
+myvars['jpsichi2'   ] = ROOT.RooRealVar('jpsivtx_chi2'         , 'jpsivtx_chi2'        ,   0. , 1000. )
+myvars['jpsilxy_unc'] = ROOT.RooRealVar('jpsivtx_lxy_unc'      , 'jpsivtx_lxy_unc'     ,   0. , 1000. )
+# myvars['jpsicos'    ] = ROOT.RooRealVar('jpsivtx_log10_svprob' , 'jpsivtx_cos2D'       ,   0. ,    1. )
+# myvars['jpsicos'    ] = ROOT.RooRealVar('jpsivtx_log10_lxy'    , 'jpsivtx_cos2D'       ,   0. ,    1. )
+# myvars['jpsicos'    ] = ROOT.RooRealVar('jpsivtx_log10_lxy_sig', 'jpsivtx_cos2D'       ,   0. ,    1. )
+myvars['pipt'       ] = ROOT.RooRealVar('kpt'                  , 'kpt'                 ,   0. , 1000. , 'GeV')
+myvars['pieta'      ] = ROOT.RooRealVar('keta'                 , 'keta'                , -10. ,   10. )
+myvars['mu1id'      ] = ROOT.RooRealVar('mu1_mediumID'         , 'mu1_mediumID'        ,   0. ,    2. )
+myvars['mu2id'      ] = ROOT.RooRealVar('mu2_mediumID'         , 'mu2_mediumID'        ,   0. ,    2. )
+myvars['mu1dxy'     ] = ROOT.RooRealVar('mu1_dxy'              , 'mu1_dxy'             ,  -5. ,    5. , 'cm')
+myvars['mu2dxy'     ] = ROOT.RooRealVar('mu2_dxy'              , 'mu2_dxy'             ,  -5. ,    5. , 'cm')
+myvars['pidxy'      ] = ROOT.RooRealVar('k_dxy'                , 'k_dxy'               ,  -5. ,    5. , 'cm')
+myvars['mu1dz'      ] = ROOT.RooRealVar('mu1_dz'               , 'mu1_dz'              , -25. ,   25. , 'cm')
+myvars['mu2dz'      ] = ROOT.RooRealVar('mu2_dz'               , 'mu2_dz'              , -25. ,   25. , 'cm')
+myvars['pidz'       ] = ROOT.RooRealVar('k_dz'                 , 'k_dz'                , -25. ,   25. , 'cm')
+
+# histos['jpsivtx_chi2'         ] = (ROOT.RDF.TH1DModel('jpsivtx_chi2'         , '', 50,      0,    50), 'vtx(#mu_{1}, #mu_{2}) #chi^{2}'                                , 1)
+# histos['jpsivtx_lxy_unc'      ] = (ROOT.RDF.TH1DModel('jpsivtx_lxy_unc'      , '',100,      0,  0.02), '#sigma_{L_{xy}} (cm)'                                          , 1)
+# histos['jpsivtx_svprob'       ] = (ROOT.RDF.TH1DModel('jpsivtx_svprob'       , '', 50,      0,     1), 'vtx(#mu_{1}, #mu_{2}) probability'                             , 0)
+# histos['jpsivtx_log10_svprob' ] = (ROOT.RDF.TH1DModel('jpsivtx_log10_svprob' , '', 51,     -8,     1), 'log_{10} vtx(#mu_{1}, #mu_{2}) probability'                    , 1)
+# histos['jpsivtx_log10_lxy'    ] = (ROOT.RDF.TH1DModel('jpsivtx_log10_lxy'    , '', 51,     -4,     1), 'log_{10} vtx(#mu_{1}, #mu_{2}) L_{xy}'                         , 1)
+# histos['jpsivtx_log10_lxy_sig'] = (ROOT.RDF.TH1DModel('jpsivtx_log10_lxy_sig', '', 51,     -2,     2), 'log_{10} vtx(#mu_{1}, #mu_{2}) L_{xy}/#sigma_{L_{xy}}'         , 1)
 
 # only MC
-k_genpdgId            = ROOT.RooRealVar('k_genpdgId'           , 'k_genpdgId'           , -1e6  , 1e6  )
-k_mother_pdgId        = ROOT.RooRealVar('k_mother_pdgId'       , 'k_mother_pdgId'       , -1e6  , 1e6  )
-mu1_genpdgId          = ROOT.RooRealVar('mu1_genpdgId'         , 'mu1_genpdgId'         , -1e6  , 1e6  )
-mu1_mother_pdgId      = ROOT.RooRealVar('mu1_mother_pdgId'     , 'mu1_mother_pdgId'     , -1e6  , 1e6  )
-mu1_grandmother_pdgId = ROOT.RooRealVar('mu1_grandmother_pdgId', 'mu1_grandmother_pdgId', -1e6  , 1e6  )
-mu2_genpdgId          = ROOT.RooRealVar('mu2_genpdgId'         , 'mu2_genpdgId'         , -1e6  , 1e6  )
-mu2_mother_pdgId      = ROOT.RooRealVar('mu2_mother_pdgId'     , 'mu2_mother_pdgId'     , -1e6  , 1e6  )
-mu2_grandmother_pdgId = ROOT.RooRealVar('mu2_grandmother_pdgId', 'mu2_grandmother_pdgId', -1e6  , 1e6  )
+myvarsmc = dict()
+myvarsmc['k_genpdgId'           ] = ROOT.RooRealVar('k_genpdgId'           , 'k_genpdgId'           , -1e6  , 1e6  )
+myvarsmc['k_mother_pdgId'       ] = ROOT.RooRealVar('k_mother_pdgId'       , 'k_mother_pdgId'       , -1e6  , 1e6  )
+myvarsmc['mu1_genpdgId'         ] = ROOT.RooRealVar('mu1_genpdgId'         , 'mu1_genpdgId'         , -1e6  , 1e6  )
+myvarsmc['mu1_mother_pdgId'     ] = ROOT.RooRealVar('mu1_mother_pdgId'     , 'mu1_mother_pdgId'     , -1e6  , 1e6  )
+myvarsmc['mu1_grandmother_pdgId'] = ROOT.RooRealVar('mu1_grandmother_pdgId', 'mu1_grandmother_pdgId', -1e6  , 1e6  )
+myvarsmc['mu2_genpdgId'         ] = ROOT.RooRealVar('mu2_genpdgId'         , 'mu2_genpdgId'         , -1e6  , 1e6  )
+myvarsmc['mu2_mother_pdgId'     ] = ROOT.RooRealVar('mu2_mother_pdgId'     , 'mu2_mother_pdgId'     , -1e6  , 1e6  )
+myvarsmc['mu2_grandmother_pdgId'] = ROOT.RooRealVar('mu2_grandmother_pdgId', 'mu2_grandmother_pdgId', -1e6  , 1e6  )
 
 ##########################################################################################
 #      mass ranges
@@ -94,6 +118,7 @@ mass_window_lo = 6.275 - 0.15
 mass_window_hi = 6.275 + 0.15 
 fit_range_hi   = 7.
 
+mass = myvars['mass']
 mass.setRange('left' , fit_range_lo  , mass_window_lo)
 mass.setRange('right', mass_window_hi, fit_range_hi  )
 
@@ -216,9 +241,9 @@ mc_narrow_gaus  = ROOT.RooGaussian('mc_sig_narrow_gaus', 'mc_sig_narrow_gaus', m
 mc_broad_width = ROOT.RooRealVar('mc_broad_width', 'mc_broad_width',   0.06,  0. , 1.)
 mc_broad_gaus  = ROOT.RooGaussian('mc_sig_broad_gaus', 'mc_sig_broad_gaus', mass, mc_mean, mc_broad_width)
 
-mc_nsig        = ROOT.RooRealVar('mc_signal_yield'       , 'mc_signal_yield'       , 800, 0, 100000)
-mc_nsig_narrow = ROOT.RooRealVar('mc_signal_yield_narrow', 'mc_signal_yield_narrow', 700, 0, 100000)
-mc_nsig_broad  = ROOT.RooRealVar('mc_signal_yield_broad' , 'mc_signal_yield_broad' , 100, 0, 100000)
+mc_nsig        = ROOT.RooRealVar('mc_signal_yield'       , 'mc_signal_yield'       , 800, 0, 10000000)
+mc_nsig_narrow = ROOT.RooRealVar('mc_signal_yield_narrow', 'mc_signal_yield_narrow', 700, 0, 10000000)
+mc_nsig_broad  = ROOT.RooRealVar('mc_signal_yield_broad' , 'mc_signal_yield_broad' , 100, 0, 10000000)
 
 # MC signal function
 mc_signal_fitFunction = ROOT.RooAddPdf(
@@ -229,36 +254,12 @@ mc_signal_fitFunction = ROOT.RooAddPdf(
 )
 
 thevars = ROOT.RooArgSet()
-thevars.add(mass  )
-thevars.add(mu1pt )
-thevars.add(mu2pt )
-thevars.add(mu1eta)
-thevars.add(mu2eta)
-thevars.add(bpt   )
-thevars.add(lovers)
-thevars.add(lxy   )
-thevars.add(svprob)
-thevars.add(pipt  )
-thevars.add(pieta )
-thevars.add(cos   )
-thevars.add(mu1id )
-thevars.add(mu2id )
-thevars.add(mu1dxy)
-thevars.add(mu2dxy)
-thevars.add(pidxy )
-thevars.add(mu1dz )
-thevars.add(mu2dz )
-thevars.add(pidz  )
-
+for k, v in myvars.items():
+    thevars.add(v)
+    
 thevars_mc = thevars
-thevars_mc.add(k_genpdgId           )
-thevars_mc.add(k_mother_pdgId       )
-thevars_mc.add(mu1_genpdgId         )
-thevars_mc.add(mu1_mother_pdgId     )
-thevars_mc.add(mu1_grandmother_pdgId)
-thevars_mc.add(mu2_genpdgId         )
-thevars_mc.add(mu2_mother_pdgId     )
-thevars_mc.add(mu2_grandmother_pdgId)
+for k, v in myvarsmc.items():
+    thevars_mc.add(v)
 
 ##########################################################################################
 # selection on data, plotting, fitting
@@ -267,32 +268,33 @@ thevars_mc.add(mu2_grandmother_pdgId)
 selection = ' & '.join([
     '%s>6' %mass_type       ,
     '%s<6.6' %mass_type     ,
-#     'mu1pt>4.5'             ,
-#     'mu2pt>4.5'             ,
-    'mu1pt>5'               ,
-    'mu2pt>5'               ,
+    'mu1pt>4.5'             ,
+    'mu2pt>4.5'             ,
+#     'mu1pt>5'               ,
+#     'mu2pt>5'               ,
     'abs(mu1eta)<2.4'       ,
     'abs(mu2eta)<2.4'       ,
 #     'mu1pt>3.5'             ,
 #     'mu2pt>3.5'             ,
-    'Bpt>15'                ,
+#     'Bpt>15'                ,
 #     'Blxy>0.01'             , # 100 micron
-    'Blxy_sig>3'            ,
+#     'Blxy_sig>3'            ,
 #     'Bsvprob>0.005'         ,
-    'Bsvprob>0.001'         ,
+#     'Bsvprob>0.001'         ,
 #     'Bsvprob>0.1'           ,
-#     'kpt>2'                 ,
-    'kpt>3.5'               ,
+    'kpt>2.5'                 ,
+#     'kpt>3.5'               ,
     'abs(keta)<2.4'         ,
-    'Bcos2D>0.999'          ,
+    'bvtx_cos2D>0.999'          ,
     'mu1_mediumID>0.5'      ,
     'mu2_mediumID>0.5'      ,
-    'abs(mu1_dz-mu2_dz)<0.4', 
-    'abs(mu1_dz-k_dz)<0.4'  ,
-    'abs(mu2_dz-k_dz)<0.4'  ,
-    'abs(k_dxy)<0.2'        ,
-    'abs(mu1_dxy)<0.2'      ,
-    'abs(mu2_dxy)<0.2'      ,
+    'abs(mu1_dz-mu2_dz)<0.2', # *
+    'abs(mu1_dz-k_dz)<0.2'  , # *
+    'abs(mu2_dz-k_dz)<0.2'  , # *
+    'abs(k_dxy)<0.05'       , # *
+    'abs(mu1_dxy)<0.05'     , # *
+    'abs(mu2_dxy)<0.05'     , # *
+    '(((abs(mu1eta)<1. & abs(mu1eta)<1.) & abs(jpsivtx_fit_mass-3.0969)<0.1) | (!(abs(mu1eta)<1. & abs(mu1eta)<1.) & abs(jpsivtx_fit_mass-3.0969)<0.15))', # *
 
 #     'abs(mu1eta)<1.2'       ,
 #     'abs(mu2eta)<1.2'       ,
@@ -347,11 +349,11 @@ leg.SetTextSize(0.035)
 # leg.SetNColumns(3)
 
 # RooFit demmerda 
-leg.AddEntry(c1.GetPrimitive('fit_function_Norm[fit_Bmass]_Comp[lxg]')                , 'B_{c}#rightarrowJ/#Psi#pi + X', 'L')
-leg.AddEntry(c1.GetPrimitive('fit_function_Norm[fit_Bmass]_Comp[bkg_pol]')            , 'combinatorial bkg'            , 'L')
-leg.AddEntry(c1.GetPrimitive('fit_function_Norm[fit_Bmass]_Comp[signal_fit_function]'), 'B_{c}#rightarrowJ/#Psi#pi'    , 'L')
-leg.AddEntry(c1.GetPrimitive('fit_function_Norm[fit_Bmass]_Comp[jpsik_func]')         , 'B_{c}#rightarrowJ/#PsiK'      , 'L')
-leg.AddEntry(c1.GetPrimitive('h_data')                                                , 'observed'                     , 'EP')
+leg.AddEntry(c1.GetPrimitive('fit_function_Norm[%s]_Comp[lxg]'%mass_type)                , 'B_{c}#rightarrowJ/#Psi#pi + X', 'L')
+leg.AddEntry(c1.GetPrimitive('fit_function_Norm[%s]_Comp[bkg_pol]'%mass_type)            , 'combinatorial bkg'            , 'L')
+leg.AddEntry(c1.GetPrimitive('fit_function_Norm[%s]_Comp[signal_fit_function]'%mass_type), 'B_{c}#rightarrowJ/#Psi#pi'    , 'L')
+leg.AddEntry(c1.GetPrimitive('fit_function_Norm[%s]_Comp[jpsik_func]'%mass_type)         , 'B_{c}#rightarrowJ/#PsiK'      , 'L')
+leg.AddEntry(c1.GetPrimitive('h_data')                                                   , 'observed'                     , 'EP')
 leg.Draw('SAME')
 
 # ROOT.gPad.SaveAs('sideband_fit.pdf')
@@ -366,7 +368,7 @@ results_mc = mc_signal_fitFunction.fitTo(fullsignal, ROOT.RooFit.Extended(True),
 mc_signal_fitFunction.plotOn(frame, ROOT.RooFit.LineColor(ROOT.kRed), ROOT.RooFit.MarkerColor(ROOT.kRed))
 frame.Draw()
 CMS_lumi(c1, 4, 0, cmsText = 'CMS', extraText = '   Preliminary', lumi_13TeV = '60 fb^{-1}')
-leg.AddEntry(c1.GetPrimitive('mc_signal_fit_function_Norm[fit_Bmass]'), 'B_{c}#rightarrowJ/#Psi#pi MC', 'LP')
+leg.AddEntry(c1.GetPrimitive('mc_signal_fit_function_Norm[%s]'%mass_type), 'B_{c}#rightarrowJ/#Psi#pi MC', 'LP')
 leg.Draw('SAME')
 c1.SaveAs('sideband_fit_with_mc.pdf')
 

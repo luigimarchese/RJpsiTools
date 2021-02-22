@@ -20,8 +20,8 @@ names_eigen = [
 ]
 
 cval = np.array([
-    2.,
-    1.,
+    0.,
+    0.,
 ])
 
 uncs = np.array([
@@ -102,9 +102,6 @@ for i in range(eUncs.shape[0]):
 print ('='*80+'\n\n')
 print(variations)
 
-plt.arrow(cval[0], cval[1], principal_comp[0][0], principal_comp[0][1], length_includes_head=True, width=1e-6, head_width=0., head_length=0., fc='k', ec='k', label='e0')
-plt.arrow(cval[0], cval[1], principal_comp[1][0], principal_comp[1][1], length_includes_head=True, width=1e-6, head_width=0., head_length=0., fc='k', ec='k', label='e1')
-
 # max_unc = min(uncs)
 max_unc = max(uncs)
 xmin = -2.*max_unc + cval[0]
@@ -158,7 +155,7 @@ for ix, iy in (principal_comp+np.atleast_2d(origin).T):
 subplt.scatter(*cval)
 plt.text(*cval, '({:.3f}, {:.3f})'.format(*cval), c='silver')
 
-subplt.quiver(*origin, principal_comp[:,0], principal_comp[:,1], units='xy', color=['r','b'], angles='xy', scale_units='xy', scale=1.)
+# plot principal components (eigenvectors * eigenvalues)
 subplt.quiver(*origin, principal_comp[:,0], principal_comp[:,1], units='xy', color=['r','b'], angles='xy', scale_units='xy', scale=1.)
 
 plot_margin = 0.2

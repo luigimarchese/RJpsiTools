@@ -9,28 +9,11 @@ import pandas as pd
 import numpy as np
 import pickle
 from root_pandas import read_root, to_root
+from new_branches import to_define 
+from selections import preselection as selection
+from datetime import datetime
 
-selection = ' & '.join([
-    'mu1pt>3'               ,
-    'mu2pt>3'               ,
-    'kpt>2.5'               ,
-    'abs(mu1eta)<2.5'       ,
-    'abs(mu2eta)<2.5'       ,
-    'abs(keta)<2.5'         ,
-    'Bsvprob>1e-7'          ,
-    'abs(k_dxy)<0.2'        ,
-    'abs(mu1_dxy)<0.2'      ,
-    'abs(mu2_dxy)<0.2'      ,
-    'Bcos2D>0.95'           ,
-    'Bmass<6.3'             ,
-#     'mu1_mediumID>0.5'      ,
-#     'mu2_mediumID>0.5'      ,
-#     'k_mediumID>0.5'        ,
-    'Bpt_reco>15'           ,
-    'abs(mu1_dz-mu2_dz)<0.4', 
-    'abs(mu1_dz-k_dz)<0.4'  ,
-    'abs(mu2_dz-k_dz)<0.4'  ,
-])
+label = datetime.now().strftime('%d%b%Y_%Hh%Mm%Ss')
 
 selection_mc = ' & '.join([
     selection                        ,
@@ -45,77 +28,81 @@ selection_mc = ' & '.join([
 ])
 
 features = [
-    'Bpt'         ,
-    'Bmass'       ,
-    'kpt'         ,
-    'Bpt_reco'    ,
-    'Blxy_sig'    ,
-    'Bsvprob'     ,
-#     'log10_svprob',
-    'm_miss_sq'   ,
-    'Q_sq'        ,
-    'pt_var'      ,
-    'pt_miss_vec' ,
-    'E_mu_star'   ,
-    'E_mu_canc'   ,
-    'b_iso03_rel' ,
-    'dr13'        ,
-    'dr23'        ,
-    'dr_jpsi_mu'  ,
+    'Bpt'                  ,
+    'Bmass'                ,
+    'kpt'                  ,
+    'Bpt_reco'             ,
+    'bvtx_log10_svprob'    ,
+    'jpsivtx_log10_svprob' ,
+    'bvtx_log10_lxy_sig'   ,
+    'jpsivtx_log10_lxy_sig',
+    'mmm_p4_par'           ,
+    'mmm_p4_perp'          ,
+#     'm_miss_sq'            ,
+#     'Q_sq'                 ,
+    'pt_var'               ,
+    'pt_miss_vec'          ,
+    'pt_miss_scal'         ,
+#     'E_mu_star'            ,
+#     'E_mu_canc'            ,
+#     'b_iso03_rel'          ,
+    'b_iso04_rel'          ,
+    'dr13'                 ,
+    'dr23'                 ,
+    'dr_jpsi_mu'           ,
+    'mcorr'                ,
+    'decay_time'           ,
+    'bct'                  ,
 ]
 
 samples = dict()
-samples['tau'] = ROOT.RDataFrame('BTommm', '../samples_20_novembre/samples/BcToXToJpsi_is_jpsi_tau_merged.root').Filter(selection_mc) 
-samples['mu' ] = ROOT.RDataFrame('BTommm', '../samples_20_novembre/samples/BcToXToJpsi_is_jpsi_mu_merged.root' ).Filter(selection_mc) 
-samples['bkg'] = ROOT.RDataFrame('BTommm', '../dataframes_2020Oct19/Onia_merged.root'                          ).Filter(selection) 
+tree_dir = '/Users/manzoni/Documents/RJPsi/dataframes_december_2020'
 
-to_define = [
-    ('abs_mu1_dxy' , 'abs(mu1_dxy)'         ),
-    ('abs_mu2_dxy' , 'abs(mu2_dxy)'         ),
-    ('abs_k_dxy'   , 'abs(k_dxy)'           ),
-    ('abs_mu1_dz'  , 'abs(mu1_dz)'          ),
-    ('abs_mu2_dz'  , 'abs(mu2_dz)'          ),
-    ('abs_k_dz'    , 'abs(k_dz)'            ),
-    ('log10_svprob', 'TMath::Log10(Bsvprob)'),
-    ('b_iso03_rel' , 'b_iso03/Bpt'          ),
-    ('b_iso04_rel' , 'b_iso04/Bpt'          ),
-    ('k_iso03_rel' , 'k_iso03/kpt'          ),
-    ('k_iso04_rel' , 'k_iso04/kpt'          ),
-    ('l1_iso03_rel', 'l1_iso03/mu1pt'       ),
-    ('l1_iso04_rel', 'l1_iso04/mu1pt'       ),
-    ('l2_iso03_rel', 'l2_iso03/mu2pt'       ),
-    ('l2_iso04_rel', 'l2_iso04/mu2pt'       ),
-    ('mu1_p4'      , 'ROOT::Math::PtEtaPhiMVector(mu1pt, mu1eta, mu1phi, mu1mass)'),
-    ('mu2_p4'      , 'ROOT::Math::PtEtaPhiMVector(mu2pt, mu2eta, mu2phi, mu2mass)'),
-    ('mu3_p4'      , 'ROOT::Math::PtEtaPhiMVector(kpt, keta, kphi, kmass)'),
-    ('jpsi_p4'     , 'mu1_p4+mu2_p4'        ),
-    ('jpsi_pt'     , 'jpsi_p4.pt()'         ),
-    ('jpsi_eta'    , 'jpsi_p4.eta()'        ),
-    ('jpsi_phi'    , 'jpsi_p4.phi()'        ),
-    ('jpsi_mass'   , 'jpsi_p4.mass()'       ),
-    ('dr12'        , 'ROOT::Math::VectorUtil::DeltaR(mu1_p4.Vect(), mu2_p4.Vect())'),
-    ('dr13'        , 'ROOT::Math::VectorUtil::DeltaR(mu1_p4.Vect(), mu3_p4.Vect())'),
-    ('dr23'        , 'ROOT::Math::VectorUtil::DeltaR(mu2_p4.Vect(), mu3_p4.Vect())'),
-    ('dr_jpsi_mu'  , 'ROOT::Math::VectorUtil::DeltaR(jpsi_p4.Vect(), mu3_p4.Vect())'),
-    # is there a better way?
-    ('maxdr'       , 'dr12*(dr12>dr13 & dr12>dr23) + dr13*(dr13>dr12 & dr13>dr23) + dr23*(dr23>dr12 & dr23>dr13)'),
-    ('mindr'       , 'dr12*(dr12<dr13 & dr12<dr23) + dr13*(dr13<dr12 & dr13<dr23) + dr23*(dr23<dr12 & dr23<dr13)'),
-]
+samples['tau'] = ROOT.RDataFrame('BTommm', '%s/BcToXToJpsi_is_jpsi_tau_merged.root'%tree_dir)
+samples['mu' ] = ROOT.RDataFrame('BTommm', '%s/BcToXToJpsi_is_jpsi_mu_merged.root' %tree_dir)
+samples['cmb'] = ROOT.RDataFrame('BTommm', '%s/BcToXToJpsi_is_onia_merged.root'    %tree_dir)    
+samples['bkg'] = ROOT.RDataFrame('BTommm', '%s/BcToXToJpsi_is_data_merged.root'    %tree_dir)    
 
 print('adding new columns')
 for k, v in samples.items():
     for new_column, new_definition in to_define:
+        if samples[k].HasColumn(new_column): continue
         samples[k] = samples[k].Define(new_column, new_definition)
 
 print('convert to pandas, exclude LorentzVector branches, as they do not cope well with pandas')
-tau = pd.DataFrame(samples['tau'].AsNumpy(exclude=['mu1_p4', 'mu2_p4', 'mu3_p4', 'jpsi_p4']))
-mu  = pd.DataFrame(samples['mu' ].AsNumpy(exclude=['mu1_p4', 'mu2_p4', 'mu3_p4', 'jpsi_p4']))
-bkg = pd.DataFrame(samples['bkg'].AsNumpy(exclude=['mu1_p4', 'mu2_p4', 'mu3_p4', 'jpsi_p4']))
+to_exclude = [
+    'mu1_p4'     ,
+    'mu2_p4'     ,
+    'mu3_p4'     ,
+    'kaon_p4'    ,
+    'mmm_p4'     ,
+    'jpsiK_p4'   ,
+    'pion_p4'    ,
+    'jpsipi_p4'  ,
+    'jpsi_p4'    ,
+    'Bdir_eta'   ,
+    'Bdir_phi'   ,
+]
+
+tau = pd.DataFrame(samples['tau'].Filter(' & '.join([selection_mc                  ])).AsNumpy(exclude=to_exclude))
+mu  = pd.DataFrame(samples['mu' ].Filter(' & '.join([selection_mc                  ])).AsNumpy(exclude=to_exclude))
+cmb = pd.DataFrame(samples['cmb'].Filter(' & '.join([selection                     ])).AsNumpy(exclude=to_exclude))
+bkg = pd.DataFrame(samples['bkg'].Filter(' & '.join([selection   , 'k_mediumID<0.5'])).AsNumpy(exclude=to_exclude))
+
+# merge together all backgrounds
+bkg = pd.concat([bkg, cmb])
+bkg.sample(frac=1).reset_index(drop=True)
 
 print('defining targets')
 tau['target'] = np.ones ( tau.shape[0]).astype(np.int)
 mu ['target'] = np.zeros( mu .shape[0]).astype(np.int)
 bkg['target'] = np.full ((bkg.shape[0]), 2)
+
+# import pdb ; pdb.set_trace()
+tau['w'] = np.ones(tau.shape[0]) * 1000./tau.shape[0]
+mu ['w'] = np.ones(mu .shape[0]) * 1000./mu .shape[0]
+bkg['w'] = np.ones(bkg.shape[0]) * 1000./bkg.shape[0]
+
 
 print('Splitting into train, validation and test...')
 data = pd.concat([bkg, tau, mu])
@@ -159,10 +146,10 @@ clf.fit(
 #     showsd                = TRUE, 
 #     stratified            = TRUE, 
 #     print.every.n = 10, early_stop_round = 20, maximize = FALSE, prediction = TRUE
-    #sample_weight         = train['weight'],
+    sample_weight         = train['w'],
 )
  
-flag = '24nov'   
+flag = label   
 pickle.dump(clf, open('bdtModel/BDT_Model_' +flag+ '.pck', 'wb'))
 print('Model saved  ')
 pickle.dump(features, open('bdtModel/BDT_Model_' +flag+ '_features.pck', 'wb'))
@@ -242,7 +229,6 @@ plt.scatter(wp_x, wp_y, color='orange')
 for i, note in enumerate(cuts_to_display):
     plt.annotate('%.2f'%note, (wp_x[i], wp_y[i]))
 
-
 plt.legend()
 
-plt.savefig('rocs.pdf')
+plt.savefig('rocs_%s.pdf' %flag)
