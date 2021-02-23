@@ -11,9 +11,10 @@ from samples import weights, sample_names, titles
 from selections import preselection, preselection_mc, pass_id, fail_id
 import pickle
 from officialStyle import officialStyle
-
-ROOT.EnableImplicitMT()
-ROOT.gROOT.SetBatch(True)   
+from create_datacard import create_datacard_pass,create_datacard_fail
+#ROOT.EnableImplicitMT()
+ROOT.gROOT.SetBatch()   
+ROOT.gStyle.SetOptStat(0)
 
 officialStyle(ROOT.gStyle, ROOT.TGaxis)
 
@@ -62,8 +63,8 @@ def create_legend(temp_hists, sample_names, titles):
         leg.AddEntry(temp_hists[k]['%s_%s' %(k, kk)].GetValue(), titles[kk], 'F' if kk!='data' else 'EP')
     return leg
 
-def create_datacard(hists, name, label):
-    fout = ROOT.TFile.Open('plots_ul/%s/datacards/datacard_%s.root' %(label, name), 'recreate')
+def create_datacard_prep(hists,flag,name,label):
+    fout = ROOT.TFile.Open('plots_ul/%s/datacards/datacard_%s_%s.root' %(label,flag, name), 'recreate')
     fout.cd()
     myhists = dict()
     for k, v in hists.items():
@@ -76,65 +77,16 @@ def create_datacard(hists, name, label):
                     hh.SetName(isample)
                 hh.Write()
                 myhists[isample] = hh.Clone()
+                #print(myhists[isample],isample)
 
-    toprint = '''
-imax * number of bins
-jmax * number of processes minus 1
-kmax * number of nuisance parameters
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-shapes * * {dc} $PROCESS $PROCESS_$SYSTEMATIC
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-bin          ch1    
-observation  {obs:d} 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-bin                                   ch1            ch1           ch1              ch1              ch1              ch1           ch1            ch1             ch1           ch1        ch1     
-process                               jpsi_tau       jpsi_mu       chic0_mu         chic1_mu         chic2_mu         jpsi_hc       psi2s_mu       psi2s_tau       hc_mu         onia       fakes  
-process                               0              1             2                3                4                5             6              7               8             9          10       
-rate                                  {jpsi_tau:.2f} {jpsi_mu:.2f} {chic0_mu:.2f}   {chic1_mu:.2f}   {chic2_mu:.2f}   {jpsi_hc:.2f} {psi2s_mu:.2f} {psi2s_tau:.2f} {hc_mu:.2f}   {onia:.2f} {fakes:.2f}
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-br_tau_over_mu          lnN           1.15           -             -                -                -                -             -              -               -             -          -       
-br_pi_over_mu           lnN           -              1.15          -                -                -                -             -              -               -             -          -       
-br_chic0_over_mu        lnN           -              -             1.15             -                -                -             -              -               -             -          -       
-br_chic1_over_mu        lnN           -              -             -                1.15             -                -             -              -               -             -          -       
-br_chic2_over_mu        lnN           -              -             -                -                1.15             -             -              -               -             -          -       
-br_hc_over_mu           lnN           -              -             -                -                -                1.15          -              -               -             -          -       
-br_psi2s_over_mu        lnN           -              -             -                -                -                -             1.15           -               -             -          -       
-br_psi2stau_over_mu     lnN           -              -             -                -                -                -             -              1.15            -             -          -       
-br_jpsi_hc_over_mu      lnN           -              -             -                -                -                -             -              -               1.15          -          -       
-jpsi_plus_x             lnN           -              -             -                -                -                -             -              -               -             1.3        -       
-fake_rate               lnN           -              -             -                -                -                -             -              -               -             -          1.5     
-muon_id                 lnN           1.05           1.05          1.05             1.05             1.05             1.05          1.05           1.05            1.05          1.05       -       
-trigger                 lnN           1.05           1.05          1.05             1.05             1.05             1.05          1.05           1.05            1.05          1.05       -       
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-bc_norm       rateParam ch1 jpsi_mu 1  
-bc_norm       rateParam ch1 jpsi_tau 1  
-bc_norm       rateParam ch1 chic0_mu 1  
-bc_norm       rateParam ch1 chic1_mu 1  
-bc_norm       rateParam ch1 chic2_mu 1  
-bc_norm       rateParam ch1 psi2s_mu 1  
-bc_norm       rateParam ch1 psi2s_tau 1  
-bc_norm       rateParam ch1 hc_mu 1  
-bc_norm       rateParam ch1 jpsi_hc 1 
-ch1 autoMCStats 0 0 1
-'''.format(
-    dc        = 'datacard_%s.root' %name,
-    obs       = int(myhists['data'].Integral()),
-    jpsi_tau  = myhists['jpsi_tau' ].Integral(),
-    jpsi_mu   = myhists['jpsi_mu'  ].Integral(),
-    chic0_mu  = myhists['chic0_mu' ].Integral(),
-    chic1_mu  = myhists['chic1_mu' ].Integral(),
-    chic2_mu  = myhists['chic2_mu' ].Integral(),
-    jpsi_hc   = myhists['jpsi_hc'  ].Integral(),
-    psi2s_mu  = myhists['psi2s_mu' ].Integral(),
-    psi2s_tau = myhists['psi2s_tau'].Integral(),
-    hc_mu     = myhists['hc_mu'    ].Integral(),
-    onia      = myhists['onia'     ].Integral(),
-    fakes     = myhists['fakes'    ].Integral(),
-)
-    with open('plots_ul/%s/datacards/datacard_%s.txt' %(label, name), 'w') as ff:
-        print(toprint, file=ff)
+    #print(myhists['data'].Integral())
+    if flag == 'pass':
+        create_datacard_pass(myhists,name, label)
+    else:
+        create_datacard_fail(myhists,name, label)
     fout.Close()
 
+                
 # Canvas and Pad gymnastics
 c1 = ROOT.TCanvas('c1', '', 700, 700)
 c1.Draw()
@@ -163,6 +115,7 @@ if __name__ == '__main__':
     datacards = ['mu1pt', 'Q_sq', 'm_miss_sq', 'E_mu_star', 'E_mu_canc', 'bdt_tau', 'Bmass', 'mcorr']
     
     # timestamp
+    #label = datetime.now().strftime('%d%b%Y_%Hh%Mm%Ss')
     label = datetime.now().strftime('%d%b%Y_%Hh%Mm%Ss')
 
     # create plot directories
@@ -188,11 +141,25 @@ if __name__ == '__main__':
     samples = dict()
     
     tree_name = 'BTommm'
-#     tree_name = 'BTokmm'
-    tree_dir = '/Users/manzoni/Documents/RJPsi/dataframes_december_2020'
-    for isample_name in sample_names:
-#         samples[isample_name] = ROOT.RDataFrame(tree_name, '%s/BcToXToJpsi_is_%s_merged.root' %(tree_dir, isample_name))
-        samples[isample_name] = ROOT.RDataFrame(tree_name, '%s/BcToXToJpsi_is_%s_enriched.root' %(tree_dir, isample_name))
+    tree_dir = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2020Dec09/merged'
+
+    '''    for isample_name in sample_names:
+        print(isample_name)
+        samples[isample_name] = ROOT.RDataFrame(tree_name, '%s/BcToXToJpsi_is_%s_merged.root' %(tree_dir, isample_name))
+        #        samples[isample_name] = ROOT.RDataFrame(tree_name, '%s/BcToXToJpsi_is_%s_enriched.root' %(tree_dir, isample_name))
+    '''
+    samples['jpsi_tau'] = ROOT.RDataFrame(tree_name,'%s/BcToJpsiTauNu_ptmax_merged.root' %(tree_dir))
+    samples['jpsi_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJpsiMuNu_ptmax_merged.root' %(tree_dir))
+    samples['chic0_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToXToJpsi_is_chic0_mu_merged.root' %(tree_dir))
+    samples['chic1_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToXToJpsi_is_chic1_mu_merged.root' %(tree_dir))
+    samples['chic2_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToXToJpsi_is_chic2_mu_merged.root' %(tree_dir))
+    samples['hc_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToXToJpsi_is_hc_mu_merged.root' %(tree_dir))
+    samples['jpsi_hc'] = ROOT.RDataFrame(tree_name,'%s/BcToXToJpsi_is_jpsi_hc_merged.root' %(tree_dir))
+    samples['psi2s_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToXToJpsi_is_psi2s_mu_merged.root' %(tree_dir))
+    samples['psi2s_tau'] = ROOT.RDataFrame(tree_name,'%s/BcToXToJpsi_is_psi2s_tau_merged.root' %(tree_dir))
+    samples['data'] = ROOT.RDataFrame(tree_name,'%s/data_ptmax_merged.root' %(tree_dir))
+    samples['onia'] = ROOT.RDataFrame(tree_name,'%s/OniaX_ptmax_merged.root' %(tree_dir))
+
 
     # define total weights for the different samples and add new columns to RDFs
     for k, v in samples.items():
@@ -203,14 +170,14 @@ if __name__ == '__main__':
            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*24433./38658.')
         else:
             samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight' if k!='data' else 'br_weight') # weightGen is suposed to be the lifetime reweigh, but it's broken
-        for new_column, new_definition in to_define:
+        for new_column, new_definition in to_define: 
             if samples[k].HasColumn(new_column):
                 continue
             samples[k] = samples[k].Define(new_column, new_definition)
 
     # apply filters on newly defined variables
     for k, v in samples.items():
-        filter = preselection_mc if isample_name!='data' else preselection
+        filter = preselection_mc if k!='data' else preselection
         samples[k] = samples[k].Filter(filter)
 
     # better for categorical data
@@ -235,16 +202,17 @@ if __name__ == '__main__':
         temp_hists     [k] = {}
         temp_hists_fake[k] = {}
         for kk, vv in samples.items():
+            #print("sample items",kk)
             try:
                 temp_hists     [k]['%s_%s' %(k, kk)] = vv.Filter(pass_id).Histo1D(v[0], k, 'total_weight')
                 temp_hists_fake[k]['%s_%s' %(k, kk)] = vv.Filter(fail_id).Histo1D(v[0], k, 'total_weight')
             except:
                 pass
     
-#     import pdb ; pdb.set_trace()
-            
+    #     import pdb ; pdb.set_trace()
+    
     print('====> now looping')
-    # then let RDF lazyness work 
+    # loop on the histos
     for k, v in histos.items():
     
         c1.cd()
@@ -287,21 +255,20 @@ if __name__ == '__main__':
             temp_hists_fake[k][kk].SetLineColor(temp_hists[k][kk].GetLineColor())
             temp_hists_fake[k][kk].SetFillColor(temp_hists[k][kk].GetFillColor())
          
-        temp_hists[k]['%s_fakes' %k] = temp_hists_fake[k]['%s_data' %k]
-        fakes = temp_hists[k]['%s_fakes' %k].GetPtr()
+        temp_hists[k]['%s_fakes' %k] = temp_hists_fake[k]['%s_data' %k].Clone()
+        fakes = temp_hists[k]['%s_fakes' %k]
         for i, kv in enumerate(temp_hists_fake[k].items()):
             if 'data' in kv[0]:
                 kv[1].SetLineColor(ROOT.kBlack)
                 continue
             else:
                 fakes.Add(kv[1].GetPtr(), -1.)
-                
-        fakes.Scale(weights['fakes'])
         fakes.SetFillColor(ROOT.kRed)
         fakes.SetFillStyle(1001)
         fakes.SetLineColor(ROOT.kRed)
+        fakes_forfail = fakes.Clone()
+        fakes.Scale(weights['fakes'])
         ths1.Add(fakes)
-     
         ths1.Draw('hist')
         try:
             ths1.GetXaxis().SetTitle(v[1])
@@ -382,8 +349,10 @@ if __name__ == '__main__':
         c1.SaveAs('plots_ul/%s/pdf/log/%s.pdf' %(label, k))
         c1.SaveAs('plots_ul/%s/png/log/%s.png' %(label, k))
         
+        #print("pass region")
+        #print(temp_hists[k])
         if k in datacards:
-            create_datacard(temp_hists[k], k, label)
+            create_datacard_prep(temp_hists[k],'pass',k,label)
 
         ##########################################################################################
         
@@ -402,7 +371,10 @@ if __name__ == '__main__':
             # ihist.SetMinimum(0.)
             # ihist.Draw('hist' + 'same'*(i>0))
             ths1_fake.Add(ihist.GetValue())
-
+        #        print(type(temp_hists_fake[k]['%s_data' %k]))
+        temp_hists_fake[k]['%s_fakes' %k] = fakes_forfail
+        #print("fakes!",temp_hists_fake[k]['%s_fakes' %k])
+        ths1_fake.Add(fakes_forfail)
         ths1_fake.Draw('hist')
         ths1_fake.SetMaximum(1.6*max_fake)
 
@@ -440,6 +412,9 @@ if __name__ == '__main__':
         c1.SaveAs('plots_ul/%s/fail_region/pdf/log/%s.pdf' %(label, k))
         c1.SaveAs('plots_ul/%s/fail_region/png/log/%s.png' %(label, k))
 
+        if k in datacards:
+            create_datacard_prep(temp_hists_fake[k],'fail',k,label)
+        
     save_yields(label, temp_hists)
     save_selection(label, preselection)
 

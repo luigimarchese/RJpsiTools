@@ -136,6 +136,25 @@ def DR_jpsimu(pf):
     pf['DR_jpsimu'] = jpsi_p4.delta_r(mu_p4)
     return pf
 
+def dr13(pf):
+    mu1_p4 = TLorentzVectorArray.from_ptetaphim(pf.mu1pt,pf.mu1eta,pf.mu1phi,pf.mu1mass)
+    mu_p4 = TLorentzVectorArray.from_ptetaphim(pf.kpt,pf.keta,pf.kphi,pf.kmass)
+    #pf.copy()
+    pf['dr13'] = mu_p4.delta_r(mu1_p4)
+    return pf
+def dr23(pf):
+    mu2_p4 = TLorentzVectorArray.from_ptetaphim(pf.mu2pt,pf.mu2eta,pf.mu2phi,pf.mu2mass)
+    mu_p4 = TLorentzVectorArray.from_ptetaphim(pf.kpt,pf.keta,pf.kphi,pf.kmass)
+    #pf.copy()
+    pf['dr23'] = mu_p4.delta_r(mu2_p4)
+    return pf
+def dr12(pf):
+    mu1_p4 = TLorentzVectorArray.from_ptetaphim(pf.mu1pt,pf.mu1eta,pf.mu1phi,pf.mu1mass)
+    mu2_p4 = TLorentzVectorArray.from_ptetaphim(pf.mu2pt,pf.mu2eta,pf.mu2phi,pf.mu2mass)
+    #pf.copy()
+    pf['dr12'] = mu2_p4.delta_r(mu1_p4)
+    return pf
+
 def jpsi_branches(pf):
     print("Adding jpsi four momentum branches...")
     mu1_p4 = TLorentzVectorArray.from_ptetaphim(pf.mu1pt,pf.mu1eta,pf.mu1phi,pf.mu1mass)
@@ -957,6 +976,10 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_x,args.mc_onia,args.mc_
                     if channel != 'BTo2Mu3P':
                         df = DR_jpsimu(df)
                         df = mcor(df)
+                        df = dr12(df)
+                        df = dr23(df)
+                        df = dr13(df)
+                        
                     df = decaytime(df)
                         
                     #print("Finito di processare la flag ",name, " la concateno a quella totale.")
