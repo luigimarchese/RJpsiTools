@@ -9,14 +9,14 @@ from officialStyle import officialStyle
 ROOT.gROOT.SetBatch()   
 ROOT.gStyle.SetOptStat(0)
 
-
-fit_date = "23Feb2021"
-path_comb = '/work/friti/combine/CMSSW_10_2_13/src/HiggsAnalysis/CombinedLimit/'
+#### var info ####
 var = 'Q_sq'
 cut = '1'
-nbins = 40 
-xmin = 0
-xmax = 12
+
+#### fit path infos ####
+fit_date = "24Feb2021_11h31m00s"
+path_comb = '/work/friti/combine/CMSSW_10_2_13/src/HiggsAnalysis/CombinedLimit/'
+
 #output
 label = datetime.now().strftime('%d%b%Y_%Hh%Mm%Ss')
 os.system('mkdir -p plots_postfit/%s/pdf/'%label)
@@ -30,8 +30,20 @@ os.system("cp "+ path_comb +var+"_"+fit_date+"_cut"+cut+ "/datacard_pass_"+var+"
 os.system("cp "+ path_comb +var+"_"+fit_date+"_cut"+cut+ "/datacard_fail_"+var+".root plots_postfit/"+label+"/inputs/.")
 os.system("cp "+ path_comb +var+"_"+fit_date+"_cut"+cut+ "/fitDiagnostics.root plots_postfit/"+label+"/inputs/.")
 
-officialStyle(ROOT.gStyle, ROOT.TGaxis)
+#symbolic link to original plot folder
+symb_out = os.popen("find "+path_comb + var+"_"+fit_date+"_cut"+cut +" . -maxdepth 1 -type l -ls").readlines()[0]
+splitted1 = symb_out.split(" ")
+os.system("ln -s "+ splitted1[-3]+" plots_postfit/"+label+"/inputs/")
 
+#take xmin and xmax automatically from histo
+f=ROOT.TFile("plots_postfit/"+label+"/inputs/datacard_pass_"+var+".root","r")
+his = f.Get("jpsi_tau")
+xmin = his.GetBinLowEdge(1)
+xmax = his.GetBinLowEdge(his.GetNbinsX() + 1)
+nbins = his.GetNbinsX()
+f.Close()
+
+officialStyle(ROOT.gStyle, ROOT.TGaxis)
 
 f=ROOT.TFile("plots_postfit/"+label+"/inputs/fitDiagnostics.root","r")
 c1 = ROOT.TCanvas('c1', '', 700, 700)
@@ -63,7 +75,7 @@ sample_names_new = [
     'chic1_mu' ,
     'chic2_mu' ,
     'hc_mu'    ,
-#    'psi2s_tau',
+    'psi2s_tau',
 #     'jpsi_3pi' ,
     'jpsi_hc'  ,
 #    'data'     ,
@@ -71,7 +83,7 @@ sample_names_new = [
 ]
 
 colours = list(map(ROOT.TColor.GetColor, all_palettes['Spectral'][len(sample_names_new)]))
-print(colours)
+
 for channel in ['ch1','ch2']:
     ths1      = ROOT.THStack('stack', '')
     c1.cd()
@@ -86,10 +98,16 @@ for channel in ['ch1','ch2']:
         print(iname)
         histo = f.Get("shapes_fit_s/" + channel + "/" + iname)
         histo_new = ROOT.TH1F(iname,iname, nbins, xmin, xmax)
-        for i in range(1,histo.GetNbinsX()+1):
-            histo_new.SetBinContent(i,histo.GetBinContent(i))
-            histo_new.SetBinError(i,histo.GetBinError(i))
-        #histo_new.Scale(scale)
+
+        try:
+            for i in range(1,histo.GetNbinsX()+1):
+                histo_new.SetBinContent(i,histo.GetBinContent(i))
+                histo_new.SetBinError(i,histo.GetBinError(i))
+                #histo_new.Scale(scale)
+        except: #if histo is empy from before the fit, combine doesn't save it at all in fitdiagnostics!
+            for i in range(nbins):
+                histo_new.SetBinContent(i,0)
+                histo_new.SetBinError(i,0)
         print("INTEGRAL " + iname,histo_new.Integral())
         #        hist_new.GetXaxis().SetTitle("") #take from histos file
         #hist_new. GetYAxis().SetTitle('events')
@@ -130,7 +148,7 @@ for channel in ['ch1','ch2']:
     leg.SetTextFont(42)
     leg.SetTextSize(0.035)
     leg.SetNColumns(3)
-    leg.AddEntry(histo_d, 'data', 'F')
+    leg.AddEntry(histo_d, 'data', 'EP')
     for i,kk in enumerate(sample_names_new):
         leg.AddEntry(histos[i], kk, 'F' if kk!='data' else 'EP')
 
