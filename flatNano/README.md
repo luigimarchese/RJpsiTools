@@ -12,6 +12,6 @@ Remember to activate the environment
 4. `same_resubmitter.py` -> resubmit the jobs that failed, without changing the number of files per jobs
 5. `split_jobs_Resubmitter.py` -> resubmit the jobs failed, you can choose another number of files per job (< of the first one and such that old%new=0). This can not be used for BcToX dataset.
 ***
-6. `files_path_write.py` -> if you sent CRAB jobs to produce the nanoAOD, you can use this script to print the file paths into a txt file,that you can use to run the flattener.
+6. `files_path_write.py` -> if you sent CRAB jobs to produce the nanoAOD, you can use this script to print the file paths into a txt file,that you can use to run the flattener. This script need the CMSSW environment!
 
 
