@@ -1,7 +1,7 @@
 # Flattener of NanoAODs
 
 # Environment
-All the scripts (except for `files_path_write.py`, work with the conda environment and Hammer installation described [here](https://github.com/friti/RJpsiTools/tree/main/hammer).
+All the scripts (except for `files_path_write.py`), work with the conda environment and Hammer installation described [here](https://github.com/friti/RJpsiTools/tree/main/hammer).
 Remember to activate the environment
 `conda activate hammer3p8`
 
@@ -11,5 +11,7 @@ Remember to activate the environment
 3. `chech_files.py` -> it checks that the submitted jobs finished without errors and it prints which output files are missing
 4. `same_resubmitter.py` -> resubmit the jobs that failed, without changing the number of files per jobs
 5. `split_jobs_Resubmitter.py` -> resubmit the jobs failed, you can choose another number of files per job (< of the first one and such that old%new=0). This can not be used for BcToX dataset.
+***
+6. `files_path_write.py` -> if you sent CRAB jobs to produce the nanoAOD, you can use this script to print the file paths into a txt file,that you can use to run the flattener.
 
 
