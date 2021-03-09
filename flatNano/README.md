@@ -5,7 +5,7 @@ All the scripts (except for `files_path_writer.py`), work with the conda environ
 Remember to activate the environment
 `conda activate hammer3p8`
 
-# The scrips
+# The scripts
 1. `Resonant_rjpsi.py` -> flattens the nanoAOD. It takes as argument the txt files that contain the paths for the nanoAOD (see 2021Jan folder). The options depend on the kind of sample you want to process. 
 2. `submitter.py` -> it submits the jobs into the bash of PSI Tier3 (need the access). It's possible to change the number of files per job, the path of the txt files, the dataset.
 3. `check_files.py` -> it checks that the submitted jobs finished without errors and it prints which output files are missing
