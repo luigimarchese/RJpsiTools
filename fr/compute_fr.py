@@ -14,8 +14,8 @@ ROOT.gStyle.SetOptStat(0)
 
 #officialStyle(ROOT.gStyle, ROOT.TGaxis)
 
-tree_name = 'BTommm'
-tree_dir = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2020Dec09/merged'
+tree_name = 'BTo3Mu'
+tree_dir = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar05/'
 data= ROOT.RDataFrame(tree_name,'%s/data_ptmax_merged.root' %(tree_dir))
 
 #define jpsiK_mass
