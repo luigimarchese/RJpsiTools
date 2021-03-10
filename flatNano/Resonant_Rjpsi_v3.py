@@ -27,10 +27,10 @@ from hammer import hepmc, pdg
 maxEvents = -1
 checkDoubles = True
 
-nMaxFiles = 3
+nMaxFiles = 1
 skipFiles = 0
 
-flag_hammer = True
+flag_hammer = False
 
 ## lifetime weights ##
 def weight_to_new_ctau(old_ctau, new_ctau, ct):
@@ -174,9 +174,12 @@ def decaytime(pf):
     PV_pos = TVector3Array(pf.pv_x,pf.pv_y,pf.pv_z)
     jpsiVertex_pos = TVector3Array(pf.jpsivtx_vtx_x,pf.jpsivtx_vtx_y,pf.jpsivtx_vtx_z)
     dist1 = (PV_pos - jpsiVertex_pos).mag
-    decay_time1 = dist1 * 6.276 / (pf.Bpt_reco * 2.998e+10)
+    if(len(PV_pos)):
+        decay_time1 = dist1 * 6.276 / (pf.Bpt_reco * 2.998e+10)
+        pf['decay_time'] = decay_time1
     #pf.copy()
-    pf['decay_time'] = decay_time1
+    else:
+        pf['decay_time'] = pf.pv_x #it's NaN anyway
     return pf
 
 #for the rho corrected iso branch
@@ -1141,7 +1144,8 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                                 df['pi3_grandgrandmother_vz'] = tab.pi3.grandgrandmother.vz
 
                     #if the dataframe is empty, we don't want to fill these branches because it fills them with NaN
-                    if(len(df)):
+                    #                    if(len(df)):
+                    if(1):
                         if(dataset == args.mc_mu or dataset == args.mc_tau or dataset == args.mc_bc):
                             df = lifetime_weight(df, fake = False)
                         else:
@@ -1158,7 +1162,9 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                         df = decaytime(df)
                         if((dataset == args.mc_mu or (dataset == args.mc_bc and name == 'is_jpsi_mu')) and flag_hammer and channel =='BTo3Mu'):
                             df = hammer_weights(df)
-                                       
+
+                    else:
+                        df['ctau_weight_central'] = tab.p4.pt
                     if(channel=='BTo3Mu'):
                         final_dfs_mmm[name] = pd.concat((final_dfs_mmm[name], dfs[name])) 
                     elif(channel == 'BTo2MuP'):
