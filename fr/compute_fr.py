@@ -37,6 +37,7 @@ c1 = ROOT.TCanvas("c1","",700, 700)
 c1.Draw()
 c1.cd()
 integrals = []
+funcs = []
 for histo,param in zip([his_pass,his_total],[[5.28,0.05],[5.27,0.05]]):
 
     func= ROOT.TF1("func","gaus(0) +pol2(3)")
@@ -78,5 +79,25 @@ for histo,param in zip([his_pass,his_total],[[5.28,0.05],[5.27,0.05]]):
     c1.Update()
     c1.SaveAs('gaus_fit_'+histo.GetPtr().GetName()+'.png')
     integrals.append(histo.Integral())
+    funcs.append(fit_gaus)
+    
 
 print("Fake Rate = ", integrals[0]/integrals[1])
+
+c2= ROOT.TCanvas()
+funcs[0].SetMaximum(2.*max(funcs[0].GetMaximum(),funcs[1].GetMaximum()))
+funcs[0].SetMinimum(0.)
+funcs[0].Draw("l")
+funcs[1].Draw("lsame")
+c2.SaveAs("comp.png")
+fr = funcs[0].Integral(0,10)/funcs[1].Integral(0,10)
+print("Fake Rate = ", funcs[0].Integral(0,10)/funcs[1].Integral(0,10))
+f_out=open("fake_rate.txt","w+")
+f_out.write("fr = "+str(fr))
+f_out.write("\n")
+f_out.write("\n")
+f_out.write("preselection "+ preselection)
+f_out.write("\n")
+f_out.write("\n")
+f_out.write("passId "+ pass_id)
+f_out.close()
