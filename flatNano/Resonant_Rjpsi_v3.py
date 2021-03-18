@@ -724,6 +724,36 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                         df['k_raw_trk_iso05'] = tab.k.raw_trk_iso05
                         df['k_raw_trk_iso05_rel'] = tab.k.raw_trk_iso05_rel
 
+                    #trigger of the muon
+                    if(channel == 'BTo3Mu'):
+                        df['mu1_isFromJpsi_MuT'] = tab.mu1.isMuonFromJpsi_dimuon0Trg
+                        df['mu1_isFromJpsi_TrkPsiPT'] = tab.mu1.isMuonFromJpsi_jpsiTrk_PsiPrimeTrg
+                        df['mu1_isFromJpsi_TrkT'] = tab.mu1.isMuonFromJpsi_jpsiTrkTrg
+                        df['mu1_isFromJpsi_TrkNResT'] = tab.mu1.isMuonFromJpsi_jpsiTrk_NonResonantTrg
+                        df['mu1_isFromMuT'] = tab.mu1.isDimuon0Trg
+                        df['mu1_isFromTrkT'] = tab.mu1.isJpsiTrkTrg
+                        df['mu1_isFromTrkPsiPT'] = tab.mu1.isJpsiTrk_PsiPrimeTrg
+                        df['mu1_isFromTrkNResT'] = tab.mu1.isJpsiTrk_NonResonantTrg
+
+                        df['mu2_isFromJpsi_MuT'] = tab.mu2.isMuonFromJpsi_dimuon0Trg
+                        df['mu2_isFromJpsi_TrkPsiPT'] = tab.mu2.isMuonFromJpsi_jpsiTrk_PsiPrimeTrg
+                        df['mu2_isFromJpsi_TrkT'] = tab.mu2.isMuonFromJpsi_jpsiTrkTrg
+                        df['mu2_isFromJpsi_TrkNResT'] = tab.mu2.isMuonFromJpsi_jpsiTrk_NonResonantTrg
+                        df['mu2_isFromMuT'] = tab.mu2.isDimuon0Trg
+                        df['mu2_isFromTrkT'] = tab.mu2.isJpsiTrkTrg
+                        df['mu2_isFromTrkPsiPT'] = tab.mu2.isJpsiTrk_PsiPrimeTrg
+                        df['mu2_isFromTrkNResT'] = tab.mu2.isJpsiTrk_NonResonantTrg
+
+                        df['k_isFromJpsi_MuT'] = tab.k.isMuonFromJpsi_dimuon0Trg
+                        df['k_isFromJpsi_TrkPsiPT'] = tab.k.isMuonFromJpsi_jpsiTrk_PsiPrimeTrg
+                        df['k_isFromJpsi_TrkT'] = tab.k.isMuonFromJpsi_jpsiTrkTrg
+                        df['k_isFromJpsi_TrkNResT'] = tab.k.isMuonFromJpsi_jpsiTrk_NonResonantTrg
+                        df['k_isFromMuT'] = tab.k.isDimuon0Trg
+                        df['k_isFromTrkT'] = tab.k.isJpsiTrkTrg
+                        df['k_isFromTrkPsiPT'] = tab.k.isJpsiTrk_PsiPrimeTrg
+                        df['k_isFromTrkNResT'] = tab.k.isJpsiTrk_NonResonantTrg
+
+
 
                     #rho
                     df['fixedGridRhoFastjetAll'] = tab.fixedGridRhoFastjetAll
@@ -760,8 +790,7 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                     df['Beta'] = tab.p4.eta
                     df['Bphi'] = tab.p4.phi
                     df['Bpt_reco'] = (tab.p4.pt * 6.275 / tab.p4.mass)
-                    
-                
+
                     df['mu1_dxy'] = tab.mu1_dxy
                     df['mu2_dxy'] = tab.mu2_dxy
                     df['mu1_dxyErr'] = tab.mu1_dxyErr
@@ -798,7 +827,11 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                     df['mu2_tightID']= tab.mu2.tightId
                     df['mu1_softID']= tab.mu1.softId
                     df['mu2_softID']= tab.mu2.softId
-                    
+                    #                    print(tab.mu1.mediumId)
+                    #                    print(df['mu1_mediumID'])                    
+                    if(name == 'is_psi2s_tau'):
+                        print(df.mu1_mediumID)
+
                     if(chan == 'BTo3Mu'):
                         df['k_tightID']= tab.k.tightId
                         df['k_mediumID']=tab.k.mediumId
@@ -897,7 +930,6 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                         df['pi3_vx'] = tab.pi3.vx
                         df['pi3_vz'] = tab.pi3.vz
 
-                    #Gen variables
                     if(dataset!=args.data):
                         
                         #PU weight
@@ -984,7 +1016,7 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                         df['mu1_grandmother_vz'] = tab.mu1.grandmother.vz
                         df['mu2_grandmother_vz'] = tab.mu2.grandmother.vz
 
-
+                        
                         if(channel != 'BTo2Mu3P'):
                             df['k_genpdgId'] = tab.k.gen.pdgId
                             df['k_pdgId'] = tab.k.pdgId
@@ -1144,14 +1176,12 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                                 df['pi3_grandgrandmother_vz'] = tab.pi3.grandgrandmother.vz
 
                     #if the dataframe is empty, we don't want to fill these branches because it fills them with NaN
-                    #                    if(len(df)):
-                    if(1):
-                        if(dataset == args.mc_mu or dataset == args.mc_tau or dataset == args.mc_bc):
+                    if(dataset == args.mc_mu or dataset == args.mc_tau or dataset == args.mc_bc):
                             df = lifetime_weight(df, fake = False)
-                        else:
+                    else:
                             df = lifetime_weight(df)
-                        df = jpsi_branches(df)
-                        if channel != 'BTo2Mu3P':
+                    df = jpsi_branches(df)
+                    if channel != 'BTo2Mu3P':
                             df = DR_jpsimu(df)
                             df = mcor(df)
                             df = dr12(df)
@@ -1159,12 +1189,23 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                             df = dr13(df)
                             if channel == 'BTo3Mu':
                                 df = rho_corr_iso(df)
-                        df = decaytime(df)
-                        if((dataset == args.mc_mu or (dataset == args.mc_bc and name == 'is_jpsi_mu')) and flag_hammer and channel =='BTo3Mu'):
+                    df = decaytime(df)
+                    if((dataset == args.mc_mu or (dataset == args.mc_bc and name == 'is_jpsi_mu')) and flag_hammer and channel =='BTo3Mu'):
                             df = hammer_weights(df)
 
-                    else:
-                        df['ctau_weight_central'] = tab.p4.pt
+                    if(name == 'is_psi2s_tau'):
+                        print("before")
+                        print(df.Bmass)
+                        print(df.mu1_mediumID)
+                        df['mu1_mediumID'] = df['mu1_mediumID']
+                        if df['mu1_mediumID'].dtype == object:
+                            df['mu1_mediumID'] = df['mu1_mediumID'].astype('S')
+                        else:
+                            df['mu1_mediumID'] = df['mu1_mediumID']
+                        print("after")
+                        print(df.Bmass)
+                        print(df.mu1_mediumID)
+
                     if(channel=='BTo3Mu'):
                         final_dfs_mmm[name] = pd.concat((final_dfs_mmm[name], dfs[name])) 
                     elif(channel == 'BTo2MuP'):
@@ -1175,7 +1216,7 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                         final_dfs_2m3p[name] = pd.concat((final_dfs_2m3p[name], dfs[name])) 
                     if(nprocessedDataset > maxEvents and maxEvents != -1):
                         break
-
+    
     dataset=dataset.strip('.txt')
     name=dataset.split('/')
     d=name[len(name)-1].split('_')
@@ -1184,8 +1225,13 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
         adj = '_UL_flags'
     
     for flag in flag_names:
+
         for channel in channels:
             if channel == 'BTo3Mu':
+                if(flag == 'is_psi2s_tau'):
+                        print(final_dfs_mmm[flag].Bmass)
+                        print(final_dfs_mmm[flag].mu1_mediumID)
+                final_dfs_mmm[flag].to_hdf('dataframes_local/'+d[0]+'_'+flag+adj+'.hdf', key=channel)
                 final_dfs_mmm[flag].to_root('dataframes_local/'+d[0]+'_'+flag+adj+'.root', key=channel)
             elif (channel == 'BTo2MuP'):
                 final_dfs_pmm[flag].to_root('dataframes_local/'+d[0]+'_'+flag+adj+'.root', key=channel, mode = 'a')
