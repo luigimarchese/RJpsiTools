@@ -1,0 +1,35 @@
+
+imax 1 number of bins
+jmax * number of processes minus 1
+kmax * number of nuisance parameters
+--------------------------------------------------------------------------------
+shapes background    jpsipi       datacard.root w:bkg_fit_function
+shapes bc            jpsipi       datacard.root w:pi_plus_k_fit_function
+shapes data_obs      jpsipi       datacard.root w:data_obs
+--------------------------------------------------------------------------------
+bin               jpsipi
+observation       12218
+-----------------------------------------------------------------------------------
+bin                                     jpsipi                 jpsipi
+process                                 bc                     background
+process                                 2                      1
+rate                                    9007.4347           7462.7200
+-----------------------------------------------------------------------------------
+jpsipi_trigger lnN  1.10 -
+jpsipi_reco lnN 1.10 -
+-----------------------------------------------------------------------------------
+bkgNorm      rateParam     jpsipi              background      1.
+frac_k        param  0.07321594068582021        0.00762 # fixed to pdg
+argpar        param  -3.5614477184915714        2.500900110587314       
+broad_width   param  0.05534734534147495   0.0037848742011666048  
+# frac_bkg      param  0.6107971877039016      0.023743510007913304     
+frac_pi       param  0.2933327648521603       0.05041675569247911      
+frac_sig      param  0.13553099477525576      0.0491132976722245     
+jpsik_mean    param  6.208216046306845    0.01032752721394603   
+jpsik_sigma   param  0.03136217395973151   0.008693337207320795  
+maxM          param  6.179624677096937          0.001200095856551009         
+mean          param  6.267073942109517          0.0011879531764602547         
+# mg            param  0.0            0.0           
+narrow_width  param  0.016969108004890415  0.003693535780564427 
+pol_c1        param  -0.08013863324161719        0.13946292202311383           
+sg            param  0.0019895076796252334            0.00344859093093433           
