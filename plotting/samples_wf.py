@@ -8,7 +8,7 @@ sample_names = [
     'chic1_mu' ,
     'chic2_mu' ,
     'hc_mu'    ,
-#    'psi2s_tau',
+    'psi2s_tau',
 #     'jpsi_3pi' ,
     'jpsi_hc'  ,
     'data'     ,
