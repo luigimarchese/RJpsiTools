@@ -299,8 +299,8 @@ def hammer_weights(df):
         print("k",k)
         print("hammer_"+k)
         #save the nan as 1
-        weights_clean[k] = [ham if (not np.isnan(ham)) else 1. for ham in weights[k] ]
-        df["hammer_"+k] = weights_clean[k]
+        weights_clean = [ham if (not np.isnan(ham)) else 1. for ham in weights[k]]
+        df["hammer_"+k] = weights_clean
     return df
 
 nprocessedAll = 0
