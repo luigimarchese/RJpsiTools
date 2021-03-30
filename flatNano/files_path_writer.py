@@ -23,7 +23,7 @@ tier_access_path = 'srm://storage01.lcg.cscs.ch:8443/srm/managerv2?SFN=/pnfs/lcg
 
 personal_rjpsi_path = '/work/friti/rjpsi/CMSSW_10_6_14/src/PhysicsTools/RJPsiNano/'
 username = 'friti'
-jobs_date = '2021Mar04'
+jobs_date = '2021Mar16'
 
 crab_path = personal_rjpsi_path + 'production/RJPsiNANO_'+jobs_date
 
@@ -35,7 +35,8 @@ dataset_dict = {
     'OniaX':['OniaX'],
     'BToJpsi_ToMuMu':['BToJpsi_ToMuMu'],
     'BcToJPsiMuMu':['BcToJPsiMuMu'],
-    'HbToJPsiMuMu':['HbToJPsiMuMu']
+    'HbToJPsiMuMu':['HbToJPsiMuMu'],
+    'HbToJPsiMuMu_3MuFilter':['HbToJPsiMuMu_3MuFilter']
                 }
 #in input the dataset names separeted by a comma, without any blank space
 datasets = map(str,sys.argv[1].split(','))
