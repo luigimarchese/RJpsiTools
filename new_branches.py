@@ -1,4 +1,5 @@
 to_define = [
+    ('ip3d_sig'             , 'ip3d/ip3d_e'                                                 ),
     ('abs_mu1_dxy'          , 'abs(mu1_dxy)'                                                 ),
     ('abs_mu2_dxy'          , 'abs(mu2_dxy)'                                                 ),
     ('abs_k_dxy'            , 'abs(k_dxy)'                                                   ),
