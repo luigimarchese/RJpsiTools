@@ -7,7 +7,6 @@ preselection = ' & '.join([
     'abs(keta)<2.5',
     'bvtx_svprob>1e-4',
     'jpsivtx_svprob>1e-2',
-    'Bmass<6.3',
     'mu1_mediumID>0.5',
     'mu2_mediumID>0.5',
     'Bpt_reco>15',
@@ -29,8 +28,11 @@ preselection = ' & '.join([
     'mu1_isFromJpsi_MuT>0.5',
     'mu2_isFromJpsi_MuT>0.5',
     'k_isFromMuT>0.5',    
-    'k_raw_db_corr_iso03_rel<0.2',
-    #'Bmass>5'
+    'k_raw_db_corr_iso04_rel<0.3',
+#     'Q_sq>7',
+#     'ip3d_sig>0.',
+    'Bmass<10.',
+    'jpsivtx_cos2D>0.99',
 ])
 
 #pass_id = 'k_mediumID>0.5 & k_raw_db_corr_iso03_rel<0.2'
