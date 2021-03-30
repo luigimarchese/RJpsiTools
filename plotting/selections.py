@@ -24,6 +24,11 @@ preselection = ' & '.join([
     'm_miss_sq>0.5',
     'abs(jpsi_mass-3.0969)<0.1',
     'mmm_p4_par>10',
+    'k_raw_db_corr_iso04_rel<0.3',
+#     'Q_sq>7',
+#     'ip3d_sig>0.',
+    'Bmass<10.',
+    'jpsivtx_cos2D>0.99',
 ])
 
 pass_id = 'k_mediumID>0.5'
