@@ -1,7 +1,7 @@
 sample_names = [
     'jpsi_tau' ,
     'jpsi_mu'  ,
-    'onia'     ,
+#     'onia'     ,
 #     'jpsi_pi'  ,
     'psi2s_mu' ,
     'chic0_mu' ,
@@ -11,6 +11,8 @@ sample_names = [
     'psi2s_tau',
 #     'jpsi_3pi' ,
     'jpsi_hc'  ,
+#     'jpsi_x'   ,
+    'jpsi_x_mu',
     'data'     ,
 ]
 
@@ -22,23 +24,13 @@ fr = 0.80
 all_comm = 1.
 hb_norm = 6.7
 weights = dict()
-#weights['jpsi_tau' ] = 1
-weights['jpsi_tau' ] = bc_common * all_comm
-weights['jpsi_mu'  ] = bc_common * all_comm# * 0.7 # 1.
-weights['jpsi_pi'  ] = bc_common * all_comm# * 1.
-weights['psi2s_mu' ] = bc_common * all_comm# * 0.336000000 + 0.177300000 + 0.032800000 + 0.001300000
-weights['chic0_mu' ] = bc_common * all_comm# * 0.011600000
-weights['chic1_mu' ] = bc_common * all_comm# * 0.344000000
-weights['chic2_mu' ] = bc_common* all_comm # * 0.195000000
-weights['hc_mu'    ] = bc_common* all_comm # * 0.01
-weights['psi2s_tau'] = bc_common* all_comm# * 0.336000000 + 0.177300000 + 0.032800000 + 0.001300000
-weights['jpsi_3pi' ] = bc_common* all_comm# * 1.
-weights['jpsi_hc'  ] = bc_common* all_comm# * 1.
-#weights['fakes'    ] = 1.15 * 0.46/(1-0.46)
-weights['fakes'    ] = fr/(1-fr) * all_comm
-#weights['fakes'    ] = bc_common * all_comm
-weights['onia'     ] = hb_norm * all_comm# * 6.7 #28.33
 weights['data'     ] = 1.
+
+weights['jpsi_x'   ] = 6.7
+weights['jpsi_x_mu'] = 1. * 8.5 # 10. # 8.5
+weights['onia'     ] = 1.
+weights['jpsi_pi'  ] = 1.
+weights['jpsi_3pi' ] = 1.
 
 titles = dict()
 titles['jpsi_tau' ] = 'B_{c}#rightarrowJ/#Psi#tau'
@@ -54,3 +46,9 @@ titles['psi2s_tau'] = 'B_{c}#rightarrow#Psi(2S)#tau'
 titles['jpsi_3pi' ] = 'B_{c}#rightarrowJ/#Psi3#pi'
 titles['jpsi_hc'  ] = 'B_{c}#rightarrowJ/#PsiH_{c}'
 titles['data'     ] = 'observed'
+titles['jpsi_x'   ] = 'J/#Psi + X'
+titles['jpsi_x_mu'] = 'J/#Psi + #mu'
+
+
+# import ROOT
+# colours = list(map(ROOT.TColor.GetColor, all_palettes['Spectral'][len(samples)]))
