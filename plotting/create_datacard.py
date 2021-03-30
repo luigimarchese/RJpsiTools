@@ -143,7 +143,7 @@ def create_datacard_fail(histos,name,label):
     '''
     f.close()
   
-def create_datacard_pass(histos,name,label):
+def create_datacard_onlypass(histos,name,label):
 
     
     f= open('plots_ul/%s/datacards/datacard_pass_%s.txt' %(label, name),"w")
@@ -158,14 +158,14 @@ def create_datacard_pass(histos,name,label):
 
     f.write("----------------------------------------------------------------------------\n") 
     f.write("bin  \t signal \t signal \t signal \t signal \t signal \t signal \t signal \t signal \t signal \t signal \t signal \n") 
-    f.write("process \t jpsi_mu \t jpsi_tau \t chic0_mu \t chic1_mu \t chic2_mu \t hc_mu \t jpsi_hc \t psi2s_mu \t psi2s_tau \t \t onia \t fakes\n") 
+    f.write("process \t jpsi_mu \t jpsi_tau \t chic0_mu \t chic1_mu \t chic2_mu \t hc_mu \t jpsi_hc \t psi2s_mu \t psi2s_tau \t onia \t fakes\n") 
     f.write("process \t 1 \t 0 \t 2 \t 3 \t 4 \t 5 \t 6 \t 7 \t 8 \t 9 \t 10 \n") 
     f.write("rate  \t %.2f \t %.2f \t %.2f \t %.2f \t %.2f \t %.2f \t %.2f \t  %.2f \t %.2f \t %.2f \t %.2f\n"%(histos['jpsi_mu'].Integral(),histos['jpsi_tau'].Integral(),histos['chic0_mu'].Integral(),histos['chic1_mu' ].Integral(),histos['chic2_mu'].Integral(),histos['hc_mu'].Integral(),histos['jpsi_hc'].Integral(),histos['psi2s_mu'].Integral(),histos['psi2s_tau'].Integral(),histos['onia'].Integral(),histos['fakes'].Integral()))
     f.write("-------------------------------------------------------------------- --------------------\n")
 
     f.write("bc              lnN 1.3 1.3  1.3 1.3 1.3 1.3 1.3 1.3 1.3 - -\n")
     f.write("br_tau_over_mu  lnN - 1.15  - - - - - - - - -\n")
-    f.write("br_pi_over_mu   lnN 1.15 - - - - - - - - - -\n")
+    f.write("#br_pi_over_mu   lnN 1.15 - - - - - - - - - -\n")
     f.write("br_chic0_over_mu lnN - - 1.15 - - - - - - - -\n")
     f.write("br_chic1_over_mu lnN - - - 1.15 - - - - - - -\n")
     f.write("br_chic2_over_mu lnN - - - - 1.15  - - - - - -\n")
