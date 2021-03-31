@@ -192,27 +192,34 @@ if __name__ == '__main__':
     
     tree_name = 'BTo3Mu'
 
-    tree_dir = '/Users/manzoni/Documents/RJPsi/ntuples_26mar21_jpsimu'
+    tree_dir_data = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15' #data
+    tree_dir = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15' #Bc and Hb
+    tree_dir_psitau = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar25' #psi2stau
+    tree_hbmu = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar16' #Bc and Hb
 
-    samples['data'     ] = ROOT.RDataFrame(tree_name,'%s/data.root'      %(tree_dir))
-    samples['jpsi_tau' ] = ROOT.RDataFrame(tree_name,'%s/jpsi_tau.root'  %(tree_dir))
-    samples['psi2s_tau'] = ROOT.RDataFrame(tree_name,'%s/psi2s_tau.root' %(tree_dir))
-    samples['jpsi_x_mu'] = ROOT.RDataFrame(tree_name,'%s/jpsi_x_mu.root' %(tree_dir))
-    samples['psi2s_mu' ] = ROOT.RDataFrame(tree_name,'%s/psi2s_mu.root'  %(tree_dir))
-    samples['chic0_mu' ] = ROOT.RDataFrame(tree_name,'%s/chic0_mu.root'  %(tree_dir))
-    samples['chic1_mu' ] = ROOT.RDataFrame(tree_name,'%s/chic1_mu.root'  %(tree_dir))
-    samples['chic2_mu' ] = ROOT.RDataFrame(tree_name,'%s/chic2_mu.root'  %(tree_dir))
-    samples['hc_mu'    ] = ROOT.RDataFrame(tree_name,'%s/hc_mu.root'     %(tree_dir))
-    samples['jpsi_hc'  ] = ROOT.RDataFrame(tree_name,'%s/jpsi_hc.root'   %(tree_dir))
-    samples['jpsi_mu'  ] = ROOT.RDataFrame(tree_name,'%s/jpsi_mu.root'   %(tree_dir))
-#     samples['jpsi_x'   ] = ROOT.RDataFrame(tree_name,'%s/jpsi_x.root'    %(tree_dir))
+    samples['jpsi_tau'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_jpsi_tau_merged.root' %(tree_dir))
+    samples['jpsi_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_jpsi_mu_trigger_hammer.root' %(tree_dir))
+    samples['chic0_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_chic0_mu_merged.root' %(tree_dir))
+    samples['chic1_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_chic1_mu_merged.root' %(tree_dir))
+    samples['chic2_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_chic2_mu_merged.root' %(tree_dir))
+    samples['hc_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_hc_mu_merged.root' %(tree_dir))
+    samples['jpsi_hc'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_jpsi_hc_merged.root' %(tree_dir))
+    samples['psi2s_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_psi2s_mu_merged.root' %(tree_dir))
+    samples['psi2s_tau'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_psi2s_tau_merged.root' %(tree_dir_psitau))
+    #samples['data'] = ROOT.RDataFrame(tree_name,'%s/data_ptmax_merged.root' %(tree_dir_data))
+    samples['data'] = ROOT.RDataFrame(tree_name,'%s/data_flagtriggersel.root' %(tree_dir_data))
+    #samples['onia'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu_ptmax_merged.root' %(tree_dir))
+    #samples['onia'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu3MuFilter_ptmax_merged.root' %(tree_hbmu))
+    samples['jpsi_x_mu'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu3MuFilter_trigger_bcclean.root' %(tree_hbmu))
+    #samples['fakes'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu_trigger_bcclean.root' %(tree_dir))
+
 
 
     # define total weights for the different samples and add new columns to RDFs
     for k, v in samples.items():
         samples[k] = samples[k].Define('br_weight', '%f' %weights[k])
         if   k=='jpsi_tau' : samples[k] = samples[k].Define('total_weight', 'br_weight * ctau_weight_central * puWeight')
-        elif k=='jpsi_mu'  : samples[k] = samples[k].Define('total_weight', 'br_weight * ctau_weight_central * puWeight * bgl')
+        elif k=='jpsi_mu'  : samples[k] = samples[k].Define('total_weight', 'br_weight * ctau_weight_central * puWeight * hammer_clean')
 #         elif k=='jpsi_mu'  : samples[k] = samples[k].Define('total_weight', 'br_weight * ctau_weight_central * puWeight')
         elif k=='psi2s_mu' : samples[k] = samples[k].Define('total_weight', 'br_weight * ctau_weight_central * puWeight')
         elif k=='psi2s_tau': samples[k] = samples[k].Define('total_weight', 'br_weight * ctau_weight_central * puWeight')

@@ -1,7 +1,6 @@
 sample_names = [
     'jpsi_tau' ,
     'jpsi_mu'  ,
-#     'onia'     ,
 #     'jpsi_pi'  ,
     'psi2s_mu' ,
     'chic0_mu' ,
@@ -11,19 +10,30 @@ sample_names = [
     'psi2s_tau',
 #     'jpsi_3pi' ,
     'jpsi_hc'  ,
-#     'jpsi_x'   ,
     'jpsi_x_mu',
+    #'fakes'   ,
     'data'     ,
 ]
 
-bc_common = 0.30
-#bc_common = 0.45
-#fr = 0.119 without trigger selection
-#fr = 0.423 #with trigger selection
-fr = 0.80
-all_comm = 1.
-hb_norm = 6.7
+
 weights = dict()
+
+bc_weight = 0.52
+# rjpsi = 0.71
+# rjpsi = 0.29
+rjpsi = 1.
+
+weights['jpsi_tau' ] = bc_weight * rjpsi
+weights['jpsi_mu'  ] = bc_weight
+weights['psi2s_mu' ] = bc_weight
+weights['chic0_mu' ] = bc_weight
+weights['chic1_mu' ] = bc_weight
+weights['chic2_mu' ] = bc_weight
+weights['hc_mu'    ] = bc_weight
+weights['psi2s_tau'] = bc_weight
+weights['jpsi_hc'  ] = bc_weight
+weights['fakes'    ] = 2.7 # 2.5 # 2.7
+
 weights['data'     ] = 1.
 
 weights['jpsi_x'   ] = 6.7
@@ -46,7 +56,7 @@ titles['psi2s_tau'] = 'B_{c}#rightarrow#Psi(2S)#tau'
 titles['jpsi_3pi' ] = 'B_{c}#rightarrowJ/#Psi3#pi'
 titles['jpsi_hc'  ] = 'B_{c}#rightarrowJ/#PsiH_{c}'
 titles['data'     ] = 'observed'
-titles['jpsi_x'   ] = 'J/#Psi + X'
+titles['fakes'   ] = 'J/#Psi + X'
 titles['jpsi_x_mu'] = 'J/#Psi + #mu'
 
 
