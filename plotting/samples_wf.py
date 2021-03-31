@@ -2,16 +2,16 @@ sample_names = [
     'jpsi_tau' ,
     'jpsi_mu'  ,
 #     'jpsi_pi'  ,
-    'psi2s_mu' ,
     'chic0_mu' ,
     'chic1_mu' ,
     'chic2_mu' ,
+    'jpsi_hc'  ,
     'hc_mu'    ,
+    'psi2s_mu' ,
     'psi2s_tau',
 #     'jpsi_3pi' ,
-    'jpsi_hc'  ,
-    'jpsi_x_mu'     ,
     #'fakes',
+    'jpsi_x_mu'     ,
     'jpsi_x',
     'data'     ,
 ]
@@ -19,9 +19,10 @@ sample_names = [
 bc_weight = 0.52
 fr = 0.19
 #normalisation for the jpsi+X sample used for the fakes
-hb_norm = 2.7#6.7 
+hb_norm = 6.7 
 #normalisation for the jpsi+mu sample used for the comb bkg jpsi+mu
-hbmu_norm = 8.5
+#hbmu_norm = 8.5
+hbmu_norm = 7.5
 
 weights = dict()
 #weights['jpsi_tau' ] = 1

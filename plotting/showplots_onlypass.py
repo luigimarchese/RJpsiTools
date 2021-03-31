@@ -15,6 +15,7 @@ from create_datacard import create_datacard_onlypass
 import random
 import time
 from array import array
+
 start_time = time.time()
 
 ROOT.EnableImplicitMT()
@@ -71,6 +72,7 @@ def create_legend(temp_hists, sample_names, titles):
     leg.SetNColumns(3)
     k = list(temp_hists.keys())[0]
     for kk in sample_names:
+        print(kk)
         leg.AddEntry(temp_hists[k]['%s_%s' %(k, kk)].GetValue(), titles[kk], 'F' if kk!='data' else 'EP')
     return leg
 
@@ -172,11 +174,11 @@ if __name__ == '__main__':
     samples['psi2s_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_psi2s_mu_merged.root' %(tree_dir))
     samples['psi2s_tau'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_psi2s_tau_merged.root' %(tree_dir_psitau))
     #samples['data'] = ROOT.RDataFrame(tree_name,'%s/data_ptmax_merged.root' %(tree_dir_data))
-    samples['data'] = ROOT.RDataFrame(tree_name,'%s/data_flagtriggersel.root' %(tree_dir_data))
     #samples['onia'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu_ptmax_merged.root' %(tree_dir))
     #samples['onia'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu3MuFilter_ptmax_merged.root' %(tree_hbmu))
     samples['jpsi_x_mu'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu3MuFilter_trigger_bcclean.root' %(tree_hbmu))
     samples['jpsi_x'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu_trigger_bcclean.root' %(tree_dir))
+    samples['data'] = ROOT.RDataFrame(tree_name,'%s/data_flagtriggersel.root' %(tree_dir_data))
     
     print("OK")
     # define total weights for the different samples and add new columns to RDFs
@@ -217,6 +219,7 @@ if __name__ == '__main__':
 
     # better for categorical data
     # colours = list(map(ROOT.TColor.GetColor, all_palettes['Category10'][len(samples)]))
+    print(len(samples)-1)
     colours = list(map(ROOT.TColor.GetColor, all_palettes['Spectral'][len(samples)-1]))
 
     # print ('user defined variables')
@@ -264,12 +267,12 @@ if __name__ == '__main__':
             ihist.GetXaxis().SetTitle(v[1])
             ihist.GetYaxis().SetTitle('events')
             #         ihist.Scale(1./ihist.Integral())
-            if(key == '%s_jpsi_x'%k):
-                ihist.SetLineColor(ROOT.kRed-4)
-                ihist.SetFillColor(ROOT.kRed-4)
-            else:
-                ihist.SetLineColor(colours[i] if key!='%s_data'%k else ROOT.kBlack)
-                ihist.SetFillColor(colours[i] if key!='%s_data'%k else ROOT.kWhite)
+            #            if(key == '%s_jpsi_x'%k):
+            #    ihist.SetLineColor(ROOT.kRed-4)
+            #    ihist.SetFillColor(ROOT.kRed-4)
+            #else:
+            ihist.SetLineColor(colours[i] if key!='%s_data'%k else ROOT.kBlack)
+            ihist.SetFillColor(colours[i] if key!='%s_data'%k else ROOT.kWhite)
             if key!='%s_data'%k:
                 maxima.append(ihist.GetMaximum())
             else:
@@ -295,7 +298,7 @@ if __name__ == '__main__':
             temp_hists_fake[k][kk].GetYaxis().SetTitle(temp_hists[k][kk].GetYaxis().GetTitle())
             temp_hists_fake[k][kk].SetLineColor(temp_hists[k][kk].GetLineColor())
             temp_hists_fake[k][kk].SetFillColor(temp_hists[k][kk].GetFillColor())
-        print(k)
+        #print(k)
         '''
         print(temp_hists_fake[k]['%s_data' %k].Integral())
         temp_hists[k]['%s_fakes' %k] = temp_hists_fake[k]['%s_data' %k].Clone()

@@ -12,7 +12,10 @@ from selections import preselection, preselection_mc, pass_id, fail_id
 import pickle
 from officialStyle import officialStyle
 from create_datacard import create_datacard_pass,create_datacard_fail
-#ROOT.EnableImplicitMT()
+import random
+
+
+ROOT.EnableImplicitMT()
 ROOT.gROOT.SetBatch()   
 ROOT.gStyle.SetOptStat(0)
 
@@ -140,43 +143,52 @@ if __name__ == '__main__':
     # access the samples, via RDataFrames
     samples = dict()
     
-    tree_name = 'BTommm'
-    tree_dir = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2020Dec09/merged'
+    tree_name = 'BTo3Mu'
+    tree_dir_data = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15' #data
+    tree_dir_psitau = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar25' #data
+    tree_dir = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15' #Bc and Hb
 
     '''    for isample_name in sample_names:
         print(isample_name)
         samples[isample_name] = ROOT.RDataFrame(tree_name, '%s/BcToXToJpsi_is_%s_merged.root' %(tree_dir, isample_name))
         #        samples[isample_name] = ROOT.RDataFrame(tree_name, '%s/BcToXToJpsi_is_%s_enriched.root' %(tree_dir, isample_name))
     '''
-    samples['jpsi_tau'] = ROOT.RDataFrame(tree_name,'%s/BcToJpsiTauNu_ptmax_merged.root' %(tree_dir))
-    samples['jpsi_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJpsiMuNu_ptmax_merged.root' %(tree_dir))
-    samples['chic0_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToXToJpsi_is_chic0_mu_merged.root' %(tree_dir))
-    samples['chic1_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToXToJpsi_is_chic1_mu_merged.root' %(tree_dir))
-    samples['chic2_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToXToJpsi_is_chic2_mu_merged.root' %(tree_dir))
-    samples['hc_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToXToJpsi_is_hc_mu_merged.root' %(tree_dir))
-    samples['jpsi_hc'] = ROOT.RDataFrame(tree_name,'%s/BcToXToJpsi_is_jpsi_hc_merged.root' %(tree_dir))
-    samples['psi2s_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToXToJpsi_is_psi2s_mu_merged.root' %(tree_dir))
-    samples['psi2s_tau'] = ROOT.RDataFrame(tree_name,'%s/BcToXToJpsi_is_psi2s_tau_merged.root' %(tree_dir))
-    samples['data'] = ROOT.RDataFrame(tree_name,'%s/data_ptmax_merged.root' %(tree_dir))
-    samples['onia'] = ROOT.RDataFrame(tree_name,'%s/OniaX_ptmax_merged.root' %(tree_dir))
+    samples['jpsi_tau'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_jpsi_tau_merged.root' %(tree_dir))
+    samples['jpsi_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_jpsi_mu_merged.root' %(tree_dir))
+    samples['chic0_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_chic0_mu_merged.root' %(tree_dir))
+    samples['chic1_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_chic1_mu_merged.root' %(tree_dir))
+    samples['chic2_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_chic2_mu_merged.root' %(tree_dir))
+    samples['hc_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_hc_mu_merged.root' %(tree_dir))
+    samples['jpsi_hc'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_jpsi_hc_merged.root' %(tree_dir))
+    samples['psi2s_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_psi2s_mu_merged.root' %(tree_dir))
+    samples['psi2s_tau'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_psi2s_tau_merged.root' %(tree_dir_psitau))
+    samples['data'] = ROOT.RDataFrame(tree_name,'%s/data_ptmax_merged.root' %(tree_dir_data))
+    samples['onia'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu_ptmax_merged.root' %(tree_dir))
 
-
+    print("OK")
     # define total weights for the different samples and add new columns to RDFs
+    #blind analysis-> random number between 0.5 and 2 (but always the same because it is fixed)
+    random.seed(2)
+    rand = random.randint(0, 10000)
+    blind = rand/10000 *1.5 +0.5
     for k, v in samples.items():
+        print(k,v)
         samples[k] = samples[k].Define('br_weight', '%f' %weights[k])
         if k=='jpsi_tau':
-           samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*290620./500805.')
+           samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*%f' %blind)
+
         elif k=='jpsi_mu':
-           samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*24433./38658.')
+           samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight')
         else:
             samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight' if k!='data' else 'br_weight') # weightGen is suposed to be the lifetime reweigh, but it's broken
         for new_column, new_definition in to_define: 
             if samples[k].HasColumn(new_column):
                 continue
             samples[k] = samples[k].Define(new_column, new_definition)
-
+    print("OK2")
     # apply filters on newly defined variables
     for k, v in samples.items():
+        print(k,v)
         filter = preselection_mc if k!='data' else preselection
         samples[k] = samples[k].Filter(filter)
 
