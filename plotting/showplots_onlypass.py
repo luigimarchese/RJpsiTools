@@ -46,6 +46,12 @@ def save_yields(label, temp_hists):
             print(kk.replace(k, '')[1:], '\t\t%.1f' %vv.Integral(), file=ff)
         print('total expected', '\t%.1f' %total_expected, file=ff)
 
+def save_weights(label, sample_names, weights):
+    with open('plots_ul/%s/normalisations.txt' %label, 'w') as ff:
+        for sname in sample_names: 
+            print(sname+'\t\t%.2f' %weights[sname], file=ff)
+
+    
 def save_selection(label, preselection):
     with open('plots_ul/%s/selection.py' %label, 'w') as ff:
         total_expected = 0.
@@ -169,8 +175,8 @@ if __name__ == '__main__':
     samples['data'] = ROOT.RDataFrame(tree_name,'%s/data_flagtriggersel.root' %(tree_dir_data))
     #samples['onia'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu_ptmax_merged.root' %(tree_dir))
     #samples['onia'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu3MuFilter_ptmax_merged.root' %(tree_hbmu))
-    samples['onia'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu3MuFilter_trigger_bcclean.root' %(tree_hbmu))
-    samples['fakes'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu_trigger_bcclean.root' %(tree_dir))
+    samples['jpsi_x_mu'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu3MuFilter_trigger_bcclean.root' %(tree_hbmu))
+    samples['jpsi_x'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu_trigger_bcclean.root' %(tree_dir))
     
     print("OK")
     # define total weights for the different samples and add new columns to RDFs
@@ -192,8 +198,8 @@ if __name__ == '__main__':
            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*%f*%f' %(blind,rjpsi))
            
         elif k=='jpsi_mu':
-            #samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*hammer_clean')
-            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight')
+            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*hammer_clean')
+            #samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight')
         else:
             samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight' if k!='data' else 'br_weight') # weightGen is suposed to be the lifetime reweigh, but it's broken
         for new_column, new_definition in to_define: 
@@ -203,9 +209,9 @@ if __name__ == '__main__':
 
     # apply filters on newly defined variables
     for k, v in samples.items():
-        filter = preselection_mc if (k!='data' and k!='fakes') else preselection
+        filter = preselection_mc if (k!='data' and k!='jpsi_x') else preselection
         samples[k] = samples[k].Filter(filter)
-        if k == 'fakes':
+        if k == 'jpsi_x':
             hbx_filter = '!(abs(k_genpdgId)==13)'
             samples[k] = samples[k].Filter(hbx_filter)
 
@@ -258,7 +264,7 @@ if __name__ == '__main__':
             ihist.GetXaxis().SetTitle(v[1])
             ihist.GetYaxis().SetTitle('events')
             #         ihist.Scale(1./ihist.Integral())
-            if(key == '%s_fakes'%k):
+            if(key == '%s_jpsi_x'%k):
                 ihist.SetLineColor(ROOT.kRed-4)
                 ihist.SetFillColor(ROOT.kRed-4)
             else:
@@ -276,7 +282,7 @@ if __name__ == '__main__':
             key = kv[0]
             if key=='%s_data'%k: continue
             ihist = kv[1]
-            #if key == '%s_jpsi_mu'%k:ihist.Scale(48717.9/ihist.Integral())
+            #            if key == '%s_jpsi_mu'%k:ihist.Scale(48717.9/ihist.Integral())
             ihist.SetMaximum(2.*max(maxima))
             # ihist.SetMinimum(0.)
             ihist.Draw('hist' + 'same'*(i>0))
@@ -465,6 +471,8 @@ if __name__ == '__main__':
 
     save_yields(label, temp_hists)
     save_selection(label, preselection)
+    save_weights(label, sample_names, weights)
+
 
 print("--- %s seconds ---" % (time.time() - start_time))
 # save reduced trees to produce datacards
