@@ -3,8 +3,9 @@ from bokeh.palettes import viridis, all_palettes
 import ROOT
 from datetime import datetime
 import os
-from samples import weights, sample_names, titles
+from samples_wf import weights, sample_names, titles
 from officialStyle import officialStyle
+from histos import histos
 
 ROOT.gROOT.SetBatch()   
 ROOT.gStyle.SetOptStat(0)
@@ -14,7 +15,7 @@ var = 'Q_sq'
 cut = '1'
 
 #### fit path infos ####
-fit_date = "24Mar2021_16h22m58s"
+fit_date = "31Mar2021_15h35m38s"
 path_comb = '/work/friti/combine/CMSSW_10_2_13/src/HiggsAnalysis/CombinedLimit/'
 
 #output
@@ -64,6 +65,7 @@ ratio_pad.SetTopMargin(0.)
 ratio_pad.SetGridy()
 ratio_pad.SetBottomMargin(0.45)
 
+'''
 sample_names_new = [
     'jpsi_tau' ,
     'jpsi_mu'  ,
@@ -80,8 +82,8 @@ sample_names_new = [
     #'data'     ,
     'fakes'
 ]
-
-colours = list(map(ROOT.TColor.GetColor, all_palettes['Spectral'][11]))
+'''
+colours = list(map(ROOT.TColor.GetColor, all_palettes['Spectral'][len(sample_names)-1]))
 
 for channel in ['signal']:
     ths1      = ROOT.THStack('stack', '')
@@ -92,9 +94,8 @@ for channel in ['signal']:
 
     maxima = []
     data_max = 0.
-    histos = []
-    for j,iname in enumerate(sample_names_new):
-        print(iname)
+    hs = []
+    for j,iname in enumerate(sample_names[:-1]): # except data
         histo = f.Get("shapes_fit_s/" + channel + "/" + iname)
         histo_new = ROOT.TH1F(iname,iname, nbins, xmin, xmax)
 
@@ -107,18 +108,21 @@ for channel in ['signal']:
             for i in range(nbins):
                 histo_new.SetBinContent(i,0)
                 histo_new.SetBinError(i,0)
-        print("INTEGRAL " + iname,histo_new.Integral())
+        histo_new.GetXaxis().SetTitle(histos[var][1])
+        histo_new.GetYaxis().SetTitle('events')
+
         #        hist_new.GetXaxis().SetTitle("") #take from histos file
         #hist_new. GetYAxis().SetTitle('events')
-        histos.append(histo_new)
+        hs.append(histo_new)
+        #        if(iname == 'jpsi_x'):
+        #    histo_new.SetLineColor(ROOT.kRed+2)
+        #    histo_new.SetFillColor(ROOT.kRed+2)
+        #else:
         histo_new.SetLineColor(colours[j])
         histo_new.SetFillColor(colours[j])
         maxima.append(histo_new.GetMaximum())
         ths1.Add(histo_new)
         
-                
-        
-
     #DATA
     his_d = f.Get("shapes_fit_s/" + channel + "/data")
     histo_d = ROOT.TH1F("data","data", nbins, xmin, xmax)
@@ -127,11 +131,10 @@ for channel in ['signal']:
         #    histo_d.Scale(scale)
     data_max = histo_d.GetMaximum()
     histo_d.SetLineColor(ROOT.kBlack)
+    ths1.Draw("hist")
     ths1.SetMaximum(1.6*max(sum(maxima), data_max))
     ths1.SetMinimum(0.)
-    ths1.Draw("hist")
-    ths1.GetXaxis().SetTitle("") #take from histos file
-    ths1.GetYaxis().SetTitle('events')
+    histo_d.Draw("ep same")
 
     stats = ths1.GetStack().Last().Clone()
     stats.SetLineColor(0)
@@ -147,14 +150,13 @@ for channel in ['signal']:
     leg.SetTextFont(42)
     leg.SetTextSize(0.035)
     leg.SetNColumns(3)
-    leg.AddEntry(histo_d, 'data', 'EP')
-    for i,kk in enumerate(sample_names_new):
-        leg.AddEntry(histos[i], kk, 'F' if kk!='data' else 'EP')
+    for i,kk in enumerate(sample_names[:-1]):
+        leg.AddEntry(hs[i], titles[kk], 'F' if kk!='data' else 'EP')
+    leg.AddEntry(histo_d, titles['data'], 'EP')
 
     leg.AddEntry(stats, 'stat. unc.', 'F')
     leg.Draw('same')
-    histo_d.Draw("ep same")
-    
+        
     CMS_lumi(main_pad, 4, 0, cmsText = 'CMS', extraText = ' Preliminary', lumi_13TeV = '')
     main_pad.cd()
     #rjpsi_value = ROOT.TPaveText(0.7, 0.65, 0.88, 0.72, 'nbNDC')
@@ -182,19 +184,19 @@ for channel in ['signal']:
 
     norm_stack = ROOT.THStack('norm_stack', '')
     #         import pdb ; pdb.set_trace()
-    for i,k in enumerate(histos):
+    for i,k in enumerate(hs):
         hh = k.Clone()
         hh.Divide(stats)
         norm_stack.Add(hh)
-    norm_stack.Draw('hist same')
-
+    #norm_stack.Draw('hist same')
+    
 
     line = ROOT.TLine(ratio.GetXaxis().GetXmin(), 1., ratio.GetXaxis().GetXmax(), 1.)
     line.SetLineColor(ROOT.kBlack)
     line.SetLineWidth(1)
     ratio_stats.Draw('E2')
     norm_stack.Draw('hist same')
-    ratio_stats.Draw('E2 same')
+    #ratio_stats.Draw('E2 same')
     line.Draw('same')
     ratio.Draw('EP same')
     
