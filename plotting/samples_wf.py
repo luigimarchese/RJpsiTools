@@ -18,11 +18,13 @@ sample_names = [
 
 bc_weight = 0.52
 fr = 0.19
+
 #normalisation for the jpsi+X sample used for the fakes
 hb_norm = 6.7 
+#hb_norm = 5.5 
+
 #normalisation for the jpsi+mu sample used for the comb bkg jpsi+mu
-#hbmu_norm = 8.5
-hbmu_norm = 7.5
+hbmu_norm = 8.5
 
 weights = dict()
 #weights['jpsi_tau' ] = 1
@@ -37,7 +39,7 @@ weights['hc_mu'    ] = bc_weight
 weights['psi2s_tau'] = bc_weight
 weights['jpsi_3pi' ] = bc_weight
 weights['jpsi_hc'  ] = bc_weight
-weights['fakes'    ] = fr/(1-fr) 
+#weights['fakes'    ] = fr/(1-fr) 
 weights['jpsi_x'    ] =  hb_norm  
 weights['jpsi_x_mu'     ] = hbmu_norm 
 weights['data'     ] = 1.
