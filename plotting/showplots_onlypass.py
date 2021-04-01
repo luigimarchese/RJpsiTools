@@ -72,11 +72,10 @@ def create_legend(temp_hists, sample_names, titles):
     leg.SetNColumns(3)
     k = list(temp_hists.keys())[0]
     for kk in sample_names:
-        print(kk)
         leg.AddEntry(temp_hists[k]['%s_%s' %(k, kk)].GetValue(), titles[kk], 'F' if kk!='data' else 'EP')
     return leg
 
-def create_datacard_prep(hists,flag,name,label):
+def create_datacard_prep(hists,shape_hists,shapes_names,flag,name,label):
     fout = ROOT.TFile.Open('plots_ul/%s/datacards/datacard_%s_%s.root' %(label,flag, name), 'recreate')
     fout.cd()
     myhists = dict()
@@ -91,7 +90,12 @@ def create_datacard_prep(hists,flag,name,label):
                 hh.Write()
                 myhists[isample] = hh.Clone()
                 #print(myhists[isample],isample)
-
+    for k,v in shape_hists.items():
+        for sname in shapes_names:
+            if sname in k:
+                hh = v.Clone()
+                hh.SetName(sname)
+                hh.Write()
     #print(myhists['data'].Integral())
     if flag == 'pass':
         create_datacard_onlypass(myhists,name, label)
@@ -180,6 +184,10 @@ if __name__ == '__main__':
     samples['jpsi_x'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu_trigger_bcclean.root' %(tree_dir))
     samples['data'] = ROOT.RDataFrame(tree_name,'%s/data_flagtriggersel.root' %(tree_dir_data))
     
+
+        
+
+
     print("OK")
     # define total weights for the different samples and add new columns to RDFs
 
@@ -200,7 +208,7 @@ if __name__ == '__main__':
            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*%f*%f' %(blind,rjpsi))
            
         elif k=='jpsi_mu':
-            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*hammer_clean')
+            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*bglvar')
             #samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight')
         else:
             samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight' if k!='data' else 'br_weight') # weightGen is suposed to be the lifetime reweigh, but it's broken
@@ -217,9 +225,54 @@ if __name__ == '__main__':
             hbx_filter = '!(abs(k_genpdgId)==13)'
             samples[k] = samples[k].Filter(hbx_filter)
 
+
+    #shape uncertainties
+    shapes = dict()
+    for sname in samples:
+        if (sname != 'jpsi_x_mu' and sname != 'jpsi_x' and sname != 'data' ):
+            shapes[sname + '_ctauUp'] = samples[sname]
+            if sname == 'jpsi_mu':
+                shapes[sname +'_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight*bglvar')
+            else:
+                shapes[sname + '_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight')
+            shapes[sname + '_ctauDown'] = samples[sname]
+            if sname == 'jpsi_mu':
+                shapes[sname + '_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight*bglvar')
+            else:
+                shapes[sname + '_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight')
+
+    hammer_branches = ['bglvar_e0up',
+                       'bglvar_e0down',
+                       'bglvar_e1up',
+                       'bglvar_e1down',
+                       'bglvar_e2up',
+                       'bglvar_e2down',
+                       'bglvar_e3up',
+                       'bglvar_e3down',
+                       'bglvar_e4up',
+                       'bglvar_e4down',
+                       'bglvar_e5up',
+                       'bglvar_e5down',
+                       'bglvar_e6up',
+                       'bglvar_e6down',
+                       'bglvar_e7up',
+                       'bglvar_e7down',
+                       'bglvar_e8up',
+                       'bglvar_e8down',
+                       'bglvar_e9up',
+                       'bglvar_e9down',
+                       'bglvar_e10up',
+                       'bglvar_e10down'
+    ]
+    for ham in hammer_branches:
+        if 'up' in ham:
+            new_name = ham.replace('up','Up')
+        elif 'down' in ham:
+            new_name = ham.replace('down','Down')
+        shapes['jpsi_mu_'+new_name] = samples['jpsi_mu']
+        shapes['jpsi_mu_'+new_name] = shapes['jpsi_mu_'+new_name].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*'+ham)
     # better for categorical data
     # colours = list(map(ROOT.TColor.GetColor, all_palettes['Category10'][len(samples)]))
-    print(len(samples)-1)
     colours = list(map(ROOT.TColor.GetColor, all_palettes['Spectral'][len(samples)-1]))
 
     # print ('user defined variables')
@@ -248,6 +301,15 @@ if __name__ == '__main__':
             #    pass
     
     #     import pdb ; pdb.set_trace()
+
+    print('====> shape uncertainties histos')
+    unc_hists      = {} # pass muon ID category
+    for k, v in histos.items():    
+        unc_hists     [k] = {}
+        for kk, vv in shapes.items():
+            unc_hists     [k]['%s_%s' %(k, kk)] = vv.Filter(pass_id).Histo1D(v[0], k, 'shape_weight')
+
+
     
     print('====> now looping')
     # loop on the histos
@@ -281,6 +343,8 @@ if __name__ == '__main__':
         ths1      = ROOT.THStack('stack', '')
         ths1_fake = ROOT.THStack('stack_fake', '')
 
+
+
         for i, kv in enumerate(temp_hists[k].items()):
             key = kv[0]
             if key=='%s_data'%k: continue
@@ -291,14 +355,16 @@ if __name__ == '__main__':
             ihist.Draw('hist' + 'same'*(i>0))
             #if key == '%s_fakes'%k:print(ihist.Integral())
             ths1.Add(ihist.GetValue())
-        
+
+            
         # apply same aestethics to pass and fail
-        for kk in temp_hists[k].keys():
+        '''for kk in temp_hists[k].keys():
             temp_hists_fake[k][kk].GetXaxis().SetTitle(temp_hists[k][kk].GetXaxis().GetTitle())
             temp_hists_fake[k][kk].GetYaxis().SetTitle(temp_hists[k][kk].GetYaxis().GetTitle())
             temp_hists_fake[k][kk].SetLineColor(temp_hists[k][kk].GetLineColor())
             temp_hists_fake[k][kk].SetFillColor(temp_hists[k][kk].GetFillColor())
         #print(k)
+        '''
         '''
         print(temp_hists_fake[k]['%s_data' %k].Integral())
         temp_hists[k]['%s_fakes' %k] = temp_hists_fake[k]['%s_data' %k].Clone()
@@ -407,10 +473,10 @@ if __name__ == '__main__':
         c1.SaveAs('plots_ul/%s/png/log/%s.png' %(label, k))
         
         if k in datacards:
-            create_datacard_prep(temp_hists[k],'pass',k,label)
+            create_datacard_prep(temp_hists[k],unc_hists[k],shapes,'pass',k,label)
 
         ##########################################################################################
-        
+        '''
         c1.cd()
         main_pad.cd()
         main_pad.SetLogy(False)
@@ -469,7 +535,7 @@ if __name__ == '__main__':
 
         #        if k in datacards:
         #    create_datacard_prep(temp_hists_fake[k],'fail',k,label)
-  
+        '''
 
 
     save_yields(label, temp_hists)
