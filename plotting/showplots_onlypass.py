@@ -16,6 +16,8 @@ import random
 import time
 from array import array
 
+shape_nuisances = True
+
 start_time = time.time()
 
 ROOT.EnableImplicitMT()
@@ -80,8 +82,12 @@ def create_datacard_prep(hists,shape_hists,shapes_names,flag,name,label):
     fout.cd()
     myhists = dict()
     for k, v in hists.items():
+        print(k)
         for isample in sample_names :
+            print(isample)
             if isample in k:
+                if isample == 'jpsi_x' and 'jpsi_x_mu' in k:
+                    continue
                 hh = v.Clone()
                 if isample == 'data':
                     hh.SetName(isample+'_obs')
@@ -225,54 +231,55 @@ if __name__ == '__main__':
             hbx_filter = '!(abs(k_genpdgId)==13)'
             samples[k] = samples[k].Filter(hbx_filter)
 
+    if shape_nuisances :
+        #shape uncertainties
+        shapes = dict()
+        for sname in samples:
+            if (sname != 'jpsi_x_mu' and sname != 'jpsi_x' and sname != 'data' ):
+                shapes[sname + '_ctauUp'] = samples[sname]
+                if sname == 'jpsi_mu':
+                    shapes[sname +'_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight*bglvar')
+                else:
+                    shapes[sname + '_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight')
+                shapes[sname + '_ctauDown'] = samples[sname]
+                if sname == 'jpsi_mu':
+                    shapes[sname + '_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight*bglvar')
+                else:
+                    shapes[sname + '_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight')
 
-    #shape uncertainties
-    shapes = dict()
-    for sname in samples:
-        if (sname != 'jpsi_x_mu' and sname != 'jpsi_x' and sname != 'data' ):
-            shapes[sname + '_ctauUp'] = samples[sname]
-            if sname == 'jpsi_mu':
-                shapes[sname +'_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight*bglvar')
-            else:
-                shapes[sname + '_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight')
-            shapes[sname + '_ctauDown'] = samples[sname]
-            if sname == 'jpsi_mu':
-                shapes[sname + '_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight*bglvar')
-            else:
-                shapes[sname + '_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight')
-
-    hammer_branches = ['bglvar_e0up',
-                       'bglvar_e0down',
-                       'bglvar_e1up',
-                       'bglvar_e1down',
-                       'bglvar_e2up',
-                       'bglvar_e2down',
-                       'bglvar_e3up',
-                       'bglvar_e3down',
-                       'bglvar_e4up',
-                       'bglvar_e4down',
-                       'bglvar_e5up',
-                       'bglvar_e5down',
-                       'bglvar_e6up',
-                       'bglvar_e6down',
-                       'bglvar_e7up',
-                       'bglvar_e7down',
-                       'bglvar_e8up',
-                       'bglvar_e8down',
-                       'bglvar_e9up',
-                       'bglvar_e9down',
-                       'bglvar_e10up',
-                       'bglvar_e10down'
-    ]
-    for ham in hammer_branches:
-        if 'up' in ham:
-            new_name = ham.replace('up','Up')
-        elif 'down' in ham:
-            new_name = ham.replace('down','Down')
-        shapes['jpsi_mu_'+new_name] = samples['jpsi_mu']
-        shapes['jpsi_mu_'+new_name] = shapes['jpsi_mu_'+new_name].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*'+ham)
-    # better for categorical data
-    # colours = list(map(ROOT.TColor.GetColor, all_palettes['Category10'][len(samples)]))
+        hammer_branches = ['bglvar_e0up',
+                           'bglvar_e0down',
+                           'bglvar_e1up',
+                           'bglvar_e1down',
+                           'bglvar_e2up',
+                           'bglvar_e2down',
+                           'bglvar_e3up',
+                           'bglvar_e3down',
+                           'bglvar_e4up',
+                           'bglvar_e4down',
+                           'bglvar_e5up',
+                           'bglvar_e5down',
+                           'bglvar_e6up',
+                           'bglvar_e6down',
+                           'bglvar_e7up',
+                           'bglvar_e7down',
+                           'bglvar_e8up',
+                           'bglvar_e8down',
+                           'bglvar_e9up',
+                           'bglvar_e9down',
+                           'bglvar_e10up',
+                           'bglvar_e10down'
+                       ]
+        for ham in hammer_branches:
+            if 'up' in ham:
+                new_name = ham.replace('up','Up')
+            elif 'down' in ham:
+                new_name = ham.replace('down','Down')
+            shapes['jpsi_mu_'+new_name] = samples['jpsi_mu']
+            shapes['jpsi_mu_'+new_name] = shapes['jpsi_mu_'+new_name].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*'+ham)
+            # better for categorical data
+            # colours = list(map(ROOT.TColor.GetColor, all_palettes['Category10'][len(samples)]))
+    ###end shapes nuisances####
     colours = list(map(ROOT.TColor.GetColor, all_palettes['Spectral'][len(samples)-1]))
 
     # print ('user defined variables')
@@ -302,12 +309,15 @@ if __name__ == '__main__':
     
     #     import pdb ; pdb.set_trace()
 
-    print('====> shape uncertainties histos')
-    unc_hists      = {} # pass muon ID category
-    for k, v in histos.items():    
-        unc_hists     [k] = {}
-        for kk, vv in shapes.items():
-            unc_hists     [k]['%s_%s' %(k, kk)] = vv.Filter(pass_id).Histo1D(v[0], k, 'shape_weight')
+    if shape_nuisances:
+        print('====> shape uncertainties histos')
+        unc_hists      = {} # pass muon ID category
+        for k, v in histos.items():    
+            if k not in datacards:
+                continue
+            unc_hists     [k] = {}
+            for kk, vv in shapes.items():
+                unc_hists     [k]['%s_%s' %(k, kk)] = vv.Filter(pass_id).Histo1D(v[0], k, 'shape_weight')
 
 
     
@@ -472,7 +482,7 @@ if __name__ == '__main__':
         c1.SaveAs('plots_ul/%s/pdf/log/%s.pdf' %(label, k))
         c1.SaveAs('plots_ul/%s/png/log/%s.png' %(label, k))
         
-        if k in datacards:
+        if k in datacards and shape_nuisances:
             create_datacard_prep(temp_hists[k],unc_hists[k],shapes,'pass',k,label)
 
         ##########################################################################################
