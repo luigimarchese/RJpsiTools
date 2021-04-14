@@ -12,8 +12,9 @@ from DataFormats.FWLite import Events, Handle
 from PhysicsTools.HeppyCore.utils.deltar import deltaR, deltaPhi
 # https://pypi.org/project/particle/
 from particle import Particle
-#from kiselev_paths import files
-#from ebert_paths import files
+from kiselev_paths_mu import files
+#from ebert_paths_mu import files
+
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--files_per_job', dest='files_per_job', default=2    , type=int)
 parser.add_argument('--jobid'        , dest='jobid'        , default=0    , type=int)
@@ -108,8 +109,7 @@ handles['genInfo'] = ('generator'   , Handle('GenEventInfoProduct'           ))
 #     files = ['root://cms-xrd-global.cern.ch/%s' %line.rstrip() for line in lines]
 # events = Events(files[:10])
 
-#files = glob('/pnfs/psi.ch/cms/trivcat/store/user/manzoni/RJPsi_Bc_GEN_30nov20_v1/RJpsi-BcToXToJpsiMuMuSelected-RunIISummer19UL18GEN_*.root')
-files = ['/pnfs/psi.ch/cms/trivcat/store/user/manzoni/RJPsi_Bc_GEN_30nov20_v1/RJpsi-BcToXToJpsiMuMuSelected-RunIISummer19UL18GEN_1033.root']
+# files = glob('/pnfs/psi.ch/cms/trivcat/store/user/manzoni/RJPsi_Bc_GEN_30nov20_v1/RJpsi-BcToXToJpsiMuMuSelected-RunIISummer19UL18GEN_*.root')
 # files = glob('/pnfs/psi.ch/cms/trivcat/store/user/manzoni/RJPsi_Bc_GEN_NO_FILTER_3dec20_v2/RJpsi-BcToXToJpsiMuMuSelected-RunIISummer19UL18GEN_*.root')
 # files = glob('/pnfs/psi.ch/cms/trivcat/store/user/manzoni/RJPsi_Bc_GEN_WITH_FILTER_3dec20_v3/RJpsi-BcToXToJpsiMuMuSelected-RunIISummer19UL18GEN_*.root')
 # files.sort()
@@ -160,22 +160,6 @@ branches = [
     'bhad_q',
     'bhad_pdgid',
 
-    'tau_pt',
-    'tau_eta',
-    'tau_y',
-    'tau_phi',
-    'tau_q',
-    'tau_pdgid',
-    'tau_m',
-
-    'nutau_pt',
-    'nutau_eta',
-    'nutau_phi',
-    'nutau_y',
-    'nutau_pdgid',
-    'nutau_q',
-
-
     'mmm_pt',
     'mmm_eta',
     'mmm_y',
@@ -196,7 +180,6 @@ branches = [
     'q2_reco',
     'e_star_mu3_reco',
     
-    'ismu3fromtau',
     'mu3_pt',
     'mu3_eta',
     'mu3_y',
@@ -247,7 +230,7 @@ branches = [
 #     'ctau_weight_down_lhe',
 ]
 
-fout = ROOT.TFile('%s/flat_tree_bc_newtaubranches.root' %(destination), 'recreate')
+fout = ROOT.TFile('%s/flat_tree_kiselev_mu_14Apr21.root' %(destination), 'recreate')
 ntuple = ROOT.TNtuple('tree', 'tree', ':'.join(branches))
 tofill = OrderedDict(zip(branches, [np.nan]*len(branches)))
 
@@ -255,6 +238,7 @@ start = time()
 maxevents = maxevents if maxevents>=0 else events.size() # total number of events in the files
 
 for i, event in enumerate(events):
+
     if (i+1)>maxevents:
         break
         
@@ -279,10 +263,13 @@ for i, event in enumerate(events):
    
     if verbose: print('=========>')
     
-    jpsis = [ip for ip in event.genp if abs(ip.pdgId())==443]    
+    jpsis = [ip for ip in event.genp if abs(ip.pdgId())==443]
+    
+#     bs =  [ip for ip in event.genp if abs(ip.pdgId())==511]
     bs =  [ip for ip in event.genp if (abs(ip.pdgId())>500 and abs(ip.pdgId())<600) or (abs(ip.pdgId())>5000 and abs(ip.pdgId())<6000)]
     muons =  [ip for ip in event.genp if abs(ip.pdgId())==13 and ip.status()==1]
     bq = [ip for ip in event.genp if abs(ip.pdgId())==5 and ip.isHardProcess()]
+    
     for jpsi in jpsis:
         
         for k, v in tofill.items(): 
@@ -307,7 +294,7 @@ for i, event in enumerate(events):
         first_ancestor = ancestors[-1]
         if first_ancestor.pdgId() in diquarks:
             first_ancestor = ancestors[-2]
-        
+              
         # compute the distance between primary and secondary vtx
         sv = jpsi.vertex()
         pv = first_ancestor.vertex()
@@ -430,138 +417,90 @@ for i, event in enumerate(events):
                 tofill['is_jpsi_pppi'] 
             if not known_decay:
                 print('unknown decay', final_daus)
-                #                 import pdb ; pdb.set_trace()
+#                 import pdb ; pdb.set_trace()
 
             
             
-            #             if not(its_a_b):
-            #                 print(final_daus)
-            #                 import pdb ; pdb.set_trace()
+#             if not(its_a_b):
+#                 print(final_daus)
+#                 import pdb ; pdb.set_trace()
             
-            if   tofill['is_jpsi_mu'  ]: 
-                tofill['weight'] = 1.
-            elif tofill['is_psi2s_mu' ]: 
-                tofill['weight'] = 0.5474 # Psi(2S) -> J/Psi X BR, forced decay at generation
-            elif tofill['is_chic0_mu' ]: 
-                tofill['weight'] = 0.0116
-            elif tofill['is_chic1_mu' ]: 
-                tofill['weight'] = 0.3440
-            elif tofill['is_chic2_mu' ]: 
-                tofill['weight'] = 0.1950
-            elif tofill['is_hc_mu'    ]: 
-                tofill['weight'] = 0.01
-            elif tofill['is_jpsi_tau' ]: 
-                tofill['weight'] = 1. 
-            elif tofill['is_psi2s_tau']: 
-                tofill['weight'] = 0.5474
-            elif tofill['is_jpsi_pi'  ]: 
-                tofill['weight'] = 1.
-            elif tofill['is_jpsi_k'   ]: 
-                tofill['weight'] = 1.
-            elif tofill['is_jpsi_3pi' ]: 
-                tofill['weight'] = 1.
-            elif tofill['is_jpsi_hc'  ]: 
-                tofill['weight'] = 1.
-            elif tofill['is_jpsi_pppi']: 
-                tofill['weight'] = 1.
-            else                       : 
-                tofill['weight'] = -1.
+        if   tofill['is_jpsi_mu'  ]: tofill['weight'] = 1.
+        elif tofill['is_psi2s_mu' ]: tofill['weight'] = 0.5474 # Psi(2S) -> J/Psi X BR, forced decay at generation
+        elif tofill['is_chic0_mu' ]: tofill['weight'] = 0.0116
+        elif tofill['is_chic1_mu' ]: tofill['weight'] = 0.3440
+        elif tofill['is_chic2_mu' ]: tofill['weight'] = 0.1950
+        elif tofill['is_hc_mu'    ]: tofill['weight'] = 0.01
+        elif tofill['is_jpsi_tau' ]: tofill['weight'] = 1. 
+        elif tofill['is_psi2s_tau']: tofill['weight'] = 0.5474
+        elif tofill['is_jpsi_pi'  ]: tofill['weight'] = 1.
+        elif tofill['is_jpsi_k'   ]: tofill['weight'] = 1.
+        elif tofill['is_jpsi_3pi' ]: tofill['weight'] = 1.
+        elif tofill['is_jpsi_hc'  ]: tofill['weight'] = 1.
+        elif tofill['is_jpsi_pppi']: tofill['weight'] = 1.
+        else                       : tofill['weight'] = -1.
 
-            if len(final_state_muons)>=3:
-                final_state_muons_non_jpsi = [imu for imu in final_state_muons if imu not in jpsi_muons]
-                final_state_muons_non_jpsi.sort(key = lambda x : x.pt(), reverse = True)
+        if len(final_state_muons)>=3:
+            final_state_muons_non_jpsi = [imu for imu in final_state_muons if imu not in jpsi_muons]
+            final_state_muons_non_jpsi.sort(key = lambda x : x.pt(), reverse = True)
             
-                extra_mu = final_state_muons_non_jpsi[0]
-                #print(extra_mu.mother(0).pdgId())
-                #if it is jpsi tau
-                #print(final_daus,final_daus==[15, 16, 443])
-                if(final_daus==[15, 16, 443]):
-                    taus =  [ip for ip in event.genp if abs(ip.pdgId())==15 and ip.status()==2]
-                    nutaus = [ip for ip in event.genp if abs(ip.pdgId())==16]# and ip.status()==1]
-                    tau_frombc =[itau for itau in taus if isAncestor(first_ancestor,itau)]
-                    if(len(tau_frombc)>1):
-                        #I take the one with highest pt
-                        tau_frombc.sort(key = lambda x : x.pt(), reverse = True)
-                    extra_mu_fromtau = [imu for imu in final_state_muons_non_jpsi if isAncestor(tau_frombc[0],imu)]
-                    nutau_fromtau = [inu for inu in nutaus if isAncestor(tau_frombc[0],inu)]
-                    #                print(nutau_fromtau)
-                    #print("ex",extra_mu_fromtau)
-                    #print(tau_frombc[0].pt(),nutau_fromtau[0].pt())
-                    tofill['tau_pt' ] = tau_frombc[0].pt()
-                    tofill['tau_eta'] = tau_frombc[0].eta()
-                    tofill['tau_y'  ] = tau_frombc[0].y()
-                    tofill['tau_phi'] = tau_frombc[0].phi()
-                    tofill['tau_q'  ] = tau_frombc[0].charge()
-                    tofill['tau_pdgid'  ] = tau_frombc[0].pdgId()
-                    tofill['tau_m'  ] = tau_frombc[0].mass()
-                    tofill['nutau_pt' ] = nutau_fromtau[0].pt()
-                    tofill['nutau_eta'] = nutau_fromtau[0].eta()
-                    tofill['nutau_y'  ] = nutau_fromtau[0].y()
-                    tofill['nutau_phi'] = nutau_fromtau[0].phi()
-                    tofill['nutau_q'  ] = nutau_fromtau[0].charge()
-                    tofill['nutau_pdgid'  ] = nutau_fromtau[0].pdgId()
-                    
-                    #trova il tau genitore dell'extra mu
-                    if(len(extra_mu_fromtau)!=0):
-                        extra_mu = extra_mu_fromtau[0]
-                    tofill['ismu3fromtau'] = len(extra_mu_fromtau)!=0
-                else:
-                    tofill['ismu3fromtau'] = 0
-                tofill['mu3_pt' ] = extra_mu.pt()
-                tofill['mu3_eta'] = extra_mu.eta()
-                tofill['mu3_y'  ] = extra_mu.y()
-                tofill['mu3_phi'] = extra_mu.phi()
-                tofill['mu3_q'  ] = extra_mu.charge()
-                
-                three_mu_p4 = extra_mu.p4() + jpsi_muons[0].p4() + jpsi_muons[1].p4()
-                b_scaled_p4 = three_mu_p4 * (6.275/three_mu_p4.mass())
-                
-                tofill['mmm_pt' ] = three_mu_p4.pt()
-                tofill['mmm_eta'] = three_mu_p4.eta()
-                tofill['mmm_y'  ] = three_mu_p4.y()
-                tofill['mmm_phi'] = three_mu_p4.phi()
-                tofill['mmm_m'  ] = three_mu_p4.mass()
-                tofill['mmm_q'  ] = extra_mu.charge()
-                
-                tofill['dr_jpsi_m'] = deltaR(extra_mu, jpsi)
-                
-                tofill['n_extra_mu'] = len(final_state_muons_non_jpsi)
-                
-                # how the hell does one boost LorentzVectors back and forth?!
-                # using TLorentzVectors of course... shit.
-                three_mu_p4_tlv = ROOT.TLorentzVector() ; three_mu_p4_tlv.SetPtEtaPhiE(three_mu_p4.pt(), three_mu_p4.eta(), three_mu_p4.phi(), three_mu_p4.energy())
-                b_scaled_p4_tlv = ROOT.TLorentzVector() ; b_scaled_p4_tlv.SetPtEtaPhiE(b_scaled_p4.pt(), b_scaled_p4.eta(), b_scaled_p4.phi(), b_scaled_p4.energy())
-                jpsi_p4_tlv     = ROOT.TLorentzVector() ; jpsi_p4_tlv    .SetPtEtaPhiE(jpsi.p4()  .pt(), jpsi.p4()  .eta(), jpsi.p4()  .phi(), jpsi.p4()  .energy())
-                extra_mu_p4_tlv = ROOT.TLorentzVector() ; extra_mu_p4_tlv.SetPtEtaPhiE(extra_mu   .pt(), extra_mu   .eta(), extra_mu   .phi(), extra_mu   .energy())
-                b_gen_p4_tlv = ROOT.TLorentzVector() ; b_gen_p4_tlv.SetPtEtaPhiM(first_ancestor.pt(),first_ancestor.eta(),first_ancestor.phi(),first_ancestor.mass())
-                
-                three_mu_p4_boost = three_mu_p4_tlv.BoostVector()
-                b_scaled_p4_boost = b_scaled_p4_tlv.BoostVector()
-                b_gen_p4_boost = b_gen_p4_tlv.BoostVector()
-                jpsi_p4_boost     = jpsi_p4_tlv    .BoostVector()
-                
-                extra_mu_p4_in_b_rf    = extra_mu_p4_tlv.Clone(); extra_mu_p4_in_b_rf   .Boost(-b_scaled_p4_boost)
-                extra_mu_p4_in_bgen_rf    = extra_mu_p4_tlv.Clone(); extra_mu_p4_in_bgen_rf   .Boost(-b_gen_p4_boost)
-                extra_mu_p4_in_jpsi_rf = extra_mu_p4_tlv.Clone(); extra_mu_p4_in_jpsi_rf.Boost(-jpsi_p4_boost    )
-                
-                tofill['m2_miss'    ] = (b_gen_p4_tlv - jpsi_p4_tlv - extra_mu_p4_tlv).M2()
-                tofill['m2_miss_reco'    ] = (b_scaled_p4 - extra_mu.p4() - jpsi_muons[0].p4() - jpsi_muons[1].p4()).mass2()
-                tofill['pt_miss_sca'] = b_gen_p4_tlv.Pt() - extra_mu_p4_tlv.Pt() - jpsi_p4_tlv.Pt()
-                tofill['pt_miss_sca_reco'] = b_scaled_p4.pt() - extra_mu.pt() - jpsi_muons[0].pt() - jpsi_muons[1].pt()
-                tofill['pt_miss_vec'] = (b_gen_p4_tlv - extra_mu_p4_tlv - jpsi_p4_tlv).Pt()
-                tofill['pt_miss_vec_reco'] = (b_scaled_p4 - extra_mu.p4() - jpsi_muons[0].p4() - jpsi_muons[1].p4()).pt()
-                tofill['q2'] = (b_gen_p4_tlv - jpsi_p4_tlv).M2()
-                tofill['q2_reco'         ] = (b_scaled_p4 - jpsi.p4()).mass2()
-                
-                tofill['e_star_mu3' ] = extra_mu_p4_in_bgen_rf   .E()
-                tofill['e_star_mu3_reco' ] = extra_mu_p4_in_b_rf   .E()
-                tofill['e_hash_mu3' ] = extra_mu_p4_in_jpsi_rf.E()
-                tofill['ptvar'      ] = jpsi.pt() - extra_mu.pt()
+            extra_mu = final_state_muons_non_jpsi[0]
+ 
+            tofill['mu3_pt' ] = extra_mu.pt()
+            tofill['mu3_eta'] = extra_mu.eta()
+            tofill['mu3_y'  ] = extra_mu.y()
+            tofill['mu3_phi'] = extra_mu.phi()
+            tofill['mu3_q'  ] = extra_mu.charge()
+           
+            three_mu_p4 = extra_mu.p4() + jpsi_muons[0].p4() + jpsi_muons[1].p4()
+            b_scaled_p4 = three_mu_p4 * (6.275/three_mu_p4.mass())
+
+            tofill['mmm_pt' ] = three_mu_p4.pt()
+            tofill['mmm_eta'] = three_mu_p4.eta()
+            tofill['mmm_y'  ] = three_mu_p4.y()
+            tofill['mmm_phi'] = three_mu_p4.phi()
+            tofill['mmm_m'  ] = three_mu_p4.mass()
+            tofill['mmm_q'  ] = extra_mu.charge()
             
+            tofill['dr_jpsi_m'] = deltaR(extra_mu, jpsi)
+
+            tofill['n_extra_mu'] = len(final_state_muons_non_jpsi)
+
+            # how the hell does one boost LorentzVectors back and forth?!
+            # using TLorentzVectors of course... shit.
+            three_mu_p4_tlv = ROOT.TLorentzVector() ; three_mu_p4_tlv.SetPtEtaPhiE(three_mu_p4.pt(), three_mu_p4.eta(), three_mu_p4.phi(), three_mu_p4.energy())
+            b_scaled_p4_tlv = ROOT.TLorentzVector() ; b_scaled_p4_tlv.SetPtEtaPhiE(b_scaled_p4.pt(), b_scaled_p4.eta(), b_scaled_p4.phi(), b_scaled_p4.energy())
+            jpsi_p4_tlv     = ROOT.TLorentzVector() ; jpsi_p4_tlv    .SetPtEtaPhiE(jpsi.p4()  .pt(), jpsi.p4()  .eta(), jpsi.p4()  .phi(), jpsi.p4()  .energy())
+            extra_mu_p4_tlv = ROOT.TLorentzVector() ; extra_mu_p4_tlv.SetPtEtaPhiE(extra_mu   .pt(), extra_mu   .eta(), extra_mu   .phi(), extra_mu   .energy())
+            b_gen_p4_tlv = ROOT.TLorentzVector() ; b_gen_p4_tlv.SetPtEtaPhiM(first_ancestor.pt(),first_ancestor.eta(),first_ancestor.phi(),first_ancestor.mass())
+
+            three_mu_p4_boost = three_mu_p4_tlv.BoostVector()
+            b_scaled_p4_boost = b_scaled_p4_tlv.BoostVector()
+            b_gen_p4_boost = b_gen_p4_tlv.BoostVector()
+            jpsi_p4_boost     = jpsi_p4_tlv    .BoostVector()
+            
+            extra_mu_p4_in_b_rf    = extra_mu_p4_tlv.Clone(); extra_mu_p4_in_b_rf   .Boost(-b_scaled_p4_boost)
+            extra_mu_p4_in_bgen_rf    = extra_mu_p4_tlv.Clone(); extra_mu_p4_in_bgen_rf   .Boost(-b_gen_p4_boost)
+            extra_mu_p4_in_jpsi_rf = extra_mu_p4_tlv.Clone(); extra_mu_p4_in_jpsi_rf.Boost(-jpsi_p4_boost    )
+            
+            tofill['m2_miss'    ] = (b_gen_p4_tlv - jpsi_p4_tlv - extra_mu_p4_tlv).M2()
+            tofill['m2_miss_reco'    ] = (b_scaled_p4 - extra_mu.p4() - jpsi_muons[0].p4() - jpsi_muons[1].p4()).mass2()
+            tofill['pt_miss_sca'] = b_gen_p4_tlv.Pt() - extra_mu_p4_tlv.Pt() - jpsi_p4_tlv.Pt()
+            tofill['pt_miss_sca_reco'] = b_scaled_p4.pt() - extra_mu.pt() - jpsi_muons[0].pt() - jpsi_muons[1].pt()
+            tofill['pt_miss_vec'] = (b_gen_p4_tlv - extra_mu_p4_tlv - jpsi_p4_tlv).Pt()
+            tofill['pt_miss_vec_reco'] = (b_scaled_p4 - extra_mu.p4() - jpsi_muons[0].p4() - jpsi_muons[1].p4()).pt()
+            tofill['q2'] = (b_gen_p4_tlv - jpsi_p4_tlv).M2()
+            tofill['q2_reco'         ] = (b_scaled_p4 - jpsi.p4()).mass2()
+
+            tofill['e_star_mu3' ] = extra_mu_p4_in_bgen_rf   .E()
+            tofill['e_star_mu3_reco' ] = extra_mu_p4_in_b_rf   .E()
+            tofill['e_hash_mu3' ] = extra_mu_p4_in_jpsi_rf.E()
+            tofill['ptvar'      ] = jpsi.pt() - extra_mu.pt()
+
         # fill only if it comes from  a Bc
         if abs(first_ancestor.pdgId()) in [541, 543]:
             ntuple.Fill(array('f', tofill.values()))
-            #         ntuple.Fill(array('f', tofill.values()))
+#         ntuple.Fill(array('f', tofill.values()))
 
     if verbose:
         if len(bs)>1: # and len(jpsis)>1:

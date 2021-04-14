@@ -37,7 +37,8 @@ ham.init_run()
 
 #input di ebert(efg), reweighted as Kiselev
 #fname = 'flat_tree_ebert20k.root'
-fname = 'flat_tree_ebert_all_newgen.root'
+#fname = 'flat_tree_ebert_all_newgen.root'
+fname = 'inspector/flat_tree_ebert_mu_14Apr21.root'
 
 fin = ROOT.TFile.Open(fname)
 tree = fin.Get('tree')
@@ -128,5 +129,5 @@ for i, ev in enumerate(tree):
 
 reduced_tree = tree_df[:len(weights)]
 reduced_tree['hammer'] = np.nan_to_num(np.array(weights)) # sone NaNs, check the manual
-to_root(reduced_tree, 'reweighed_bc_tree_fromEfgtoKis.root', key='tree')
+to_root(reduced_tree, 'reweighed_bc_tree_mu_fromEfgtoKis_14Apr21.root', key='tree')
 

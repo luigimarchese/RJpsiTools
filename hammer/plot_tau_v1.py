@@ -7,13 +7,14 @@ ROOT.gROOT.SetBatch()
 
 #path_kis = 'flat_tree_kiselev_all_newgen.root'
 #path_efg = 'reweighed_bc_tree_fromEfgtoKis.root'
-path_kis = 'flat_tree_tau_kiselev.root'
-path_efg = 'reweighed_bc_tree_tau_efgtokiselev2.root'
+#path_kis = 'flat_tree_tau_kiselev.root'
+#path_efg = 'reweighed_bc_tree_tau_efgtokiselev2.root'
+
+path_kis = 'inspector/flat_tree_tau_kiselev_13Apr21.root'
+path_efg = 'reweighed_bc_tree_tau_EFGtoKis_14Apr21.root'
+path_efg = 'reweighed_bc_tree_tau_EFTtoKis_14Apr21_1vertx.root'
 
 nbin = 12
-xmin = -1
-xmax = 12
-
 
 branches_dic = {'pt_miss_vec':{'nbin' : nbin, 'xmin' : 0 , 'xmax' : 9},
                 'q2':{'nbin' : nbin, 'xmin' : 4 , 'xmax' : 10},
@@ -32,11 +33,12 @@ for branch in branches_dic:
     print("Working on branch "+ branch)
     his_efg = ROOT.TH1F("his_efg","EFG",branches_dic[branch]['nbin'],branches_dic[branch]['xmin'],branches_dic[branch]['xmax'])
     his_rew_efg = ROOT.TH1F("his_rew_efg","EFG rew",branches_dic[branch]['nbin'],branches_dic[branch]['xmin'],branches_dic[branch]['xmax'])
-    tree_efg.Draw(branch+">>his_efg","")
+    tree_efg.Draw(branch+">>his_efg","is_jpsi_tau & is3m & ismu3fromtau & bhad_pdgid == 541")
 
     for i in range(tree_efg.GetEntries()):
         tree_efg.GetEntry(i)
-        his_rew_efg.Fill(getattr(tree_efg,branch),tree_efg.hammer)
+        if (tree_efg.is_jpsi_tau and tree_efg.is3m and tree_efg.ismu3fromtau and tree_efg.bhad_pdgid == 541):
+            his_rew_efg.Fill(getattr(tree_efg,branch),tree_efg.hammer)
 
     his_efg.Scale(1./his_efg.Integral())
     his_rew_efg.Scale(1./his_rew_efg.Integral())
@@ -59,7 +61,7 @@ for branch in branches_dic:
     his_rew_efg.Draw("eSAME")
     c.Update()
     c.BuildLegend()
-    c.SaveAs("hammer-validation_tau_"+branch+".png")
+    c.SaveAs("plots/hammer-validation_tau_"+branch+"_14Apr21_1vrxt.png")
 
     
     his_ratio_efgkis = his_efg.Clone("his_ratio_efgkis")
@@ -87,7 +89,7 @@ for branch in branches_dic:
     his_ratio_efgrewkis.Draw("eSAME")
     c1.Update()
     c1.BuildLegend()
-    c1.SaveAs("hammer-validation-ratio_tau_"+branch+".png")
+    c1.SaveAs("plots/hammer-validation-ratio_tau_"+branch+"_14Apr21_1vrtx.png")
     his_efg.Delete()
     his_rew_efg.Delete()
     his_kis.Delete()

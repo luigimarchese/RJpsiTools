@@ -10,7 +10,8 @@ import numpy as np
 ham = Hammer()
 fbBuffer = IOBuffer
 
-ham.include_decay(["BcJpsiTauNu","TauMuNuNuBar"])
+#ham.include_decay(["BcJpsiTauNu","TauMuNuNuBar"])
+ham.include_decay(["BcJpsiTauNu"])
 
 ff_input_scheme = dict()
 ff_input_scheme["BcJpsi"] = "EFG"
@@ -33,14 +34,14 @@ ham.init_run()
 
 # input file (BcToJpsiTauNu )
 #fname = 'flat_tree_bc_chunk0.root'
-fname = 'flat_tree_bc_newtaubranches.root'
+fname = 'inspector/flat_tree_tau_ebert_13Apr21.root'
 
 fin = ROOT.TFile.Open(fname)
 tree = fin.Get('tree')
 
 maxevents = -1
 
-tree_df = read_root(fname, 'tree', where='is_jpsi_tau & is3m & ismu3fromtau')
+tree_df = read_root(fname, 'tree', where='is_jpsi_tau & is3m & ismu3fromtau & bhad_pdgid == 541')
 
 pids = []
 weights = []
@@ -66,7 +67,7 @@ for i, ev in enumerate(tree):
     if not ev.is_jpsi_tau: continue
     if not ev.is3m: continue
     if not ev.ismu3fromtau: continue
-
+    if not ev.bhad_pdgid == 541: continue
     #     print ("processing event", i)
     
     ham.init_event()
@@ -82,18 +83,18 @@ for i, ev in enumerate(tree):
     thenutaubar_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(ev.nutau_pt , ev.nutau_eta , ev.nutau_phi , 0   )
     thenumu_p4   = thetau_p4 - themu_p4 - thenutaubar_p4
 
-    print(thenumu_p4.mass())
     #    print(ev.bhad_pdgid,ev.tau_pdgid,ev.nutau_pdgid)#,ev.jpsi_pdgid,ev.tau_pdgid,ev.mu3_pdgid,ev.nutau_pdgid)
     thebc   = Particle(FourMomentum(thebc_p4.e()  , thebc_p4.px()  , thebc_p4.py()  , thebc_p4.pz()  ), ev.bhad_pdgid)
     thejpsi = Particle(FourMomentum(thejpsi_p4.e(), thejpsi_p4.px(), thejpsi_p4.py(), thejpsi_p4.pz()), 443          )
     thetau = Particle(FourMomentum(thetau_p4.e(), thetau_p4.px(), thetau_p4.py(), thetau_p4.pz()), -15          )
     thenutau   = Particle(FourMomentum(thenutau_p4.e()  , thenutau_p4.px()  , thenutau_p4.py()  , thenutau_p4.pz())  , 16           )
 
-
     themu   = Particle(FourMomentum(themu_p4.e()  , themu_p4.px()  , themu_p4.py()  , themu_p4.pz()  ), -13          )
     thenutaubar   = Particle(FourMomentum(thenutaubar_p4.e()  , thenutaubar_p4.px()  , thenutaubar_p4.py()  , thenutaubar_p4.pz())  , -16           )
     thenumu   = Particle(FourMomentum(thenumu_p4.e()  , thenumu_p4.px()  , thenumu_p4.py()  , thenumu_p4.pz())  , 14           )
 
+    #    print(ev.bhad_pdgid)
+    #print(thenumu_p4.mass())
     Bc2JpsiLNu = Process()
     
     # each of these add_particle operations returns an index, needed to define vertices 
@@ -109,7 +110,7 @@ for i, ev in enumerate(tree):
 
     # define decay vertex
     Bc2JpsiLNu.add_vertex(thebc_idx, [thejpsi_idx, thetau_idx, thenutau_idx])
-    Bc2JpsiLNu.add_vertex(thetau_idx, [themu_idx,  thenutaubar_idx, thenumu_idx])
+    #Bc2JpsiLNu.add_vertex(thetau_idx, [themu_idx,  thenutaubar_idx, thenumu_idx])
 
     # save process id to later retrieve the per-event weight
     pid = ham.add_process(Bc2JpsiLNu)
@@ -140,5 +141,5 @@ for i, ev in enumerate(tree):
 
 reduced_tree = tree_df[:len(weights)]
 reduced_tree['hammer'] = np.nan_to_num(np.array(weights)) # sone NaNs, check the manual
-to_root(reduced_tree, 'reweighed_bc_tree_tau.root', key='tree')
+to_root(reduced_tree, 'reweighed_bc_tree_tau_EFTtoKis_14Apr21_1vertx.root', key='tree')
 

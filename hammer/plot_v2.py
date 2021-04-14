@@ -5,12 +5,12 @@ ROOT.gStyle.SetOptStat(0)
 ROOT.TH1.SetDefaultSumw2()
 ROOT.gROOT.SetBatch()
 
-path_kis = 'flat_tree_kiselev_all_newgen.root'
-path_efg = 'reweighed_bc_tree_fromEfgtoKis.root'
+#path_kis = 'flat_tree_kiselev_all_newgen.root'
+#path_efg = 'reweighed_bc_tree_fromEfgtoKis.root'
+path_kis = 'inspector/flat_tree_kiselev_mu_14Apr21.root'
+path_efg = 'reweighed_bc_tree_mu_fromEfgtoKis_14Apr21.root'
 
 nbin = 12
-xmin = -1
-xmax = 12
 
 
 branches_dic = {'pt_miss_vec':{'nbin' : nbin, 'xmin' : 0 , 'xmax' : 9},
@@ -56,7 +56,7 @@ for branch in branches_dic:
     his_rew_efg.Draw("eSAME")
     c.Update()
     c.BuildLegend()
-    c.SaveAs("hammer-validation_"+branch+".png")
+    c.SaveAs("plots/hammer-validation_mu_"+branch+"_14Apr21.png")
 
     
     his_ratio_efgkis = his_efg.Clone("his_ratio_efgkis")
@@ -84,7 +84,7 @@ for branch in branches_dic:
     his_ratio_efgrewkis.Draw("eSAME")
     c1.Update()
     c1.BuildLegend()
-    c1.SaveAs("hammer-validation-ratio_"+branch+".png")
+    c1.SaveAs("plots/hammer-validation-ratio_mu_"+branch+"_14Apr21.png")
     his_efg.Delete()
     his_rew_efg.Delete()
     his_kis.Delete()
