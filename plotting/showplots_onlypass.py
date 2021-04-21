@@ -82,9 +82,9 @@ def create_datacard_prep(hists,shape_hists,shapes_names,flag,name,label):
     fout.cd()
     myhists = dict()
     for k, v in hists.items():
-        print(k)
+        #        print(k)
         for isample in sample_names :
-            print(isample)
+            #            print(isample)
             if isample in k:
                 if isample == 'jpsi_x' and 'jpsi_x_mu' in k:
                     continue
@@ -165,29 +165,32 @@ if __name__ == '__main__':
     
     tree_name = 'BTo3Mu'
     tree_dir_data = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15' #data
-    tree_dir = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15' #Bc and Hb
+    tree_dir_hb = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15' #Hb
+    tree_dir_bc = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Apr14' #Bc 
+    
     tree_dir_psitau = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar25' #psi2stau
-    tree_hbmu = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar16' #Bc and Hb
+    tree_hbmu = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar16' #Hb mu filter
 
     '''    for isample_name in sample_names:
         print(isample_name)
         samples[isample_name] = ROOT.RDataFrame(tree_name, '%s/BcToXToJpsi_is_%s_merged.root' %(tree_dir, isample_name))
         #        samples[isample_name] = ROOT.RDataFrame(tree_name, '%s/BcToXToJpsi_is_%s_enriched.root' %(tree_dir, isample_name))
     '''
-    samples['jpsi_tau'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_jpsi_tau_merged.root' %(tree_dir))
-    samples['jpsi_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_jpsi_mu_trigger_hammer.root' %(tree_dir))
-    samples['chic0_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_chic0_mu_merged.root' %(tree_dir))
-    samples['chic1_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_chic1_mu_merged.root' %(tree_dir))
-    samples['chic2_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_chic2_mu_merged.root' %(tree_dir))
-    samples['hc_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_hc_mu_merged.root' %(tree_dir))
-    samples['jpsi_hc'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_jpsi_hc_merged.root' %(tree_dir))
-    samples['psi2s_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_psi2s_mu_merged.root' %(tree_dir))
-    samples['psi2s_tau'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_psi2s_tau_merged.root' %(tree_dir_psitau))
+    samples['jpsi_tau'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_jpsi_tau_merged.root' %(tree_dir_bc))
+    #samples['jpsi_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_jpsi_mu_trigger_hammer.root' %(tree_dir_bc))
+    samples['jpsi_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_jpsi_mu_merged.root' %(tree_dir_bc))
+    samples['chic0_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_chic0_mu_merged.root' %(tree_dir_bc))
+    samples['chic1_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_chic1_mu_merged.root' %(tree_dir_bc))
+    samples['chic2_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_chic2_mu_merged.root' %(tree_dir_bc))
+    samples['hc_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_hc_mu_merged.root' %(tree_dir_bc))
+    samples['jpsi_hc'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_jpsi_hc_merged.root' %(tree_dir_bc))
+    samples['psi2s_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_psi2s_mu_merged.root' %(tree_dir_bc))
+    samples['psi2s_tau'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_psi2s_tau_merged.root' %(tree_dir_bc))
     #samples['data'] = ROOT.RDataFrame(tree_name,'%s/data_ptmax_merged.root' %(tree_dir_data))
     #samples['onia'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu_ptmax_merged.root' %(tree_dir))
     #samples['onia'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu3MuFilter_ptmax_merged.root' %(tree_hbmu))
     samples['jpsi_x_mu'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu3MuFilter_trigger_bcclean.root' %(tree_hbmu))
-    samples['jpsi_x'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu_trigger_bcclean.root' %(tree_dir))
+    samples['jpsi_x'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu_trigger_bcclean.root' %(tree_dir_hb))
     samples['data'] = ROOT.RDataFrame(tree_name,'%s/data_flagtriggersel.root' %(tree_dir_data))
     
 
@@ -211,10 +214,10 @@ if __name__ == '__main__':
         if k=='jpsi_tau':
             # HERE
             #samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*290620./500805.')
-           samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*%f*%f' %(blind,rjpsi))
+           samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*%f*%f' %(blind,rjpsi))
            
         elif k=='jpsi_mu':
-            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*bglvar')
+            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar')
             #samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight')
         else:
             samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight' if k!='data' else 'br_weight') # weightGen is suposed to be the lifetime reweigh, but it's broken
@@ -234,49 +237,59 @@ if __name__ == '__main__':
     if shape_nuisances :
         #shape uncertainties
         shapes = dict()
+        #ctau shape nuisance on Bc samples
         for sname in samples:
             if (sname != 'jpsi_x_mu' and sname != 'jpsi_x' and sname != 'data' ):
                 shapes[sname + '_ctauUp'] = samples[sname]
                 if sname == 'jpsi_mu':
-                    shapes[sname +'_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight*bglvar')
+                    shapes[sname +'_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight*hammer_bglvar')
+                elif sname == 'jpsi_tau':
+                    shapes[sname +'_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight*hammer_bglvar*%f*%f' %(blind,rjpsi))
                 else:
                     shapes[sname + '_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight')
                 shapes[sname + '_ctauDown'] = samples[sname]
                 if sname == 'jpsi_mu':
-                    shapes[sname + '_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight*bglvar')
+                    shapes[sname + '_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight*hammer_bglvar')
+                elif sname == 'jpsi_tau':
+                    shapes[sname +'_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight*hammer_bglvar*%f*%f' %(blind,rjpsi))
                 else:
                     shapes[sname + '_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight')
-
-        hammer_branches = ['bglvar_e0up',
-                           'bglvar_e0down',
-                           'bglvar_e1up',
-                           'bglvar_e1down',
-                           'bglvar_e2up',
-                           'bglvar_e2down',
-                           'bglvar_e3up',
-                           'bglvar_e3down',
-                           'bglvar_e4up',
-                           'bglvar_e4down',
-                           'bglvar_e5up',
-                           'bglvar_e5down',
-                           'bglvar_e6up',
-                           'bglvar_e6down',
-                           'bglvar_e7up',
-                           'bglvar_e7down',
-                           'bglvar_e8up',
-                           'bglvar_e8down',
-                           'bglvar_e9up',
-                           'bglvar_e9down',
-                           'bglvar_e10up',
-                           'bglvar_e10down'
+        
+        # form factor shape nuisances for jpsi mu and jpsi tau datasets
+        hammer_branches = ['hammer_bglvar_e0up',
+                           'hammer_bglvar_e0down',
+                           'hammer_bglvar_e1up',
+                           'hammer_bglvar_e1down',
+                           'hammer_bglvar_e2up',
+                           'hammer_bglvar_e2down',
+                           'hammer_bglvar_e3up',
+                           'hammer_bglvar_e3down',
+                           'hammer_bglvar_e4up',
+                           'hammer_bglvar_e4down',
+                           'hammer_bglvar_e5up',
+                           'hammer_bglvar_e5down',
+                           'hammer_bglvar_e6up',
+                           'hammer_bglvar_e6down',
+                           'hammer_bglvar_e7up',
+                           'hammer_bglvar_e7down',
+                           'hammer_bglvar_e8up',
+                           'hammer_bglvar_e8down',
+                           'hammer_bglvar_e9up',
+                           'hammer_bglvar_e9down',
+                           'hammer_bglvar_e10up',
+                           'hammer_bglvar_e10down'
                        ]
         for ham in hammer_branches:
+            new_name = ham.replace('hammer_','')                
             if 'up' in ham:
-                new_name = ham.replace('up','Up')
+                new_name = new_name.replace('up','Up')
             elif 'down' in ham:
-                new_name = ham.replace('down','Down')
+                new_name = new_name.replace('down','Down')
+            #            print(new_name)
             shapes['jpsi_mu_'+new_name] = samples['jpsi_mu']
             shapes['jpsi_mu_'+new_name] = shapes['jpsi_mu_'+new_name].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*'+ham)
+            shapes['jpsi_tau_'+new_name] = samples['jpsi_tau']
+            shapes['jpsi_tau_'+new_name] = shapes['jpsi_tau_'+new_name].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*'+ham+'*%f*%f' %(blind,rjpsi))
             # better for categorical data
             # colours = list(map(ROOT.TColor.GetColor, all_palettes['Category10'][len(samples)]))
     ###end shapes nuisances####
