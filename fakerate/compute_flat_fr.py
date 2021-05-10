@@ -1,3 +1,9 @@
+'''
+Script that computes the fr as a flat parameter
+using the B -> jpsi K peak
+in the pass and in the total regions
+'''
+
 import ROOT
 from new_branches import to_define
 from selections import preselection, pass_id
