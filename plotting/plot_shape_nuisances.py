@@ -4,6 +4,7 @@ from officialStyle import officialStyle
 from cmsstyle import CMS_lumi
 import os
 from histos import histos
+import numpy as np
 
 ROOT.gROOT.SetBatch()   
 ROOT.gStyle.SetOptStat(0)
@@ -56,7 +57,7 @@ def plot_shape_nuisances(histos_folder, variable, pf = 'pass', fakes = True, pat
     c2.cd()
     c2.SetTicks(True)
     c2.SetBottomMargin(0.15)
-    
+    #ROOT.gPad.SetLogx()    
 
     for sname in sample_names:
         # Only data and fakes don't have any shape nuisance
@@ -104,13 +105,16 @@ def plot_shape_nuisances(histos_folder, variable, pf = 'pass', fakes = True, pat
                     histo_down.SetBinError(i,his_down.GetBinError(i))
                 maxx.append(histo_down.GetMaximum())
                 
-                histo_central.SetTitle(syst+';'+histos[variable][1]+';events')
+                histo_central.SetTitle(sname+' '+syst+';'+histos[variable][1]+';events')
                 histo_central.SetLineColor(ROOT.kBlack)
-                histo_central.SetMarkerStyle(8)
+                histo_central.SetMarkerStyle(7)
+                histo_central.SetMarkerColor(ROOT.kBlack)
                 histo_up.SetLineColor(ROOT.kRed)
-                histo_up.SetMarkerStyle(8)
+                histo_up.SetMarkerStyle(7)
+                histo_up.SetMarkerColor(ROOT.kRed)
                 histo_down.SetLineColor(ROOT.kGreen)
-                histo_down.SetMarkerStyle(8)
+                histo_down.SetMarkerStyle(7)
+                histo_down.SetMarkerColor(ROOT.kGreen)
                 histo_central.SetMaximum(1.5*max(maxx))
                 histo_central.Draw("ep")
                 histo_up.Draw("ep same")
@@ -136,7 +140,7 @@ def plot_shape_nuisances(histos_folder, variable, pf = 'pass', fakes = True, pat
 
 if __name__ == "__main__":
 
-    histos_folder = '23Apr2021_10h49m03s'
-    variable = 'Q_sq'
+    histos_folder = '03May2021_15h16m29s'
+    variable = 'decay_time_ps'
     plot_shape_nuisances(histos_folder, variable, verbose = True)
     

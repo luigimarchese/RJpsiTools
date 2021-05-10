@@ -4,16 +4,25 @@ import ROOT
 import numpy as np
 from datetime import datetime
 from bokeh.palettes import viridis, all_palettes
+import random
+import time
+from array import array
+import pickle
+
 from histos import histos
 from cmsstyle import CMS_lumi
 from new_branches import to_define
 from samples import weights, sample_names, titles
 from selections import preselection, preselection_mc, pass_id, fail_id
-import pickle
 from officialStyle import officialStyle
 from create_datacard import create_datacard_pass,create_datacard_fail
-import random
+from plot_shape_nuisances import plot_shape_nuisances
 
+shape_nuisances = True
+blind_analysis = False
+rjpsi = 1
+
+start_time = time.time()
 
 ROOT.EnableImplicitMT()
 ROOT.gROOT.SetBatch()   
@@ -44,6 +53,11 @@ def save_yields(label, temp_hists):
             print(kk.replace(k, '')[1:], '\t\t%.1f' %vv.Integral(), file=ff)
         print('total expected', '\t%.1f' %total_expected, file=ff)
 
+def save_weights(label, sample_names, weights):
+    with open('plots_ul/%s/normalisations.txt' %label, 'w') as ff:
+        for sname in sample_names: 
+            print(sname+'\t\t%.2f' %weights[sname], file=ff)
+
 def save_selection(label, preselection):
     with open('plots_ul/%s/selection.py' %label, 'w') as ff:
         total_expected = 0.
@@ -51,6 +65,8 @@ def save_selection(label, preselection):
         for isel in preselection.split(' & '): 
             print("    '%s'," %isel, file=ff)
         print('])', file=ff)
+        print('pass: %s'%pass_id, file=ff)
+        print('fail: %s'%fail_id, file=ff)
 
 def create_legend(temp_hists, sample_names, titles):
     # Legend gymnastics
@@ -66,7 +82,13 @@ def create_legend(temp_hists, sample_names, titles):
         leg.AddEntry(temp_hists[k]['%s_%s' %(k, kk)].GetValue(), titles[kk], 'F' if kk!='data' else 'EP')
     return leg
 
-def create_datacard_prep(hists,flag,name,label):
+def create_datacard_prep(hists,shape_hists,shapes_names,flag,name,label):
+    '''
+    Creates and saves the root file with the histograms of each contribution.
+    Saves the histograms of the shape nuisances.
+    Calls the 'create datacard' function, both for the pass and fail regions, 
+    to write the text datacard for the fit in combine. 
+    '''
     fout = ROOT.TFile.Open('plots_ul/%s/datacards/datacard_%s_%s.root' %(label,flag, name), 'recreate')
     fout.cd()
     myhists = dict()
@@ -80,9 +102,15 @@ def create_datacard_prep(hists,flag,name,label):
                     hh.SetName(isample)
                 hh.Write()
                 myhists[isample] = hh.Clone()
-                #print(myhists[isample],isample)
-
-    #print(myhists['data'].Integral())
+        
+    # Creates the shape nuisances both for Pass and Fail regions
+    for k,v in shape_hists.items():
+        for sname in shapes_names:
+            if sname in k:
+                hh = v.Clone()
+                hh.SetName(sname)
+                hh.Write()
+    # datacard txt are different depending on the region
     if flag == 'pass':
         create_datacard_pass(myhists,name, label)
     else:
@@ -115,91 +143,159 @@ ratio_pad.SetBottomMargin(0.45)
 
 if __name__ == '__main__':
     
-    datacards = ['mu1pt', 'Q_sq', 'm_miss_sq', 'E_mu_star', 'E_mu_canc', 'bdt_tau', 'Bmass', 'mcorr']
+    datacards = ['mu1pt', 'Q_sq', 'm_miss_sq', 'E_mu_star', 'E_mu_canc', 'bdt_tau', 'Bmass', 'mcorr', 'decay_time_ps','k_raw_db_corr_iso04_rel']
     
     # timestamp
-    #label = datetime.now().strftime('%d%b%Y_%Hh%Mm%Ss')
     label = datetime.now().strftime('%d%b%Y_%Hh%Mm%Ss')
 
     # create plot directories
     make_directories(label)
-
-    # add normalisation factor from Jpsi pi MC
-#     for k, v in weights.items():
-#         if k not in ['data']:
-#             v *= 1.25
-#         if k in ['data', 'onia', 'fakes']:
-#             continue
-#         v *= 0.79
-
-    # tweak selections, if you like
-
-#     preselection = '1'
-#     preselection_mc = preselection
-#     pass_id = 'k_softID>0.5'
-#     fail_id = 'k_tightID<0.5'
-#     fail_id = '(!(%s))' % pass_id
-
+    
     # access the samples, via RDataFrames
     samples = dict()
-    
+
     tree_name = 'BTo3Mu'
+    #Different paths depending on the sample
     tree_dir_data = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15' #data
-    tree_dir_psitau = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar25' #data
-    tree_dir = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15' #Bc and Hb
+    tree_dir_hb = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15' #Hb
+    tree_dir_bc = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Apr14' #Bc 
+    tree_dir_psitau = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar25' #psi2stau
+    tree_hbmu = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar16' #Hb mu filter
 
-    '''    for isample_name in sample_names:
-        print(isample_name)
-        samples[isample_name] = ROOT.RDataFrame(tree_name, '%s/BcToXToJpsi_is_%s_merged.root' %(tree_dir, isample_name))
-        #        samples[isample_name] = ROOT.RDataFrame(tree_name, '%s/BcToXToJpsi_is_%s_enriched.root' %(tree_dir, isample_name))
-    '''
-    samples['jpsi_tau'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_jpsi_tau_merged.root' %(tree_dir))
-    samples['jpsi_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_jpsi_mu_merged.root' %(tree_dir))
-    samples['chic0_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_chic0_mu_merged.root' %(tree_dir))
-    samples['chic1_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_chic1_mu_merged.root' %(tree_dir))
-    samples['chic2_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_chic2_mu_merged.root' %(tree_dir))
-    samples['hc_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_hc_mu_merged.root' %(tree_dir))
-    samples['jpsi_hc'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_jpsi_hc_merged.root' %(tree_dir))
-    samples['psi2s_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_psi2s_mu_merged.root' %(tree_dir))
-    samples['psi2s_tau'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_psi2s_tau_merged.root' %(tree_dir_psitau))
-    samples['data'] = ROOT.RDataFrame(tree_name,'%s/data_ptmax_merged.root' %(tree_dir_data))
-    samples['onia'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu_ptmax_merged.root' %(tree_dir))
+    samples['jpsi_tau'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_jpsi_tau_merged.root' %(tree_dir_bc))
+    samples['jpsi_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_jpsi_mu_merged.root' %(tree_dir_bc))
+    samples['chic0_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_chic0_mu_merged.root' %(tree_dir_bc))
+    samples['chic1_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_chic1_mu_merged.root' %(tree_dir_bc))
+    samples['chic2_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_chic2_mu_merged.root' %(tree_dir_bc))
+    samples['hc_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_hc_mu_merged.root' %(tree_dir_bc))
+    samples['jpsi_hc'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_jpsi_hc_merged.root' %(tree_dir_bc))
+    samples['psi2s_mu'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_psi2s_mu_merged.root' %(tree_dir_bc))
+    samples['psi2s_tau'] = ROOT.RDataFrame(tree_name,'%s/BcToJPsiMuMu_is_psi2s_tau_merged.root' %(tree_dir_bc))
+    samples['jpsi_x_mu'] = ROOT.RDataFrame(tree_name,'%s/HbToJPsiMuMu3MuFilter_trigger_bcclean.root' %(tree_hbmu))
+    samples['data'] = ROOT.RDataFrame(tree_name,'%s/data_flagtriggersel.root' %(tree_dir_data))
+    
+    print("=============================")
+    print("====== Samples loaded =======")
+    print("=============================")
 
-    print("OK")
-    # define total weights for the different samples and add new columns to RDFs
-    #blind analysis-> random number between 0.5 and 2 (but always the same because it is fixed)
-    random.seed(2)
-    rand = random.randint(0, 10000)
-    blind = rand/10000 *1.5 +0.5
+    #Blind analysis: hide the value of rjpsi for the fit
+    if blind_analysis:
+        random.seed(2)
+        rand = random.randint(0, 10000)
+        blind = rand/10000 *1.5 +0.5
+    else:
+        blind = 1.
+    #rjpsi value in case we need to change it 
+    
+    #################################################
+    ####### Weights ################################
+    #################################################
     for k, v in samples.items():
-        print(k,v)
         samples[k] = samples[k].Define('br_weight', '%f' %weights[k])
+        #for jpsi tau apply ctau, pu and ff weights. Plus the values for the blind analyss and rjpsi
         if k=='jpsi_tau':
-           samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*%f' %blind)
-
+            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*%f*%f' %(blind,rjpsi))
+            #samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight*hammer_bglvar*%f*%f' %(blind,rjpsi))
+        # jpsi mu apply ctau, pu and ff weights
         elif k=='jpsi_mu':
-           samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight')
+            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar')
+            #samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight*hammer_bglvar')
+        #For all the other samples we apply ctau and pu
+        #For the Bc samples the ctau contribution is != 1., while for the background it is ==1
         else:
-            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight' if k!='data' else 'br_weight') # weightGen is suposed to be the lifetime reweigh, but it's broken
+            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight' if k!='data' else 'br_weight') 
+            #samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight' if k!='data' else 'br_weight') 
+        #define new columns
         for new_column, new_definition in to_define: 
             if samples[k].HasColumn(new_column):
                 continue
             samples[k] = samples[k].Define(new_column, new_definition)
-    print("OK2")
-    # apply filters on newly defined variables
+
+    #Apply preselection. 
     for k, v in samples.items():
-        print(k,v)
         filter = preselection_mc if k!='data' else preselection
         samples[k] = samples[k].Filter(filter)
 
-    # better for categorical data
-    # colours = list(map(ROOT.TColor.GetColor, all_palettes['Category10'][len(samples)]))
-    colours = list(map(ROOT.TColor.GetColor, all_palettes['Spectral'][len(samples)]))
+    # Shape nuisances definition
+    # Create a new disctionary "shapes", similar to the "samples" one defined for the datasets
+    # Each entry of the dic is a nuisance for a different dataset
+    if shape_nuisances :
+        shapes = dict()
+        #ctau nuisances
+        for sname in samples:
+            #Only Bc samples want this nuisance
+            if (sname != 'jpsi_x_mu' and sname != 'data' ):
+                shapes[sname + '_ctauUp'] = samples[sname]
+                if sname == 'jpsi_mu':
+                    shapes[sname +'_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight*hammer_bglvar')
+                elif sname == 'jpsi_tau':
+                    shapes[sname +'_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight*hammer_bglvar*%f*%f' %(blind,rjpsi))
+                else:
+                    shapes[sname + '_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight')
+                shapes[sname + '_ctauDown'] = samples[sname]
+                if sname == 'jpsi_mu':
+                    shapes[sname + '_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight*hammer_bglvar')
+                elif sname == 'jpsi_tau':
+                    shapes[sname +'_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight*hammer_bglvar*%f*%f' %(blind,rjpsi))
+                else:
+                    shapes[sname + '_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight')
+        
+            # Pile up nuisances
+            if (sname != 'data'):
+                shapes[sname + '_puWeightUp'] = samples[sname]
+                if sname == 'jpsi_mu':
+                    shapes[sname +'_puWeightUp'] = shapes[sname + '_puWeightUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightUp*hammer_bglvar')
+                elif sname == 'jpsi_tau':
+                    shapes[sname +'_puWeightUp'] = shapes[sname + '_puWeightUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightUp*hammer_bglvar*%f*%f' %(blind,rjpsi))
+                else:
+                    shapes[sname + '_puWeightUp'] = shapes[sname + '_puWeightUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightUp')
 
-    # print ('user defined variables')
-    # print ('='*80)
-    # for i in samples['jpsi_mu'].GetDefinedColumnNames(): print(i)
-    # print ('%'*80)
+                shapes[sname + '_puWeightDown'] = samples[sname]
+                if sname == 'jpsi_mu':
+                    shapes[sname + '_puWeightDown'] = shapes[sname + '_puWeightDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightDown*hammer_bglvar')
+                elif sname == 'jpsi_tau':
+                    shapes[sname +'_puWeightDown'] = shapes[sname + '_puWeightDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightDown*hammer_bglvar*%f*%f' %(blind,rjpsi))
+                else:
+                    shapes[sname + '_puWeightDown'] = shapes[sname + '_puWeightDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightDown')
+        
+        # form factor shape nuisances for jpsi mu and jpsi tau datasets
+        hammer_branches = ['hammer_bglvar_e0up',
+                           'hammer_bglvar_e0down',
+                           'hammer_bglvar_e1up',
+                           'hammer_bglvar_e1down',
+                           'hammer_bglvar_e2up',
+                           'hammer_bglvar_e2down',
+                           'hammer_bglvar_e3up',
+                           'hammer_bglvar_e3down',
+                           'hammer_bglvar_e4up',
+                           'hammer_bglvar_e4down',
+                           'hammer_bglvar_e5up',
+                           'hammer_bglvar_e5down',
+                           'hammer_bglvar_e6up',
+                           'hammer_bglvar_e6down',
+                           'hammer_bglvar_e7up',
+                           'hammer_bglvar_e7down',
+                           'hammer_bglvar_e8up',
+                           'hammer_bglvar_e8down',
+                           'hammer_bglvar_e9up',
+                           'hammer_bglvar_e9down',
+                           'hammer_bglvar_e10up',
+                           'hammer_bglvar_e10down'
+                       ]
+        for ham in hammer_branches:
+            new_name = ham.replace('hammer_','')
+            # Redefinition of the name for combine requests
+            if 'up' in ham:
+                new_name = new_name.replace('up','Up')
+            elif 'down' in ham:
+                new_name = new_name.replace('down','Down')
+            
+            shapes['jpsi_mu_'+new_name] = samples['jpsi_mu']
+            shapes['jpsi_mu_'+new_name] = shapes['jpsi_mu_'+new_name].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*'+ham)
+            shapes['jpsi_tau_'+new_name] = samples['jpsi_tau']
+            shapes['jpsi_tau_'+new_name] = shapes['jpsi_tau_'+new_name].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*'+ham+'*%f*%f' %(blind,rjpsi))
+
+    colours = list(map(ROOT.TColor.GetColor, all_palettes['Spectral'][len(samples)]))
 
     # CREATE THE SMART POINTERS IN ONE GO AND PRODUCE RESULTS IN ONE SHOT,
     # SEE MAX GALLI PRESENTATION
@@ -214,33 +310,41 @@ if __name__ == '__main__':
         temp_hists     [k] = {}
         temp_hists_fake[k] = {}
         for kk, vv in samples.items():
-            #print("sample items",kk)
             try:
                 temp_hists     [k]['%s_%s' %(k, kk)] = vv.Filter(pass_id).Histo1D(v[0], k, 'total_weight')
                 temp_hists_fake[k]['%s_%s' %(k, kk)] = vv.Filter(fail_id).Histo1D(v[0], k, 'total_weight')
             except:
                 pass
     
-    #     import pdb ; pdb.set_trace()
-    
+    # Create pointers for the shapes histos 
+    if shape_nuisances:
+        print('====> shape uncertainties histos')
+        unc_hists      = {} # pass muon ID category
+        unc_hists_fake = {} # pass muon ID category
+        for k, v in histos.items():    
+            # Compute them only for the variables that we want to fit
+            if k not in datacards:
+                continue
+            unc_hists     [k] = {}
+            unc_hists_fake[k] = {}
+            for kk, vv in shapes.items():
+                unc_hists     [k]['%s_%s' %(k, kk)] = vv.Filter(pass_id).Histo1D(v[0], k, 'shape_weight')
+                unc_hists_fake[k]['%s_%s' %(k, kk)] = vv.Filter(fail_id).Histo1D(v[0], k, 'shape_weight')
+
     print('====> now looping')
-    # loop on the histos
     for k, v in histos.items():
-    
         c1.cd()
         leg = create_legend(temp_hists, sample_names, titles)
-
         main_pad.cd()
         main_pad.SetLogy(False)
-
-        maxima = []
+        
+        maxima = [] # save maxima for the look of the stack plot
         data_max = 0.
         for i, kv in enumerate(temp_hists[k].items()):
             key = kv[0]
             ihist = kv[1]
             ihist.GetXaxis().SetTitle(v[1])
             ihist.GetYaxis().SetTitle('events')
-    #         ihist.Scale(1./ihist.Integral())
             ihist.SetLineColor(colours[i] if key!='%s_data'%k else ROOT.kBlack)
             ihist.SetFillColor(colours[i] if key!='%s_data'%k else ROOT.kWhite)
             if key!='%s_data'%k:
@@ -248,6 +352,7 @@ if __name__ == '__main__':
             else:
                 data_max = ihist.GetMaximum()
     
+        # Definition of stack histos
         ths1      = ROOT.THStack('stack', '')
         ths1_fake = ROOT.THStack('stack_fake', '')
 
@@ -256,30 +361,31 @@ if __name__ == '__main__':
             if key=='%s_data'%k: continue
             ihist = kv[1]
             ihist.SetMaximum(2.*max(maxima))
-            # ihist.SetMinimum(0.)
             ihist.Draw('hist' + 'same'*(i>0))
             ths1.Add(ihist.GetValue())
-
+            
         # apply same aestethics to pass and fail
         for kk in temp_hists[k].keys():
             temp_hists_fake[k][kk].GetXaxis().SetTitle(temp_hists[k][kk].GetXaxis().GetTitle())
             temp_hists_fake[k][kk].GetYaxis().SetTitle(temp_hists[k][kk].GetYaxis().GetTitle())
             temp_hists_fake[k][kk].SetLineColor(temp_hists[k][kk].GetLineColor())
             temp_hists_fake[k][kk].SetFillColor(temp_hists[k][kk].GetFillColor())
-         
+
+        # Fakes controbution from data in the fail region
         temp_hists[k]['%s_fakes' %k] = temp_hists_fake[k]['%s_data' %k].Clone()
         fakes = temp_hists[k]['%s_fakes' %k]
+        # Subtract to fakes all the contributions of other samples in the fail region
         for i, kv in enumerate(temp_hists_fake[k].items()):
             if 'data' in kv[0]:
                 kv[1].SetLineColor(ROOT.kBlack)
                 continue
             else:
                 fakes.Add(kv[1].GetPtr(), -1.)
-        fakes.SetFillColor(ROOT.kRed)
+        fakes.SetFillColor(colours[len(samples)-1])
         fakes.SetFillStyle(1001)
-        fakes.SetLineColor(ROOT.kRed)
+        fakes.SetLineColor(colours[len(samples)-1])
         fakes_forfail = fakes.Clone()
-        fakes.Scale(weights['fakes'])
+        fakes.Scale(weights['fakes']) # fakes weight applied here
         ths1.Add(fakes)
         ths1.Draw('hist')
         try:
@@ -297,21 +403,22 @@ if __name__ == '__main__':
         stats.SetFillStyle(3344)
         stats.SetMarkerSize(0)
         stats.Draw('E2 SAME')
+
         leg.AddEntry(fakes, 'fakes', 'F')    
         leg.AddEntry(stats, 'stat. unc.', 'F')
         leg.Draw('same')
     
         temp_hists[k]['%s_data'%k].Draw('EP SAME')
-        
         CMS_lumi(main_pad, 4, 0, cmsText = 'CMS', extraText = ' Preliminary', lumi_13TeV = '')
-
         main_pad.cd()
-        rjpsi_value = ROOT.TPaveText(0.7, 0.65, 0.88, 0.72, 'nbNDC')
-        rjpsi_value.AddText('R(J/#Psi) = %.2f' %weights['jpsi_tau'])
-    #     rjpsi_value.SetTextFont(62)
-        rjpsi_value.SetFillColor(0)
-        rjpsi_value.Draw('EP')
-
+        # if the analisis if blind, we don't want to show the rjpsi prefit value
+        if not blind_analysis:
+            rjpsi_value = ROOT.TPaveText(0.7, 0.65, 0.88, 0.72, 'nbNDC')
+            rjpsi_value.AddText('R(J/#Psi) = %.2f' %rjpsi)
+            rjpsi_value.SetFillColor(0)
+            rjpsi_value.Draw('EP')
+        
+        # Ratio for pass region
         ratio_pad.cd()
         ratio = temp_hists[k]['%s_data'%k].Clone()
         ratio.SetName(ratio.GetName()+'_ratio')
@@ -330,14 +437,13 @@ if __name__ == '__main__':
         ratio_stats.GetYaxis().SetTitleSize(3.* ratio.GetYaxis().GetTitleSize())
 
         norm_stack = ROOT.THStack('norm_stack', '')
-#         import pdb ; pdb.set_trace()
+
         for kk, vv in temp_hists[k].items():
             if 'data' in kk: continue
             hh = vv.Clone()
             hh.Divide(stats)
             norm_stack.Add(hh)
         norm_stack.Draw('hist same')
-
 
         line = ROOT.TLine(ratio.GetXaxis().GetXmin(), 1., ratio.GetXaxis().GetXmax(), 1.)
         line.SetLineColor(ROOT.kBlack)
@@ -361,17 +467,15 @@ if __name__ == '__main__':
         c1.SaveAs('plots_ul/%s/pdf/log/%s.pdf' %(label, k))
         c1.SaveAs('plots_ul/%s/png/log/%s.png' %(label, k))
         
-        #print("pass region")
-        #print(temp_hists[k])
-        if k in datacards:
-            create_datacard_prep(temp_hists[k],'pass',k,label)
+        if k in datacards and shape_nuisances:
+            create_datacard_prep(temp_hists[k],unc_hists[k],shapes,'pass',k,label)
+            plot_shape_nuisances(label, k, 'pass')
+        #####################################################
+        # Now creating and saving the stack of the fail region
 
-        ##########################################################################################
-        
         c1.cd()
         main_pad.cd()
         main_pad.SetLogy(False)
-
 
         for i, kv in enumerate(temp_hists_fake[k].items()):
             key = kv[0]
@@ -379,38 +483,62 @@ if __name__ == '__main__':
                 max_fake = kv[1].GetMaximum()
                 continue
             ihist = kv[1]
-            # ihist.SetMaximum(2.*max(maxima))
-            # ihist.SetMinimum(0.)
-            # ihist.Draw('hist' + 'same'*(i>0))
             ths1_fake.Add(ihist.GetValue())
-        #        print(type(temp_hists_fake[k]['%s_data' %k]))
+
         temp_hists_fake[k]['%s_fakes' %k] = fakes_forfail
-        #print("fakes!",temp_hists_fake[k]['%s_fakes' %k])
         ths1_fake.Add(fakes_forfail)
         ths1_fake.Draw('hist')
         ths1_fake.SetMaximum(1.6*max_fake)
-
-#         try:
-#             ths1_fake.GetXaxis().SetTitle(v[1])
-#         except:
-#             continue
         ths1_fake.GetYaxis().SetTitle('events')
-#         ths1_fake.SetMaximum(1.5*max(sum(maxima), data_max))
-#         ths1_fake.SetMinimum(0.)
-        
-        # statistical uncertainty
-#         stats = ths1_fake.GetStack().Last().Clone()
-#         stats.SetLineColor(0)
-#         stats.SetFillColor(ROOT.kGray+1)
-#         stats.SetFillStyle(3344)
-#         stats.SetMarkerSize(0)
-#         stats.Draw('E2 SAME')
-    
+
+        stats_fake = ths1_fake.GetStack().Last().Clone()
+        stats_fake.SetLineColor(0)
+        stats_fake.SetFillColor(ROOT.kGray+1)
+        stats_fake.SetFillStyle(3344)
+        stats_fake.SetMarkerSize(0)
+        stats_fake.Draw('E2 SAME')
+
         temp_hists_fake[k]['%s_data'%k].Draw('EP SAME')
         CMS_lumi(main_pad, 4, 0, cmsText = 'CMS', extraText = ' Preliminary', lumi_13TeV = '')
         leg.Draw('same')
 
-#         import pdb ; pdb.set_trace()
+        # Ratio for pass region
+
+        ratio_pad.cd()
+        ratio_fake = temp_hists_fake[k]['%s_data'%k].Clone()
+        ratio_fake.SetName(ratio_fake.GetName()+'_ratio')
+        ratio_fake.Divide(stats_fake)
+        ratio_stats_fake = stats_fake.Clone()
+        ratio_stats_fake.SetName(ratio.GetName()+'_ratiostats_fake')
+        ratio_stats_fake.Divide(stats_fake)
+        ratio_stats_fake.SetMaximum(1.999) # avoid displaying 2, that overlaps with 0 in the main_pad
+        ratio_stats_fake.SetMinimum(0.001) # and this is for symmetry
+        ratio_stats_fake.GetYaxis().SetTitle('obs/exp')
+        ratio_stats_fake.GetYaxis().SetTitleOffset(0.5)
+        ratio_stats_fake.GetYaxis().SetNdivisions(405)
+        ratio_stats_fake.GetXaxis().SetLabelSize(3.* ratio_fake.GetXaxis().GetLabelSize())
+        ratio_stats_fake.GetYaxis().SetLabelSize(3.* ratio_fake.GetYaxis().GetLabelSize())
+        ratio_stats_fake.GetXaxis().SetTitleSize(3.* ratio_fake.GetXaxis().GetTitleSize())
+        ratio_stats_fake.GetYaxis().SetTitleSize(3.* ratio_fake.GetYaxis().GetTitleSize())
+
+        norm_stack_fake = ROOT.THStack('norm_stack', '')
+
+        for kk, vv in temp_hists_fake[k].items():
+            if 'data' in kk: continue
+            hh = vv.Clone()
+            hh.Divide(stats_fake)
+            norm_stack_fake.Add(hh)
+        norm_stack_fake.Draw('hist same')
+
+        line = ROOT.TLine(ratio_fake.GetXaxis().GetXmin(), 1., ratio_fake.GetXaxis().GetXmax(), 1.)
+        line.SetLineColor(ROOT.kBlack)
+        line.SetLineWidth(1)
+        ratio_stats_fake.Draw('E2')
+        norm_stack_fake.Draw('hist same')
+        ratio_stats_fake.Draw('E2 same')
+        line.Draw('same')
+        ratio_fake.Draw('EP same')
+
         c1.Modified()
         c1.Update()
         c1.SaveAs('plots_ul/%s/fail_region/pdf/lin/%s.pdf' %(label, k))
@@ -424,11 +552,13 @@ if __name__ == '__main__':
         c1.SaveAs('plots_ul/%s/fail_region/pdf/log/%s.pdf' %(label, k))
         c1.SaveAs('plots_ul/%s/fail_region/png/log/%s.png' %(label, k))
 
-        if k in datacards:
-            create_datacard_prep(temp_hists_fake[k],'fail',k,label)
+        if k in datacards and shape_nuisances:
+            create_datacard_prep(temp_hists_fake[k],unc_hists_fake[k],shapes,'fail',k,label)
+            plot_shape_nuisances(label, k, 'fail')
         
     save_yields(label, temp_hists)
     save_selection(label, preselection)
+    save_weights(label, sample_names, weights)
 
 
 # save reduced trees to produce datacards

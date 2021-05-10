@@ -17,7 +17,7 @@ from uproot_methods import TVector3Array
 from uproot_methods import TLorentzVector
 from uproot_methods import TVector3
 from scipy.constants import c as speed_of_light
-
+import uproot
 #hammer
 from bgl_variations import variations
 from itertools import product
@@ -30,8 +30,8 @@ checkDoubles = True
 nMaxFiles = REPLACE_MAX_FILES
 skipFiles = REPLACE_SKIP_FILES
 
-flag_hammer = True
-
+flag_hammer_mu = True
+flag_hammer_tau = True
 ## lifetime weights ##
 def weight_to_new_ctau(old_ctau, new_ctau, ct):
     '''
@@ -174,9 +174,12 @@ def decaytime(pf):
     PV_pos = TVector3Array(pf.pv_x,pf.pv_y,pf.pv_z)
     jpsiVertex_pos = TVector3Array(pf.jpsivtx_vtx_x,pf.jpsivtx_vtx_y,pf.jpsivtx_vtx_z)
     dist1 = (PV_pos - jpsiVertex_pos).mag
-    decay_time1 = dist1 * 6.276 / (pf.Bpt_reco * 2.998e+10)
+    if(len(PV_pos)):
+        decay_time1 = dist1 * 6.276 / (pf.Bpt_reco * 2.998e+10)
+        pf['decay_time'] = decay_time1
     #pf.copy()
-    pf['decay_time'] = decay_time1
+    else:
+        pf['decay_time'] = pf.pv_x #it's NaN anyway
     return pf
 
 #for the rho corrected iso branch
@@ -212,22 +215,39 @@ def getAreaEff( eta, drcone ):
 
 def rho_corr_iso(df):
     #print("adding rho-corrected isolation branches")
+    #unpaired muon
     aEff = getAreaEff(df.keta,'03')
     zeros = pd.Series({'zero':[0 for i in range(len(aEff))]})
-    df['raw_rho_corr_iso03'] = df.k_raw_ch_pfiso03 + pd.concat([df.k_raw_n_pfiso03+df.k_raw_pho_pfiso03 + df.fixedGridRhoFastjetAll * aEff,zeros],axis=1).max(axis=1)
-    df['raw_rho_corr_iso03_rel'] = (df.k_raw_ch_pfiso03 + pd.concat([df.k_raw_n_pfiso03+df.k_raw_pho_pfiso03 + df.fixedGridRhoFastjetAll * aEff,zeros],axis=1).max(axis=1))/df.kpt
+    df['k_raw_rho_corr_iso03'] = df.k_raw_ch_pfiso03 + pd.concat([df.k_raw_n_pfiso03+df.k_raw_pho_pfiso03 + df.fixedGridRhoFastjetAll * aEff,zeros],axis=1).max(axis=1)
+    df['k_raw_rho_corr_iso03_rel'] = (df.k_raw_ch_pfiso03 + pd.concat([df.k_raw_n_pfiso03+df.k_raw_pho_pfiso03 + df.fixedGridRhoFastjetAll * aEff,zeros],axis=1).max(axis=1))/df.kpt
 
-    #    df['raw_rho_corr_iso03'] = df.k_raw_ch_pfiso03 + max(df.k_raw_n_pfiso03 + df.k_raw_pho_pfiso03 + df.fixedGridRhoFastjetAll * aEff,[0 for i in range(len(aEff))])
-    #    df['raw_rho_corr_iso03_rel'] = (df.k_raw_ch_pfiso03 + max(df.k_raw_n_pfiso03 + df.k_raw_pho_pfiso03 + df.fixedGridRhoFastjetAll * aEff,0))/df.kpt
     aEff = getAreaEff(df.keta,'04')
-    df['raw_rho_corr_iso04'] = df.k_raw_ch_pfiso04 + pd.concat([df.k_raw_n_pfiso04+df.k_raw_pho_pfiso04 + df.fixedGridRhoFastjetAll * aEff,zeros],axis=1).max(axis=1)
-    df['raw_rho_corr_iso04_rel'] = (df.k_raw_ch_pfiso04 + pd.concat([df.k_raw_n_pfiso04+df.k_raw_pho_pfiso04 + df.fixedGridRhoFastjetAll * aEff,zeros],axis=1).max(axis=1))/df.kpt
-    #df['raw_rho_corr_iso04'] = df.k_raw_ch_pfiso04 + max(df.k_raw_n_pfiso04 + df.k_raw_pho_pfiso04 + df.fixedGridRhoFastjetAll * aEff,0)
-    #df['raw_rho_corr_iso04_rel'] = (df.k_raw_ch_pfiso04 + max(df.k_raw_n_pfiso04 + df.k_raw_pho_pfiso04 + df.fixedGridRhoFastjetAll * aEff,0))/df.kpt
+    df['k_raw_rho_corr_iso04'] = df.k_raw_ch_pfiso04 + pd.concat([df.k_raw_n_pfiso04+df.k_raw_pho_pfiso04 + df.fixedGridRhoFastjetAll * aEff,zeros],axis=1).max(axis=1)
+    df['k_raw_rho_corr_iso04_rel'] = (df.k_raw_ch_pfiso04 + pd.concat([df.k_raw_n_pfiso04+df.k_raw_pho_pfiso04 + df.fixedGridRhoFastjetAll * aEff,zeros],axis=1).max(axis=1))/df.kpt
+
+    #mu1
+    aEff = getAreaEff(df.mu1eta,'03')
+    zeros = pd.Series({'zero':[0 for i in range(len(aEff))]})
+    df['mu1_raw_rho_corr_iso03'] = df.mu1_raw_ch_pfiso03 + pd.concat([df.mu1_raw_n_pfiso03+df.mu1_raw_pho_pfiso03 + df.fixedGridRhoFastjetAll * aEff,zeros],axis=1).max(axis=1)
+    df['mu1_raw_rho_corr_iso03_rel'] = (df.mu1_raw_ch_pfiso03 + pd.concat([df.mu1_raw_n_pfiso03+df.mu1_raw_pho_pfiso03 + df.fixedGridRhoFastjetAll * aEff,zeros],axis=1).max(axis=1))/df.kpt
+
+    aEff = getAreaEff(df.mu1eta,'04')
+    df['mu1_raw_rho_corr_iso04'] = df.mu1_raw_ch_pfiso04 + pd.concat([df.mu1_raw_n_pfiso04+df.mu1_raw_pho_pfiso04 + df.fixedGridRhoFastjetAll * aEff,zeros],axis=1).max(axis=1)
+    df['mu1_raw_rho_corr_iso04_rel'] = (df.mu1_raw_ch_pfiso04 + pd.concat([df.mu1_raw_n_pfiso04+df.mu1_raw_pho_pfiso04 + df.fixedGridRhoFastjetAll * aEff,zeros],axis=1).max(axis=1))/df.kpt
+
+    #mu2
+    aEff = getAreaEff(df.mu2eta,'03')
+    zeros = pd.Series({'zero':[0 for i in range(len(aEff))]})
+    df['mu2_raw_rho_corr_iso03'] = df.mu2_raw_ch_pfiso03 + pd.concat([df.mu2_raw_n_pfiso03+df.mu2_raw_pho_pfiso03 + df.fixedGridRhoFastjetAll * aEff,zeros],axis=1).max(axis=1)
+    df['mu2_raw_rho_corr_iso03_rel'] = (df.mu2_raw_ch_pfiso03 + pd.concat([df.mu2_raw_n_pfiso03+df.mu2_raw_pho_pfiso03 + df.fixedGridRhoFastjetAll * aEff,zeros],axis=1).max(axis=1))/df.kpt
+
+    aEff = getAreaEff(df.mu2eta,'04')
+    df['mu2_raw_rho_corr_iso04'] = df.mu2_raw_ch_pfiso04 + pd.concat([df.mu2_raw_n_pfiso04+df.mu2_raw_pho_pfiso04 + df.fixedGridRhoFastjetAll * aEff,zeros],axis=1).max(axis=1)
+    df['mu2_raw_rho_corr_iso04_rel'] = (df.mu2_raw_ch_pfiso04 + pd.concat([df.mu2_raw_n_pfiso04+df.mu2_raw_pho_pfiso04 + df.fixedGridRhoFastjetAll * aEff,zeros],axis=1).max(axis=1))/df.kpt
 
     return df
 
-def hammer_weights(df):
+def hammer_weights_mu(df):
     ham = Hammer()
     fbBuffer = IOBuffer
     ham.include_decay("BcJpsiMuNu")
@@ -278,7 +298,65 @@ def hammer_weights(df):
     for k in ff_schemes.keys():
         print("k",k)
         print("hammer_"+k)
-        df["hammer_"+k] = weights[k]
+        #save the nan as 1
+        weights_clean = [ham if (not np.isnan(ham)) else 1. for ham in weights[k]]
+        df["hammer_"+k] = weights_clean
+    return df
+
+def hammer_weights_tau(df):
+    ham = Hammer()
+    fbBuffer = IOBuffer
+    ham.include_decay(["BcJpsiTauNu"])
+    ff_input_scheme = dict()
+    ff_input_scheme["BcJpsi"] = "Kiselev"
+    ham.set_ff_input_scheme(ff_input_scheme)
+    ff_schemes  = dict()
+    ff_schemes['bglvar' ] = {'BcJpsi':'BGLVar' }
+    for i, j in product(range(11), ['up', 'down']):
+        unc = 'e%d%s'%(i,j)
+        ff_schemes['bglvar_%s'%unc] = {'BcJpsi':'BGLVar_%s'%unc  }
+                        
+    for k, v in ff_schemes.items():
+        ham.add_ff_scheme(k, v)
+    ham.set_units("GeV")
+    ham.init_run()
+    for i, j in product(range(11), ['up', 'down']):
+        unc = 'e%d%s'%(i,j)
+        ham.set_ff_eigenvectors('BctoJpsi', 'BGLVar_%s'%unc, variations['e%d'%i][j])
+    pids=[]
+    weights = dict()
+    for k in ff_schemes.keys():
+        weights[k] = []
+    for i in range(len(df)): #loop on the events
+        ham.init_event()
+        thebc_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.mu1_grandmother_pt[i],df.mu1_grandmother_eta[i] , df.mu1_grandmother_phi[i], 6.274)
+        thetau_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.k_mother_pt[i] , df.k_mother_eta[i],df.k_mother_phi[i] , 1.77686)
+        thejpsi_p4 = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.mu1_mother_pt[i] , df.mu1_mother_eta[i],df.mu1_mother_phi[i] , 3.0969)
+        thenutau_p4   = thebc_p4 - thetau_p4 - thejpsi_p4
+                        
+        thebc   = Particle(FourMomentum(thebc_p4.e()  , thebc_p4.px()  , thebc_p4.py()  , thebc_p4.pz()  ), 541)
+        thetau   = Particle(FourMomentum(thetau_p4.e()  , thetau_p4.px()  , thetau_p4.py()  , thetau_p4.pz()  ), -15          )
+        thejpsi = Particle(FourMomentum(thejpsi_p4.e(), thejpsi_p4.px(), thejpsi_p4.py(), thejpsi_p4.pz()), 443          )
+        thenutau   = Particle(FourMomentum(thenutau_p4.e()  , thenutau_p4.px()  , thenutau_p4.py()  , thenutau_p4.pz())  , 16           )
+        
+        Bc2JpsiLNu = Process()
+        
+        thebc_idx   = Bc2JpsiLNu.add_particle(thebc  )
+        thetau_idx   = Bc2JpsiLNu.add_particle(thetau  )
+        thejpsi_idx = Bc2JpsiLNu.add_particle(thejpsi)
+        thenutau_idx   = Bc2JpsiLNu.add_particle(thenutau  )
+        Bc2JpsiLNu.add_vertex(thebc_idx, [thejpsi_idx, thetau_idx, thenutau_idx])
+        pid = ham.add_process(Bc2JpsiLNu)
+        pids.append(pid)
+        ham.process_event()
+        for k in ff_schemes.keys():
+            weights[k].append(ham.get_weight(k))
+    for k in ff_schemes.keys():
+        print("k",k)
+        print("hammer_"+k)
+        #save the nan as 1
+        weights_clean = [ham if (not np.isnan(ham)) else 1. for ham in weights[k]]
+        df["hammer_"+k] = weights_clean
     return df
 
 nprocessedAll = 0
@@ -390,10 +468,10 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
         nFiles +=1
        
 
+        nf = NanoFrame(fname, )#branches = branches)
         for channel in channels:
             print("In channel "+channel)
             # Load the needed collections, NanoFrame is just an empty shell until we call the collections
-            nf = NanoFrame(fname, )#branches = branches)
             evt = nf['event']
             muons = nf['Muon']
             bcands = nf[channel]
@@ -693,6 +771,57 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                     df['mu1_iso04'] = tab.mu1_iso04
                     df['mu2_iso03'] = tab.mu2_iso03
                     df['mu2_iso04'] = tab.mu2_iso04
+                    
+                    #other iso for mu1 and mu2
+                    df['mu1_raw_db_corr_iso03'] = tab.mu1.db_corr_iso03
+                    df['mu1_raw_db_corr_iso03_rel'] = tab.mu1.db_corr_iso03_rel
+                    df['mu1_raw_db_corr_iso04'] = tab.mu1.db_corr_iso04
+                    df['mu1_raw_db_corr_iso04_rel'] = tab.mu1.db_corr_iso04_rel
+                    df['mu1_raw_ch_pfiso03'] = tab.mu1.raw_ch_pfiso03
+                    df['mu1_raw_ch_pfiso03_rel'] = tab.mu1.raw_ch_pfiso03_rel
+                    df['mu1_raw_ch_pfiso04'] = tab.mu1.raw_ch_pfiso04
+                    df['mu1_raw_ch_pfiso04_rel'] = tab.mu1.raw_ch_pfiso04_rel
+                    df['mu1_raw_n_pfiso03'] = tab.mu1.raw_n_pfiso03
+                    df['mu1_raw_n_pfiso03_rel'] = tab.mu1.raw_n_pfiso03_rel
+                    df['mu1_raw_n_pfiso04'] = tab.mu1.raw_n_pfiso04
+                    df['mu1_raw_n_pfiso04_rel'] = tab.mu1.raw_n_pfiso04_rel
+                    df['mu1_raw_pho_pfiso03'] = tab.mu1.raw_pho_pfiso03
+                    df['mu1_raw_pho_pfiso03_rel'] = tab.mu1.raw_pho_pfiso03_rel
+                    df['mu1_raw_pho_pfiso04'] = tab.mu1.raw_pho_pfiso04
+                    df['mu1_raw_pho_pfiso04_rel'] = tab.mu1.raw_pho_pfiso04_rel
+                    df['mu1_raw_pu_pfiso03'] = tab.mu1.raw_pu_pfiso03
+                    df['mu1_raw_pu_pfiso03_rel'] = tab.mu1.raw_pu_pfiso03_rel
+                    df['mu1_raw_pu_pfiso04'] = tab.mu1.raw_pu_pfiso04
+                    df['mu1_raw_pu_pfiso04_rel'] = tab.mu1.raw_pu_pfiso04_rel
+                    df['mu1_raw_trk_iso03'] = tab.mu1.raw_trk_iso03
+                    df['mu1_raw_trk_iso03_rel'] = tab.mu1.raw_trk_iso03_rel
+                    df['mu1_raw_trk_iso05'] = tab.mu1.raw_trk_iso05
+                    df['mu1_raw_trk_iso05_rel'] = tab.mu1.raw_trk_iso05_rel
+
+                    df['mu2_raw_db_corr_iso03'] = tab.mu2.db_corr_iso03
+                    df['mu2_raw_db_corr_iso03_rel'] = tab.mu2.db_corr_iso03_rel
+                    df['mu2_raw_db_corr_iso04'] = tab.mu2.db_corr_iso04
+                    df['mu2_raw_db_corr_iso04_rel'] = tab.mu2.db_corr_iso04_rel
+                    df['mu2_raw_ch_pfiso03'] = tab.mu2.raw_ch_pfiso03
+                    df['mu2_raw_ch_pfiso03_rel'] = tab.mu2.raw_ch_pfiso03_rel
+                    df['mu2_raw_ch_pfiso04'] = tab.mu2.raw_ch_pfiso04
+                    df['mu2_raw_ch_pfiso04_rel'] = tab.mu2.raw_ch_pfiso04_rel
+                    df['mu2_raw_n_pfiso03'] = tab.mu2.raw_n_pfiso03
+                    df['mu2_raw_n_pfiso03_rel'] = tab.mu2.raw_n_pfiso03_rel
+                    df['mu2_raw_n_pfiso04'] = tab.mu2.raw_n_pfiso04
+                    df['mu2_raw_n_pfiso04_rel'] = tab.mu2.raw_n_pfiso04_rel
+                    df['mu2_raw_pho_pfiso03'] = tab.mu2.raw_pho_pfiso03
+                    df['mu2_raw_pho_pfiso03_rel'] = tab.mu2.raw_pho_pfiso03_rel
+                    df['mu2_raw_pho_pfiso04'] = tab.mu2.raw_pho_pfiso04
+                    df['mu2_raw_pho_pfiso04_rel'] = tab.mu2.raw_pho_pfiso04_rel
+                    df['mu2_raw_pu_pfiso03'] = tab.mu2.raw_pu_pfiso03
+                    df['mu2_raw_pu_pfiso03_rel'] = tab.mu2.raw_pu_pfiso03_rel
+                    df['mu2_raw_pu_pfiso04'] = tab.mu2.raw_pu_pfiso04
+                    df['mu2_raw_pu_pfiso04_rel'] = tab.mu2.raw_pu_pfiso04_rel
+                    df['mu2_raw_trk_iso03'] = tab.mu2.raw_trk_iso03
+                    df['mu2_raw_trk_iso03_rel'] = tab.mu2.raw_trk_iso03_rel
+                    df['mu2_raw_trk_iso05'] = tab.mu2.raw_trk_iso05
+                    df['mu2_raw_trk_iso05_rel'] = tab.mu2.raw_trk_iso05_rel
 
                     #other iso branches (only for BTo3Mu channel)
                     if(channel == 'BTo3Mu'):
@@ -720,6 +849,36 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                         df['k_raw_trk_iso03_rel'] = tab.k.raw_trk_iso03_rel
                         df['k_raw_trk_iso05'] = tab.k.raw_trk_iso05
                         df['k_raw_trk_iso05_rel'] = tab.k.raw_trk_iso05_rel
+
+                    #trigger of the muon
+                    if(channel == 'BTo3Mu'):
+                        df['mu1_isFromJpsi_MuT'] = tab.mu1.isMuonFromJpsi_dimuon0Trg
+                        df['mu1_isFromJpsi_TrkPsiPT'] = tab.mu1.isMuonFromJpsi_jpsiTrk_PsiPrimeTrg
+                        df['mu1_isFromJpsi_TrkT'] = tab.mu1.isMuonFromJpsi_jpsiTrkTrg
+                        df['mu1_isFromJpsi_TrkNResT'] = tab.mu1.isMuonFromJpsi_jpsiTrk_NonResonantTrg
+                        df['mu1_isFromMuT'] = tab.mu1.isDimuon0Trg
+                        df['mu1_isFromTrkT'] = tab.mu1.isJpsiTrkTrg
+                        df['mu1_isFromTrkPsiPT'] = tab.mu1.isJpsiTrk_PsiPrimeTrg
+                        df['mu1_isFromTrkNResT'] = tab.mu1.isJpsiTrk_NonResonantTrg
+
+                        df['mu2_isFromJpsi_MuT'] = tab.mu2.isMuonFromJpsi_dimuon0Trg
+                        df['mu2_isFromJpsi_TrkPsiPT'] = tab.mu2.isMuonFromJpsi_jpsiTrk_PsiPrimeTrg
+                        df['mu2_isFromJpsi_TrkT'] = tab.mu2.isMuonFromJpsi_jpsiTrkTrg
+                        df['mu2_isFromJpsi_TrkNResT'] = tab.mu2.isMuonFromJpsi_jpsiTrk_NonResonantTrg
+                        df['mu2_isFromMuT'] = tab.mu2.isDimuon0Trg
+                        df['mu2_isFromTrkT'] = tab.mu2.isJpsiTrkTrg
+                        df['mu2_isFromTrkPsiPT'] = tab.mu2.isJpsiTrk_PsiPrimeTrg
+                        df['mu2_isFromTrkNResT'] = tab.mu2.isJpsiTrk_NonResonantTrg
+
+                        df['k_isFromJpsi_MuT'] = tab.k.isMuonFromJpsi_dimuon0Trg
+                        df['k_isFromJpsi_TrkPsiPT'] = tab.k.isMuonFromJpsi_jpsiTrk_PsiPrimeTrg
+                        df['k_isFromJpsi_TrkT'] = tab.k.isMuonFromJpsi_jpsiTrkTrg
+                        df['k_isFromJpsi_TrkNResT'] = tab.k.isMuonFromJpsi_jpsiTrk_NonResonantTrg
+                        df['k_isFromMuT'] = tab.k.isDimuon0Trg
+                        df['k_isFromTrkT'] = tab.k.isJpsiTrkTrg
+                        df['k_isFromTrkPsiPT'] = tab.k.isJpsiTrk_PsiPrimeTrg
+                        df['k_isFromTrkNResT'] = tab.k.isJpsiTrk_NonResonantTrg
+
 
 
                     #rho
@@ -757,8 +916,7 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                     df['Beta'] = tab.p4.eta
                     df['Bphi'] = tab.p4.phi
                     df['Bpt_reco'] = (tab.p4.pt * 6.275 / tab.p4.mass)
-                    
-                
+
                     df['mu1_dxy'] = tab.mu1_dxy
                     df['mu2_dxy'] = tab.mu2_dxy
                     df['mu1_dxyErr'] = tab.mu1_dxyErr
@@ -787,19 +945,28 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                     df['pv_z'] = tab.pv_z
                     
                     #df['npv_good'] = tab.PV_npvsGood
+                    #tab.mu1.mediumId = tab.mu1.mediumId.astype('bool')
                                         
-                    #IDs
                     df['mu1_mediumID']= tab.mu1.mediumId
+                    df['mu1_mediumID']= df['mu1_mediumID'].astype(int)
                     df['mu2_mediumID']= tab.mu2.mediumId
+                    df['mu2_mediumID']= df['mu2_mediumID'].astype(int)
                     df['mu1_tightID']= tab.mu1.tightId
+                    df['mu1_tightID']= df['mu1_tightID'].astype(int)
                     df['mu2_tightID']= tab.mu2.tightId
+                    df['mu2_tightID']= df['mu2_tightID'].astype(int)
                     df['mu1_softID']= tab.mu1.softId
+                    df['mu1_softID']= df['mu1_softID'].astype(int)
                     df['mu2_softID']= tab.mu2.softId
-                    
+                    df['mu2_softID']= df['mu2_softID'].astype(int)
+
                     if(chan == 'BTo3Mu'):
                         df['k_tightID']= tab.k.tightId
+                        df['k_tightID']= df['k_tightID'].astype(int)
                         df['k_mediumID']=tab.k.mediumId
+                        df['k_mediumID']= df['k_mediumID'].astype(int)
                         df['k_softID']=tab.k.softId
+                        df['k_softID']= df['k_softID'].astype(int)
                     
                     #is PF ?
                     df['mu1_isPF'] = tab.mu1.isPFcand
@@ -894,7 +1061,6 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                         df['pi3_vx'] = tab.pi3.vx
                         df['pi3_vz'] = tab.pi3.vz
 
-                    #Gen variables
                     if(dataset!=args.data):
                         
                         #PU weight
@@ -981,7 +1147,7 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                         df['mu1_grandmother_vz'] = tab.mu1.grandmother.vz
                         df['mu2_grandmother_vz'] = tab.mu2.grandmother.vz
 
-
+                        
                         if(channel != 'BTo2Mu3P'):
                             df['k_genpdgId'] = tab.k.gen.pdgId
                             df['k_pdgId'] = tab.k.pdgId
@@ -1141,13 +1307,12 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                                 df['pi3_grandgrandmother_vz'] = tab.pi3.grandgrandmother.vz
 
                     #if the dataframe is empty, we don't want to fill these branches because it fills them with NaN
-                    if(len(df)):
-                        if(dataset == args.mc_mu or dataset == args.mc_tau or dataset == args.mc_bc):
+                    if(dataset == args.mc_mu or dataset == args.mc_tau or dataset == args.mc_bc):
                             df = lifetime_weight(df, fake = False)
-                        else:
+                    else:
                             df = lifetime_weight(df)
-                        df = jpsi_branches(df)
-                        if channel != 'BTo2Mu3P':
+                    df = jpsi_branches(df)
+                    if channel != 'BTo2Mu3P':
                             df = DR_jpsimu(df)
                             df = mcor(df)
                             df = dr12(df)
@@ -1155,10 +1320,13 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                             df = dr13(df)
                             if channel == 'BTo3Mu':
                                 df = rho_corr_iso(df)
-                        df = decaytime(df)
-                        if((dataset == args.mc_mu or (dataset == args.mc_bc and name == 'is_jpsi_mu')) and flag_hammer and channel =='BTo3Mu'):
-                            df = hammer_weights(df)
-                                       
+                    df = decaytime(df)
+                    if((dataset == args.mc_mu or (dataset == args.mc_bc and name == 'is_jpsi_mu')) and flag_hammer_mu and channel =='BTo3Mu'):
+                            df = hammer_weights_mu(df)
+                    if((dataset == args.mc_tau or (dataset == args.mc_bc and name == 'is_jpsi_tau')) and flag_hammer_tau and channel =='BTo3Mu'):
+                            df = hammer_weights_tau(df)
+
+
                     if(channel=='BTo3Mu'):
                         final_dfs_mmm[name] = pd.concat((final_dfs_mmm[name], dfs[name])) 
                     elif(channel == 'BTo2MuP'):
@@ -1169,7 +1337,7 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                         final_dfs_2m3p[name] = pd.concat((final_dfs_2m3p[name], dfs[name])) 
                     if(nprocessedDataset > maxEvents and maxEvents != -1):
                         break
-
+    
     dataset=dataset.strip('.txt')
     name=dataset.split('/')
     d=name[len(name)-1].split('_')

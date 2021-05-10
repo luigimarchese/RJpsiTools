@@ -30,8 +30,8 @@ checkDoubles = True
 nMaxFiles = 1
 skipFiles = 0
 
-flag_hammer = True
-
+flag_hammer_mu = True
+flag_hammer_tau = True
 ## lifetime weights ##
 def weight_to_new_ctau(old_ctau, new_ctau, ct):
     '''
@@ -247,7 +247,7 @@ def rho_corr_iso(df):
 
     return df
 
-def hammer_weights(df):
+def hammer_weights_mu(df):
     ham = Hammer()
     fbBuffer = IOBuffer
     ham.include_decay("BcJpsiMuNu")
@@ -290,6 +290,62 @@ def hammer_weights(df):
         thejpsi_idx = Bc2JpsiLNu.add_particle(thejpsi)
         thenu_idx   = Bc2JpsiLNu.add_particle(thenu  )
         Bc2JpsiLNu.add_vertex(thebc_idx, [thejpsi_idx, themu_idx, thenu_idx])
+        pid = ham.add_process(Bc2JpsiLNu)
+        pids.append(pid)
+        ham.process_event()
+        for k in ff_schemes.keys():
+            weights[k].append(ham.get_weight(k))
+    for k in ff_schemes.keys():
+        print("k",k)
+        print("hammer_"+k)
+        #save the nan as 1
+        weights_clean = [ham if (not np.isnan(ham)) else 1. for ham in weights[k]]
+        df["hammer_"+k] = weights_clean
+    return df
+
+def hammer_weights_tau(df):
+    ham = Hammer()
+    fbBuffer = IOBuffer
+    ham.include_decay(["BcJpsiTauNu"])
+    ff_input_scheme = dict()
+    ff_input_scheme["BcJpsi"] = "Kiselev"
+    ham.set_ff_input_scheme(ff_input_scheme)
+    ff_schemes  = dict()
+    ff_schemes['bglvar' ] = {'BcJpsi':'BGLVar' }
+    for i, j in product(range(11), ['up', 'down']):
+        unc = 'e%d%s'%(i,j)
+        ff_schemes['bglvar_%s'%unc] = {'BcJpsi':'BGLVar_%s'%unc  }
+                        
+    for k, v in ff_schemes.items():
+        ham.add_ff_scheme(k, v)
+    ham.set_units("GeV")
+    ham.init_run()
+    for i, j in product(range(11), ['up', 'down']):
+        unc = 'e%d%s'%(i,j)
+        ham.set_ff_eigenvectors('BctoJpsi', 'BGLVar_%s'%unc, variations['e%d'%i][j])
+    pids=[]
+    weights = dict()
+    for k in ff_schemes.keys():
+        weights[k] = []
+    for i in range(len(df)): #loop on the events
+        ham.init_event()
+        thebc_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.mu1_grandmother_pt[i],df.mu1_grandmother_eta[i] , df.mu1_grandmother_phi[i], 6.274)
+        thetau_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.k_mother_pt[i] , df.k_mother_eta[i],df.k_mother_phi[i] , 1.77686)
+        thejpsi_p4 = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.mu1_mother_pt[i] , df.mu1_mother_eta[i],df.mu1_mother_phi[i] , 3.0969)
+        thenutau_p4   = thebc_p4 - thetau_p4 - thejpsi_p4
+                        
+        thebc   = Particle(FourMomentum(thebc_p4.e()  , thebc_p4.px()  , thebc_p4.py()  , thebc_p4.pz()  ), 541)
+        thetau   = Particle(FourMomentum(thetau_p4.e()  , thetau_p4.px()  , thetau_p4.py()  , thetau_p4.pz()  ), -15          )
+        thejpsi = Particle(FourMomentum(thejpsi_p4.e(), thejpsi_p4.px(), thejpsi_p4.py(), thejpsi_p4.pz()), 443          )
+        thenutau   = Particle(FourMomentum(thenutau_p4.e()  , thenutau_p4.px()  , thenutau_p4.py()  , thenutau_p4.pz())  , 16           )
+        
+        Bc2JpsiLNu = Process()
+        
+        thebc_idx   = Bc2JpsiLNu.add_particle(thebc  )
+        thetau_idx   = Bc2JpsiLNu.add_particle(thetau  )
+        thejpsi_idx = Bc2JpsiLNu.add_particle(thejpsi)
+        thenutau_idx   = Bc2JpsiLNu.add_particle(thenutau  )
+        Bc2JpsiLNu.add_vertex(thebc_idx, [thejpsi_idx, thetau_idx, thenutau_idx])
         pid = ham.add_process(Bc2JpsiLNu)
         pids.append(pid)
         ham.process_event()
@@ -412,10 +468,10 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
         nFiles +=1
        
 
+        nf = NanoFrame(fname, )#branches = branches)
         for channel in channels:
             print("In channel "+channel)
             # Load the needed collections, NanoFrame is just an empty shell until we call the collections
-            nf = NanoFrame(fname, )#branches = branches)
             evt = nf['event']
             muons = nf['Muon']
             bcands = nf[channel]
@@ -1265,8 +1321,10 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                             if channel == 'BTo3Mu':
                                 df = rho_corr_iso(df)
                     df = decaytime(df)
-                    if((dataset == args.mc_mu or (dataset == args.mc_bc and name == 'is_jpsi_mu')) and flag_hammer and channel =='BTo3Mu'):
-                            df = hammer_weights(df)
+                    if((dataset == args.mc_mu or (dataset == args.mc_bc and name == 'is_jpsi_mu')) and flag_hammer_mu and channel =='BTo3Mu'):
+                            df = hammer_weights_mu(df)
+                    if((dataset == args.mc_tau or (dataset == args.mc_bc and name == 'is_jpsi_tau')) and flag_hammer_tau and channel =='BTo3Mu'):
+                            df = hammer_weights_tau(df)
 
 
                     if(channel=='BTo3Mu'):
