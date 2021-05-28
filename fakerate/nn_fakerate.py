@@ -43,6 +43,8 @@ mc_path = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15/HbToJP
 #mc_path = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15/HbToJPsiMuMu_tr_bc_newb.root'
 #output path
 nn_path = '/work/friti/rjpsi_tools/CMSSW_10_6_14/src/RJpsiTools/fakerate/nn/'
+data_path = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15/data_ptmax_merged.root'
+
 label = datetime.now().strftime('%d%b%Y_%Hh%Mm%Ss')
 final_nn_path = nn_path + label 
 
@@ -62,11 +64,8 @@ features = [
     #'dr12',
     #'dr23',
     #'dr13'
-
-
     'Bmass',
-    #    'Bpt_reco',
-    
+    #'Bpt_reco',
     ]
 
 def preprocessing(passing, failing):
@@ -87,11 +86,22 @@ def preprocessing(passing, failing):
     X = pd.DataFrame(main_df, columns=list(set(features)))
     Y = pd.DataFrame(main_df, columns=['target'])
     #norm
+    xx,qt = norm(X)
+    pickle.dump( qt, open( '/'.join([final_nn_path, 'input_tranformation_weighted.pck']), 'wb' ) )
+    return xx,Y,main_df
+
+def norm(X):
+    '''
+    Preprocessing of data 
+    '''
+    print("#########################################")
+    print("#######     StndScaler          #########")
+    print("#########################################")
+    #norm
     qt = RobustScaler()
     qt.fit(X[features])
     xx = qt.transform(X[features])
-    pickle.dump( qt, open( '/'.join([final_nn_path, 'input_tranformation_weighted.pck']), 'wb' ) )
-    return xx,Y,main_df
+    return xx,qt
 
 def efficiency(passing, tot):
     '''
@@ -163,17 +173,146 @@ def closure_test(passing_mc_ct,failing_mc_ct,eff):
             else:
                 hist_pass_w.Fill(item,weight/(1-weight))
 
+
+        c1.cd()
+        leg = ROOT.TLegend(0.24,.67,.95,.90)
+        leg.SetBorderSize(0)
+        leg.SetFillColor(0)
+        leg.SetFillStyle(0)
+        leg.SetTextFont(42)
+        leg.SetTextSize(0.035)
+
+        main_pad.cd()
+        main_pad.SetLogy(False)
+
+        hist_pass.GetXaxis().SetTitle(histos[var][5])
+        hist_pass.GetYaxis().SetTitle('events')
+        hist_pass.SetLineColor(ROOT.kMagenta)
+        hist_pass.SetFillColor(0)
+
+        hist_pass_w.GetXaxis().SetTitle(histos[var][5])
+        hist_pass_w.GetYaxis().SetTitle('events')
+        hist_pass_w.SetLineColor(ROOT.kOrange)
+        hist_pass_w.SetFillColor(0)
+
+        hist_fail.GetXaxis().SetTitle(histos[var][5])
+        hist_fail.GetYaxis().SetTitle('events')
+        hist_fail.SetLineColor(ROOT.kBlue)
+        hist_fail.SetFillColor(0)
+
+        maximum = max(hist_pass.GetMaximum(),hist_fail.GetMaximum(),hist_pass_w.GetMaximum()) 
+        hist_pass.SetMaximum(2.*maximum)
+
+        CMS_lumi(main_pad, 4, 0, cmsText = 'CMS', extraText = ' Preliminary', lumi_13TeV = '')
+
+        hist_pass.Draw('hist ')
+        hist_fail.Draw('hist same')
+        hist_pass_w.Draw('hist same')
+
+        leg = ROOT.TLegend(0.24,.67,.95,.90)
+        leg.SetBorderSize(0)
+        leg.SetFillColor(0)
+        leg.SetFillStyle(0)
+        leg.SetTextFont(42)
+        leg.SetTextSize(0.035)
+
+        leg.AddEntry(hist_pass, 'hb_pass','F')
+        leg.AddEntry(hist_fail, 'hb_fail','F')
+        leg.AddEntry(hist_pass_w, 'hb_fail_nn','F')
+
+        leg.Draw('same')
+
+        # Kilmogorov test
+        h_pass = hist_pass.Clone("h_pass")
+        h_fail = hist_fail.Clone("h_fail")
+        h_pass_w = hist_pass_w.Clone("h_pass_w")
+        h_pass.Scale(1./h_pass.Integral())
+        h_pass_w.Scale(1./h_pass_w.Integral())
+        h_fail.Scale(1./h_fail.Integral())
+        h_ratio_passpass = h_pass.Clone("h_ratio_passpass")
+        h_ratio_passpass.Divide(h_pass,h_pass)
+        h_ratio_failpass = h_fail.Clone("h_ratio_failpass")
+        h_ratio_failpass.Divide(h_fail,h_pass)
+        h_ratio_passwpass = h_pass_w.Clone("h_ratio_passwpass")
+        h_ratio_passwpass.Divide(h_pass_w,h_pass)
+
+        ks_fail = h_ratio_failpass.KolmogorovTest(h_ratio_passpass)
+        ks_fail_rw = h_ratio_passwpass.KolmogorovTest(h_ratio_passpass)
+        print("KS fail: ",ks_fail)
+        print("KS fail rw: ",ks_fail_rw)
+
+        KS_value = ROOT.TPaveText(0.66, 0.7, 0.92, 0.8, 'nbNDC')
+        KS_value.AddText('KS fail    = %.4f' %ks_fail)
+        KS_value.AddText('KS fail rw = %.4f' %ks_fail_rw)
+        KS_value.SetFillColor(0)
+        KS_value.Draw('EP')
+
+        #c1.Modified()
+        #c1.Update()
+        #c1.SaveAs(final_nn_path + '/closure_test/%s.pdf' %(var))
+        c1.SaveAs(final_nn_path + '/closure_test/%s.png' %( var))
+
+        maximum = max(h_pass.GetMaximum(),h_fail.GetMaximum(),h_pass_w.GetMaximum()) 
+        h_pass.SetMaximum(2.*maximum)
+        h_pass.Draw('hist ')
+        h_fail.Draw('hist same')
+        h_pass_w.Draw('hist same')
+        leg.Draw('same')
+        KS_value.Draw('EP')
+        c1.SaveAs(final_nn_path + '/closure_test/norm/%s.png' %( var))
+
+        
+        
+
+def data_mc_comparison(failing_data,passing_mc_ct,failing_mc_ct,eff):
+    '''
+    Histos for the closure test are created here.
+    3 histos made with MC HbToJpsiMuMU with preselection and cut on third muon applied
+    1. pass
+    2. fail
+    3. fail with NN weights taken from the efficiency computation -> should be equal in shape and yield to pass
+    '''
+    print("#########################################")
+    print("####        Closure Test             ####")
+    print("#########################################")
+    for var in histos:
+        print("Computing now variable "+ var)
+        
+        #histo for the data in the pass region (reweight of data in fail with weights from NN)
+        hist_pass = ROOT.TH1D("pass"+histos[var][0],"",histos[var][2],histos[var][3],histos[var][4])
+        for item,nn in zip(failing_data[histos[var][0]],failing_data['nn']):
+            binx = eff.GetXaxis().FindBin(nn)
+            weight = eff.GetBinContent(binx)
+            if weight == 1:
+                hist_pass.Fill(item)
+            else:
+                hist_pass.Fill(item,weight/(1-weight))
+
+        # histo for the data in the fail reigon
+        hist_fail = ROOT.TH1D("fail"+histos[var][0],"",histos[var][2],histos[var][3],histos[var][4])
+        for item in failing_data[histos[var][0]]:
+            hist_fail.Fill(item)
+
+        hist_pass_w = ROOT.TH1D("passw"+histos[var][0],"",histos[var][2],histos[var][3],histos[var][4])
+        for item,nn in zip(failing_mc_ct[histos[var][0]],failing_mc_ct['nn']):
+            binx = eff.GetXaxis().FindBin(nn)
+            weight = eff.GetBinContent(binx)
+            if weight == 1:
+                hist_pass_w.Fill(item)
+            else:
+                hist_pass_w.Fill(item,weight/(1-weight))
+
         hist_ratio_passpass = hist_pass.Clone("hist_ratio_passpass")
-        hist_ratio_passpass.Divide(hist_pass,hist_pass)
+        hist_ratio_passpass.Divide(hist_pass_w,hist_pass_w) #MC is the goal
         hist_ratio_failpass = hist_fail.Clone("hist_ratio_failpass")
-        hist_ratio_failpass.Divide(hist_fail,hist_pass)
+        hist_ratio_failpass.Divide(hist_fail,hist_pass_w)
         hist_ratio_passwpass = hist_pass_w.Clone("hist_ratio_passwpass")
-        hist_ratio_passwpass.Divide(hist_pass_w,hist_pass)
+        hist_ratio_passwpass.Divide(hist_pass,hist_pass_w)
 
         ks_fail = hist_ratio_failpass.KolmogorovTest(hist_ratio_passpass)
         ks_fail_rw = hist_ratio_passwpass.KolmogorovTest(hist_ratio_passpass)
-        print("KS fail: ",hist_ratio_failpass.KolmogorovTest(hist_ratio_passpass))
-        print("KS fail rw: ",hist_ratio_passwpass.KolmogorovTest(hist_ratio_passpass))
+        print("KS fail: ",ks_fail)
+        print("KS fail rw: ",ks_fail_rw)
 
         c1.cd()
         leg = ROOT.TLegend(0.24,.67,.95,.90)
@@ -220,9 +359,9 @@ def closure_test(passing_mc_ct,failing_mc_ct,eff):
         leg.SetTextFont(42)
         leg.SetTextSize(0.035)
 
-        leg.AddEntry(hist_pass, 'hb_pass','F')
-        leg.AddEntry(hist_fail, 'hb_fail','F')
-        leg.AddEntry(hist_pass_w, 'hb_fail_nn','F')
+        leg.AddEntry(hist_pass, 'data_rew','F')
+        leg.AddEntry(hist_fail, 'data_fail','F')
+        leg.AddEntry(hist_pass_w, 'mc_pass_rew','F')
 
         leg.Draw('same')
 
@@ -235,15 +374,17 @@ def closure_test(passing_mc_ct,failing_mc_ct,eff):
         c1.Modified()
         c1.Update()
         #c1.SaveAs(final_nn_path + '/closure_test/%s.pdf' %(var))
-        c1.SaveAs(final_nn_path + '/closure_test/%s.png' %( var))
+        c1.SaveAs(final_nn_path + '/data/%s.png' %( var))
+
 
 os.system('mkdir -p '+ final_nn_path + '/model/')
 os.system('mkdir -p '+ final_nn_path + '/eff/')
 os.system('mkdir -p '+ final_nn_path + '/closure_test/')
+os.system('mkdir -p '+ final_nn_path + '/closure_test/norm/')
+os.system('mkdir -p '+ final_nn_path + '/data/')
 
 #preselection and not-true muon request
 mc = read_root(mc_path, 'BTo3Mu', where=preselection + '& !(abs(k_genpdgId)==13)')
-
 mc = to_define(mc)
 
 passing_mc_tmp   = mc.query(pass_id).copy()
@@ -311,10 +452,10 @@ print(model.summary())
 
 # plot the models
 # https://keras.io/visualization/
-plot_model(model, show_shapes=True, show_layer_names=True, to_file='/'.join([final_nn_path, 'model.png']) )
+plot_model(model, show_shapes=True, show_layer_names=True, to_file='/'.join([final_nn_path, '/model/model.png']) )
 
 # save the exact list of features
-pickle.dump( features, open( '/'.join([final_nn_path, 'input_features.pck']), 'wb' ) )
+pickle.dump( features, open( '/'.join([final_nn_path, '/model/input_features.pck']), 'wb' ) )
 
 # early stopping
 # monitor = 'val_acc'
@@ -326,10 +467,8 @@ es = EarlyStopping(monitor=monitor, mode='auto', verbose=1, patience=50, restore
 reduce_lr = ReduceLROnPlateau(monitor=monitor, mode='auto', factor=0.2, patience=5, min_lr=0.00001, cooldown=10, verbose=True)
 
 # save the model every now and then
-filepath = '/'.join([final_nn_path, 'saved-model-{epoch:04d}_val_loss_{val_loss:.4f}_val_acc_{val_acc:.4f}.h5'])
-
-save_model = ModelCheckpoint(final_nn_path, monitor='val_acc', verbose=1, save_best_only=True, save_weights_only=False, mode='auto', period=1)
-
+filepath = '/'.join([final_nn_path, '/model/saved-model-{epoch:04d}_val_loss_{val_loss:.4f}_val_acc_{val_acc:.4f}.h5'])
+save_model = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, save_weights_only=False, mode='auto', period=1)
 
 # train only the classifier. beta is set at 0 and the discriminator is not trained
 callbacks = [reduce_lr, save_model]
@@ -348,7 +487,7 @@ plt.legend()
 center = min(history.history['val_loss'] + history.history['loss'])
 plt.ylim((center*0.98, center*1.5))
 plt.grid(True)
-plt.savefig('/'.join([final_nn_path, 'loss_function_history_weighted.pdf']))
+plt.savefig('/'.join([final_nn_path, '/model/loss_function_history_weighted.pdf']))
 plt.clf()
 
 # plot accuracy trends for train and validation sample
@@ -360,7 +499,7 @@ center = max(history.history['val_acc'] +  history.history['acc'])
 plt.ylim((center*0.85, center*1.02))
 # plt.yscale('log')
 plt.grid(True)
-plt.savefig('/'.join([final_nn_path, 'accuracy_history_weighted.pdf']) )
+plt.savefig('/'.join([final_nn_path, '/model/accuracy_history_weighted.pdf']) )
 plt.clf()
 
 # plot accuracy trends for train and validation sample
@@ -372,7 +511,7 @@ center = min(history.history['val_mae'] + history.history['mae'])
 plt.ylim((center*0.98, center*1.5))
 # plt.yscale('log')
 plt.grid(True)
-plt.savefig('/'.join([final_nn_path, 'mean_absolute_error_history_weighted.pdf']) )
+plt.savefig('/'.join([final_nn_path, '/model/mean_absolute_error_history_weighted.pdf']) )
 plt.clf()
 
 # calculate predictions on the main_df sample
@@ -397,10 +536,10 @@ plt.plot(fpr, tpr)
 xy = [i*j for i,j in product([10.**i for i in range(-8, 0)], [1,2,4,8])]+[1]
 plt.plot(xy, xy, color='grey', linestyle='--')
 plt.yscale('linear')
-plt.savefig('/'.join([final_nn_path, 'roc_weighted.pdf']) )
+plt.savefig('/'.join([final_nn_path, '/model/roc_weighted.pdf']) )
 
 # save model and weights
-model.save('/'.join([final_nn_path, 'net_model_weighted.h5']) )
+model.save('/'.join([final_nn_path, '/model/net_model_weighted.h5']) )
 # model.save_weights('net_model_weights.h5')
 
 # rename branches, if you want
@@ -426,3 +565,13 @@ main_pad.SetTicks(True)
 main_pad.SetBottomMargin(0.2)
 
 closure_test(main_df_ct[main_df_ct.target == 1], main_df_ct[main_df_ct.target == 0], eff)
+
+'''
+##### Apply to data ########
+data = read_root(data_path, 'BTo3Mu', where=preselection )
+data = to_define(data)
+data,qt = norm(data)  #preprocessing 
+data.loc[:,'nn'] = model.predict(data)
+#eff = efficiency(data.query(pass_id),data)
+data_mc_comparison(data)
+'''
