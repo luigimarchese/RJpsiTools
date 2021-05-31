@@ -43,7 +43,6 @@ mc_path = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15/HbToJP
 #mc_path = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15/HbToJPsiMuMu_tr_bc_newb.root'
 #output path
 nn_path = '/work/friti/rjpsi_tools/CMSSW_10_6_14/src/RJpsiTools/fakerate/nn/'
-data_path = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15/data_ptmax_merged.root'
 
 label = datetime.now().strftime('%d%b%Y_%Hh%Mm%Ss')
 final_nn_path = nn_path + label 
@@ -72,9 +71,7 @@ def preprocessing(passing, failing):
     '''
     Preprocessing of data before training/testing the NN
     '''
-    print("#########################################")
-    print("####        Preprocessing            ####")
-    print("#########################################")
+    print("Preprocessing")
 
     # concatenate the events and shuffle
     main_df = pd.concat([passing, failing], sort=False)
@@ -94,9 +91,7 @@ def norm(X):
     '''
     Preprocessing of data 
     '''
-    print("#########################################")
-    print("#######     StndScaler          #########")
-    print("#########################################")
+    print("StndScaler   ")
     #norm
     qt = RobustScaler()
     qt.fit(X[features])
@@ -264,124 +259,10 @@ def closure_test(passing_mc_ct,failing_mc_ct,eff):
         
         
 
-def data_mc_comparison(failing_data,passing_mc_ct,failing_mc_ct,eff):
-    '''
-    Histos for the closure test are created here.
-    3 histos made with MC HbToJpsiMuMU with preselection and cut on third muon applied
-    1. pass
-    2. fail
-    3. fail with NN weights taken from the efficiency computation -> should be equal in shape and yield to pass
-    '''
-    print("#########################################")
-    print("####        Closure Test             ####")
-    print("#########################################")
-    for var in histos:
-        print("Computing now variable "+ var)
-        
-        #histo for the data in the pass region (reweight of data in fail with weights from NN)
-        hist_pass = ROOT.TH1D("pass"+histos[var][0],"",histos[var][2],histos[var][3],histos[var][4])
-        for item,nn in zip(failing_data[histos[var][0]],failing_data['nn']):
-            binx = eff.GetXaxis().FindBin(nn)
-            weight = eff.GetBinContent(binx)
-            if weight == 1:
-                hist_pass.Fill(item)
-            else:
-                hist_pass.Fill(item,weight/(1-weight))
-
-        # histo for the data in the fail reigon
-        hist_fail = ROOT.TH1D("fail"+histos[var][0],"",histos[var][2],histos[var][3],histos[var][4])
-        for item in failing_data[histos[var][0]]:
-            hist_fail.Fill(item)
-
-        hist_pass_w = ROOT.TH1D("passw"+histos[var][0],"",histos[var][2],histos[var][3],histos[var][4])
-        for item,nn in zip(failing_mc_ct[histos[var][0]],failing_mc_ct['nn']):
-            binx = eff.GetXaxis().FindBin(nn)
-            weight = eff.GetBinContent(binx)
-            if weight == 1:
-                hist_pass_w.Fill(item)
-            else:
-                hist_pass_w.Fill(item,weight/(1-weight))
-
-        hist_ratio_passpass = hist_pass.Clone("hist_ratio_passpass")
-        hist_ratio_passpass.Divide(hist_pass_w,hist_pass_w) #MC is the goal
-        hist_ratio_failpass = hist_fail.Clone("hist_ratio_failpass")
-        hist_ratio_failpass.Divide(hist_fail,hist_pass_w)
-        hist_ratio_passwpass = hist_pass_w.Clone("hist_ratio_passwpass")
-        hist_ratio_passwpass.Divide(hist_pass,hist_pass_w)
-
-        ks_fail = hist_ratio_failpass.KolmogorovTest(hist_ratio_passpass)
-        ks_fail_rw = hist_ratio_passwpass.KolmogorovTest(hist_ratio_passpass)
-        print("KS fail: ",ks_fail)
-        print("KS fail rw: ",ks_fail_rw)
-
-        c1.cd()
-        leg = ROOT.TLegend(0.24,.67,.95,.90)
-        leg.SetBorderSize(0)
-        leg.SetFillColor(0)
-        leg.SetFillStyle(0)
-        leg.SetTextFont(42)
-        leg.SetTextSize(0.035)
-
-        main_pad.cd()
-        main_pad.SetLogy(False)
-
-        hist_pass.GetXaxis().SetTitle(histos[var][5])
-        hist_pass.GetYaxis().SetTitle('events')
-        hist_pass.SetLineColor(ROOT.kMagenta)
-        hist_pass.SetFillColor(0)
-
-        hist_pass_w.GetXaxis().SetTitle(histos[var][5])
-        hist_pass_w.GetYaxis().SetTitle('events')
-        hist_pass_w.SetLineColor(ROOT.kOrange)
-        hist_pass_w.SetFillColor(0)
-
-        hist_fail.GetXaxis().SetTitle(histos[var][5])
-        hist_fail.GetYaxis().SetTitle('events')
-        hist_fail.SetLineColor(ROOT.kBlue)
-        hist_fail.SetFillColor(0)
-
-        #hist_pass.Scale(1./hist_pass.Integral())
-        #hist_pass_w.Scale(1./hist_pass_w.Integral())
-        #hist_fail.Scale(1./hist_fail.Integral())
-        maximum = max(hist_pass.GetMaximum(),hist_fail.GetMaximum(),hist_pass_w.GetMaximum()) 
-        hist_pass.SetMaximum(2.*maximum)
-
-        CMS_lumi(main_pad, 4, 0, cmsText = 'CMS', extraText = ' Preliminary', lumi_13TeV = '')
-
-        hist_pass.Draw('hist ')
-        hist_fail.Draw('hist same')
-        hist_pass_w.Draw('hist same')
-
-        leg = ROOT.TLegend(0.24,.67,.95,.90)
-        leg.SetBorderSize(0)
-        leg.SetFillColor(0)
-        leg.SetFillStyle(0)
-        leg.SetTextFont(42)
-        leg.SetTextSize(0.035)
-
-        leg.AddEntry(hist_pass, 'data_rew','F')
-        leg.AddEntry(hist_fail, 'data_fail','F')
-        leg.AddEntry(hist_pass_w, 'mc_pass_rew','F')
-
-        leg.Draw('same')
-
-        KS_value = ROOT.TPaveText(0.66, 0.7, 0.92, 0.8, 'nbNDC')
-        KS_value.AddText('KS fail    = %.4f' %ks_fail)
-        KS_value.AddText('KS fail rw = %.4f' %ks_fail_rw)
-        KS_value.SetFillColor(0)
-        KS_value.Draw('EP')
-
-        c1.Modified()
-        c1.Update()
-        #c1.SaveAs(final_nn_path + '/closure_test/%s.pdf' %(var))
-        c1.SaveAs(final_nn_path + '/data/%s.png' %( var))
-
-
 os.system('mkdir -p '+ final_nn_path + '/model/')
 os.system('mkdir -p '+ final_nn_path + '/eff/')
 os.system('mkdir -p '+ final_nn_path + '/closure_test/')
 os.system('mkdir -p '+ final_nn_path + '/closure_test/norm/')
-os.system('mkdir -p '+ final_nn_path + '/data/')
 
 #preselection and not-true muon request
 mc = read_root(mc_path, 'BTo3Mu', where=preselection + '& !(abs(k_genpdgId)==13)')
@@ -405,6 +286,11 @@ passing_mc_ct = passing_mc_tmp.drop(passing_mc.index)
 failing_mc_ct = failing_mc_tmp.drop(failing_mc.index)
 
 xx, Y, main_df = preprocessing(passing_mc,failing_mc)
+
+
+print("##########################")
+print("########  Model  #########")
+print("##########################")
 
 # activation = 'tanh'
 #activation = 'selu'
@@ -474,22 +360,24 @@ save_model = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_o
 callbacks = [reduce_lr, save_model]
 x_train, x_val, y_train, y_val = train_test_split(xx, Y, test_size=0.2, shuffle= True)
 
-#history = model.fit(xx, Y, epochs=50, validation_split=0.05, callbacks=callbacks, batch_size=32, verbose=True)  
-history = model.fit(x_train, y_train, validation_data=(x_val, y_val),epochs=20, callbacks=callbacks, batch_size=32, verbose=True)  
+
+history = model.fit(x_train, y_train, validation_data=(x_val, y_val),epochs=2, callbacks=callbacks, batch_size=32, verbose=True)  
+
 
 # plot loss function trends for train and validation sample
-plt.clf()
-plt.title('loss')
-plt.plot(history.history['loss'], label='train')
-plt.plot(history.history['val_loss'], label='test')
-plt.legend()
+#plt.clf()
+#plt.title('loss')
+#plt.plot(history.history['loss'], label='train')
+#plt.plot(history.history['val_loss'], label='test')
+#plt.legend()
 # plt.yscale('log')
-center = min(history.history['val_loss'] + history.history['loss'])
-plt.ylim((center*0.98, center*1.5))
-plt.grid(True)
-plt.savefig('/'.join([final_nn_path, '/model/loss_function_history_weighted.pdf']))
-plt.clf()
+#center = min(history.history['val_loss'] + history.history['loss'])
+#plt.ylim((center*0.98, center*1.5))
+#plt.grid(True)
+#plt.savefig('/'.join([final_nn_path, '/model/loss_function_history_weighted.pdf']))
+#plt.clf()
 
+'''
 # plot accuracy trends for train and validation sample
 plt.title('accuracy')
 plt.plot(history.history['acc'], label='train')
@@ -514,6 +402,9 @@ plt.grid(True)
 plt.savefig('/'.join([final_nn_path, '/model/mean_absolute_error_history_weighted.pdf']) )
 plt.clf()
 
+'''
+
+
 # calculate predictions on the main_df sample
 print('predicting on', main_df.shape[0], 'events')
 x = pd.DataFrame(main_df, columns=features)
@@ -523,6 +414,7 @@ qt = pickle.load(open('/'.join([final_nn_path, 'input_tranformation_weighted.pck
 x_train = qt.transform(x[features])
 y_pred = model.predict(x_train)
 
+
 # impose norm conservation if you want probabilities
 # compute the overall rescaling factor scale
 scale = 1.
@@ -531,13 +423,13 @@ scale = 1.
 main_df.insert(len(main_df.columns), 'fr', scale * y_pred)
 
 # let sklearn do the heavy lifting and compute the ROC curves for you
-fpr, tpr, wps = roc_curve(main_df.target, main_df.fr) 
+'''fpr, tpr, wps = roc_curve(main_df.target, main_df.fr) 
 plt.plot(fpr, tpr)
 xy = [i*j for i,j in product([10.**i for i in range(-8, 0)], [1,2,4,8])]+[1]
 plt.plot(xy, xy, color='grey', linestyle='--')
 plt.yscale('linear')
 plt.savefig('/'.join([final_nn_path, '/model/roc_weighted.pdf']) )
-
+'''
 # save model and weights
 model.save('/'.join([final_nn_path, '/model/net_model_weighted.h5']) )
 # model.save_weights('net_model_weights.h5')
@@ -551,6 +443,10 @@ model.save('/'.join([final_nn_path, '/model/net_model_weighted.h5']) )
 # save ntuple
 main_df.to_root('/'.join([final_nn_path, 'output_ntuple_weighted.root']), key='tree', store_index=False)
 
+
+print("################################")
+print("########   Closure Test  #######")
+print("################################")
 ###### Closure test #######
 x_test, y_test, main_df_ct = preprocessing(passing_mc_ct,failing_mc_ct)
 main_df_ct.loc[:,'nn'] = model.predict(x_test)
@@ -566,12 +462,3 @@ main_pad.SetBottomMargin(0.2)
 
 closure_test(main_df_ct[main_df_ct.target == 1], main_df_ct[main_df_ct.target == 0], eff)
 
-'''
-##### Apply to data ########
-data = read_root(data_path, 'BTo3Mu', where=preselection )
-data = to_define(data)
-data,qt = norm(data)  #preprocessing 
-data.loc[:,'nn'] = model.predict(data)
-#eff = efficiency(data.query(pass_id),data)
-data_mc_comparison(data)
-'''
