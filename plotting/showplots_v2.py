@@ -8,7 +8,7 @@ import random
 import time
 from array import array
 import pickle
-
+import math 
 from histos import histos
 from cmsstyle import CMS_lumi
 from new_branches import to_define
@@ -99,7 +99,7 @@ def create_datacard_prep(hists,shape_hists,shapes_names,flag,name,label):
     Calls the 'create datacard' function, both for the pass and fail regions, 
     to write the text datacard for the fit in combine. 
     '''
-    fout = ROOT.TFile.Open('plots_ul/%s/datacards/datacard_%s_%s.root' %(label,flag, name), 'recreate')
+    fout = ROOT.TFile.Open('plots_ul/%s/datacards/datacard_%s_%s.root' %(label,flag, name), 'UPDATE')
     fout.cd()
     myhists = dict()
     for k, v in hists.items():
@@ -127,7 +127,19 @@ def create_datacard_prep(hists,shape_hists,shapes_names,flag,name,label):
         create_datacard_fail(myhists,name, label)
     fout.Close()
 
-                
+def make_binbybin(hist, flag, label, name):
+    histo_up = ROOT.TH1D('jpsi_x_mu_binbybinUp','jpsi_x_mu_binbybinUp',hist.GetValue().GetNbinsX(),hist.GetValue().GetBinLowEdge(1), hist.GetValue().GetBinLowEdge(hist.GetValue().GetNbinsX() + 1))
+    histo_down = ROOT.TH1D('jpsi_x_mu_binbybinDown','jpsi_x_mu_binbybinDown',hist.GetValue().GetNbinsX(),hist.GetValue().GetBinLowEdge(1), hist.GetValue().GetBinLowEdge(hist.GetValue().GetNbinsX() + 1))
+    for nbin in range(1,hist.GetValue().GetNbinsX()+1):
+        histo_up.SetBinContent(nbin,hist.GetValue().GetBinContent(nbin) + math.sqrt(hist.GetValue().GetBinContent(nbin)))
+        histo_down.SetBinContent(nbin,hist.GetValue().GetBinContent(nbin) - math.sqrt(hist.GetValue().GetBinContent(nbin)))
+    fout = ROOT.TFile.Open('plots_ul/%s/datacards/datacard_%s_%s.root' %(label,flag, name), 'UPDATE')
+    fout.cd()
+    histo_up.Write()
+    histo_down.Write()
+    fout.Close()
+        
+
 # Canvas and Pad gymnastics
 c1 = ROOT.TCanvas('c1', '', 700, 700)
 c1.Draw()
@@ -266,7 +278,7 @@ if __name__ == '__main__':
                     shapes[sname +'_puWeightDown'] = shapes[sname + '_puWeightDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightDown*hammer_bglvar*%f*%f' %(blind,rjpsi))
                 else:
                     shapes[sname + '_puWeightDown'] = shapes[sname + '_puWeightDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightDown')
-        
+
         # form factor shape nuisances for jpsi mu and jpsi tau datasets
         hammer_branches = ['hammer_bglvar_e0up',
                            'hammer_bglvar_e0down',
@@ -350,6 +362,13 @@ if __name__ == '__main__':
 
     print('====> now looping')
     for k, v in histos.items():
+        # add bin by bin unc plots for jpsi+mu
+        # req jpsi+x+mu
+        # loop on the bins and multiply each of them for sqrtN
+        # save in the same root file as the other shape nuisances
+        make_binbybin(temp_hists[k]['%s_jpsi_x_mu'%k],'pass', label, k)
+        make_binbybin(temp_hists_fake[k]['%s_jpsi_x_mu'%k],'fail', label, k)
+        
         c1.cd()
         leg = create_legend(temp_hists, sample_names, titles)
         main_pad.cd()

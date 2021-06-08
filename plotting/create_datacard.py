@@ -19,6 +19,7 @@ def create_datacard_pass(histos,name,label):
 
     f.write("ctau               shape      1           1          1            1           1           1           1          1          1           -             -\n")
     f.write("puWeight            shape      1           1          1            1           1           1           1          1          1           1             -\n")
+    f.write("binbybin            shape      -           -          -            -           -           -           -          -          -           1          -\n")
     f.write("bglvar_e0  shape      1           1          -            -           -           -           -          -          -           -          -\n")
     f.write("bglvar_e1  shape      1           1          -            -           -           -           -          -          -           -          -\n")
     f.write("bglvar_e2  shape      1           1          -            -           -           -           -          -          -           -          -\n")
@@ -96,6 +97,7 @@ def create_datacard_fail(histos,name,label):
 
     f.write("ctau               shape      1           1          1            1           1           1           1          1          1           -             -\n")
     f.write("puWeight             shape      1           1          1            1           1           1           1          1          1           1             -\n")
+    f.write("binbybin            shape      -           -          -            -           -           -           -          -          -           1          -\n")
     f.write("bglvar_e0  shape      1           1          -            -           -           -           -          -          -           -          -\n")
     f.write("bglvar_e1  shape      1           1          -            -           -           -           -          -          -           -          -\n")
     f.write("bglvar_e2  shape      1           1          -            -           -           -           -          -          -           -          -\n")
@@ -153,7 +155,7 @@ def create_datacard_fail(histos,name,label):
     f.write("#ch2 autoMCStats 1\n") 
     f.write("-----------------------------------------------\n") 
     for i in range(1,histos['data'].GetNbinsX()+1):
-        f.write("misid_CR_bin"+str(i)+"  flatParam \n")
+        f.write("fakes_cr_bin"+str(i)+"  flatParam \n")
     '''
     f.write("misid_CR_bin2  flatParam \n")
     f.write("misid_CR_bin3  flatParam \n")
