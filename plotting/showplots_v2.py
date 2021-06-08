@@ -12,7 +12,7 @@ import math
 from histos import histos
 from cmsstyle import CMS_lumi
 from new_branches import to_define
-from samples import weights, sample_names, titles
+from samples import weights, sample_names, titles, colours
 from selections import preselection, preselection_mc, pass_id, fail_id
 from officialStyle import officialStyle
 from create_datacard import create_datacard_pass,create_datacard_fail
@@ -320,7 +320,7 @@ if __name__ == '__main__':
             for name in shapes:
                 shapes[name] = shapes[name].Define('shape_weight_wfr','shape_weight*nn/(1-nn)')
 
-    colours = list(map(ROOT.TColor.GetColor, all_palettes['Spectral'][len(samples)]))
+    #colours = list(map(ROOT.TColor.GetColor, all_palettes['Spectral'][len(samples)]))
 
     # CREATE THE SMART POINTERS IN ONE GO AND PRODUCE RESULTS IN ONE SHOT,
     # SEE MAX GALLI PRESENTATION
@@ -379,10 +379,12 @@ if __name__ == '__main__':
         for i, kv in enumerate(temp_hists[k].items()):
             key = kv[0]
             ihist = kv[1]
+            sample_name = key.split(k+'_')[1]
             ihist.GetXaxis().SetTitle(v[1])
             ihist.GetYaxis().SetTitle('events')
-            ihist.SetLineColor(colours[i] if key!='%s_data'%k else ROOT.kBlack)
-            ihist.SetFillColor(colours[i] if key!='%s_data'%k else ROOT.kWhite)
+            
+            ihist.SetLineColor(colours[sample_name])
+            ihist.SetFillColor(colours[sample_name] if key!='%s_data'%k else ROOT.kWhite)
             if key!='%s_data'%k:
                 maxima.append(ihist.GetMaximum())
             else:
@@ -419,9 +421,9 @@ if __name__ == '__main__':
                 continue
             else:
                 fakes.Add(kv[1].GetPtr(), -1.)
-        fakes.SetFillColor(colours[len(samples)-1])
+        fakes.SetFillColor(colours['fakes'])
         fakes.SetFillStyle(1001)
-        fakes.SetLineColor(colours[len(samples)-1])
+        fakes.SetLineColor(colours['fakes'])
         fakes_forfail = fakes.Clone()
         if flat_fakerate:
             fakes.Scale(weights['fakes'])

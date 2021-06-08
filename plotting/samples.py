@@ -33,7 +33,7 @@ weights['chic2_mu' ] = bc_weight
 weights['hc_mu'    ] = bc_weight
 weights['psi2s_tau'] = bc_weight
 weights['jpsi_hc'  ] = bc_weight
-weights['fakes'    ] = 2.7 # 2.5 # 2.7
+weights['fakes'    ] = fr/(1-fr) #2.7 # 2.5 # 2.7
 weights['data'     ] = 1.
 weights['jpsi_x_mu'] = 1. * hbmu_norm # 10. # 8.5
 weights['jpsi_pi'  ] = 1.
@@ -55,3 +55,22 @@ titles['jpsi_hc'  ] = 'B_{c}#rightarrowJ/#PsiH_{c}'
 titles['data'     ] = 'observed'
 titles['fakes'   ] = 'J/#Psi + X'
 titles['jpsi_x_mu'] = 'J/#Psi + #mu'
+
+#colors
+import ROOT
+from bokeh.palettes import viridis, all_palettes
+col = list(map(ROOT.TColor.GetColor, all_palettes['Spectral'][11]))
+colours = dict()
+colours['jpsi_tau' ] = col[0]
+colours['jpsi_mu'  ] = col[1]
+colours['chic0_mu' ] = col[2]
+colours['chic1_mu' ] = col[3]
+colours['chic2_mu' ] = col[4]
+colours['jpsi_hc'  ] = col[5]
+colours['hc_mu'    ] = col[6]
+colours['psi2s_mu' ] = col[7]
+colours['psi2s_tau'] = col[8]
+colours['jpsi_x_mu'] = col[9]
+colours['fakes'   ] = col[10]
+colours['data'     ] = ROOT.kBlack
+
