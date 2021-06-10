@@ -22,7 +22,7 @@ from keras.models import load_model
 
 shape_nuisances = True
 flat_fakerate = False
-blind_analysis = False
+blind_analysis = True
 rjpsi = 1
 
 start_time = time.time()
@@ -128,15 +128,22 @@ def create_datacard_prep(hists,shape_hists,shapes_names,flag,name,label):
     fout.Close()
 
 def make_binbybin(hist, flag, label, name):
-    histo_up = ROOT.TH1D('jpsi_x_mu_binbybinUp','jpsi_x_mu_binbybinUp',hist.GetValue().GetNbinsX(),hist.GetValue().GetBinLowEdge(1), hist.GetValue().GetBinLowEdge(hist.GetValue().GetNbinsX() + 1))
-    histo_down = ROOT.TH1D('jpsi_x_mu_binbybinDown','jpsi_x_mu_binbybinDown',hist.GetValue().GetNbinsX(),hist.GetValue().GetBinLowEdge(1), hist.GetValue().GetBinLowEdge(hist.GetValue().GetNbinsX() + 1))
-    for nbin in range(1,hist.GetValue().GetNbinsX()+1):
-        histo_up.SetBinContent(nbin,hist.GetValue().GetBinContent(nbin) + math.sqrt(hist.GetValue().GetBinContent(nbin)))
-        histo_down.SetBinContent(nbin,hist.GetValue().GetBinContent(nbin) - math.sqrt(hist.GetValue().GetBinContent(nbin)))
     fout = ROOT.TFile.Open('plots_ul/%s/datacards/datacard_%s_%s.root' %(label,flag, name), 'UPDATE')
-    fout.cd()
-    histo_up.Write()
-    histo_down.Write()
+    for i in range(1,hist.GetValue().GetNbinsX()+1):
+        #histo_up = ROOT.TH1D('jpsi_x_mu_bbb'+str(i)+flag+'Up','jpsi_x_mu_bbb'+str(i)+flag+'Up',hist.GetValue().GetNbinsX(),hist.GetValue().GetBinLowEdge(1), hist.GetValue().GetBinLowEdge(hist.GetValue().GetNbinsX() + 1))
+        #histo_down = ROOT.TH1D('jpsi_x_mu_bbb'+str(i)+flag+'Down','jpsi_x_mu_bbb'+str(i)+flag+'Down',hist.GetValue().GetNbinsX(),hist.GetValue().GetBinLowEdge(1), hist.GetValue().GetBinLowEdge(hist.GetValue().GetNbinsX() + 1))
+        histo_up = ROOT.TH1D('jpsi_x_mu_bbb'+str(i)+flag+'Up','',hist.GetValue().GetNbinsX(),hist.GetValue().GetBinLowEdge(1), hist.GetValue().GetBinLowEdge(hist.GetValue().GetNbinsX() + 1))
+        histo_down = ROOT.TH1D('jpsi_x_mu_bbb'+str(i)+flag+'Down','',hist.GetValue().GetNbinsX(),hist.GetValue().GetBinLowEdge(1), hist.GetValue().GetBinLowEdge(hist.GetValue().GetNbinsX() + 1))
+        for nbin in range(1,hist.GetValue().GetNbinsX()+1):
+            if nbin == i:
+                histo_up.SetBinContent(nbin,hist.GetValue().GetBinContent(nbin) + hist.GetValue().GetBinError(nbin))
+                histo_down.SetBinContent(nbin,hist.GetValue().GetBinContent(nbin) - hist.GetValue().GetBinError(nbin))
+            else:
+                histo_up.SetBinContent(nbin,hist.GetValue().GetBinContent(nbin))
+                histo_down.SetBinContent(nbin,hist.GetValue().GetBinContent(nbin))
+        fout.cd()
+        histo_up.Write()
+        histo_down.Write()
     fout.Close()
         
 

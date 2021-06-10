@@ -34,7 +34,6 @@ def plot_shape_nuisances(histos_folder, variable, pf = 'pass', fakes = True, pat
     datacard_path = path+histos_folder+'/datacards/datacard_'+pf+'_'+variable+'.root'
     if verbose : print("Opening datacard: "+datacard_path+"")
     fin = ROOT.TFile.Open(datacard_path,'r')
-
     hammer_syst = ['bglvar_e0',
                    'bglvar_e1',
                    'bglvar_e2',
@@ -51,6 +50,12 @@ def plot_shape_nuisances(histos_folder, variable, pf = 'pass', fakes = True, pat
     ctau_syst = ['ctau',]
     pu_syst = ['puWeight']
 
+    his_tmp = fin.Get('jpsi_x_mu')
+    nbins = his_tmp.GetNbinsX()
+    if pf == 'pass':
+        bbb_syst = ['bbb'+str(i)+'pass' for i in range(1,nbins+1)]
+    if pf == 'fail':
+        bbb_syst = ['bbb'+str(i)+'fail' for i in range(1,nbins+1)]
     # Plot 
     c2 = ROOT.TCanvas('c2', '', 700, 700)
     c2.Draw()
@@ -77,7 +82,7 @@ def plot_shape_nuisances(histos_folder, variable, pf = 'pass', fakes = True, pat
                 histo_central.SetBinContent(i,his_central.GetBinContent(i))
                 histo_central.SetBinError(i,his_central.GetBinError(i))
         
-            for syst in hammer_syst + ctau_syst + pu_syst:
+            for syst in hammer_syst + ctau_syst + pu_syst + bbb_syst:
                 if verbose: print("Plotting variable "+syst+"for dataset "+sname)
                 maxx = []
 
@@ -89,6 +94,9 @@ def plot_shape_nuisances(histos_folder, variable, pf = 'pass', fakes = True, pat
                 # Only Bc datasets have the ctau systematics
                 if syst in ctau_syst:
                     if sname == 'jpsi_x' or sname == 'jpsi_x_mu':
+                        continue
+                if syst in bbb_syst:
+                    if sname != 'jpsi_x_mu':
                         continue
                 his_up = fin.Get(sname+'_'+syst+'Up')
                 histo_up = ROOT.TH1F(sname+'_'+syst+'Up',sname+'_'+syst+'Up', nbins, xmin, xmax)
@@ -107,13 +115,13 @@ def plot_shape_nuisances(histos_folder, variable, pf = 'pass', fakes = True, pat
                 
                 histo_central.SetTitle(sname+' '+syst+';'+histos[variable][1]+';events')
                 histo_central.SetLineColor(ROOT.kBlack)
-                histo_central.SetMarkerStyle(7)
+                histo_central.SetMarkerStyle(8)
                 histo_central.SetMarkerColor(ROOT.kBlack)
                 histo_up.SetLineColor(ROOT.kRed)
-                histo_up.SetMarkerStyle(7)
+                histo_up.SetMarkerStyle(8)
                 histo_up.SetMarkerColor(ROOT.kRed)
                 histo_down.SetLineColor(ROOT.kGreen)
-                histo_down.SetMarkerStyle(7)
+                histo_down.SetMarkerStyle(8)
                 histo_down.SetMarkerColor(ROOT.kGreen)
                 histo_central.SetMaximum(1.5*max(maxx))
                 histo_central.Draw("ep")

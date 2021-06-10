@@ -19,7 +19,6 @@ def create_datacard_pass(histos,name,label):
 
     f.write("ctau               shape      1           1          1            1           1           1           1          1          1           -             -\n")
     f.write("puWeight            shape      1           1          1            1           1           1           1          1          1           1             -\n")
-    f.write("binbybin            shape      -           -          -            -           -           -           -          -          -           1          -\n")
     f.write("bglvar_e0  shape      1           1          -            -           -           -           -          -          -           -          -\n")
     f.write("bglvar_e1  shape      1           1          -            -           -           -           -          -          -           -          -\n")
     f.write("bglvar_e2  shape      1           1          -            -           -           -           -          -          -           -          -\n")
@@ -44,7 +43,6 @@ def create_datacard_pass(histos,name,label):
     #f.write("jpsi_tau_bglvar_e9  shape      -           1          -            -           -           -           -          -          -           -          -\n")
     #f.write("jpsi_tau_bglvar_e10 shape      -           1          -            -           -           -           -          -          -           -          -\n")
     f.write("#bc               lnN            1.3         1.3        1.3          1.3         1.3         1.3        1.3         1.3        1.3         -          -\n")
-    f.write("br_tau_over_mu   lnN            -           1.15       -            -            -          -          -           -          -           -          -\n")
     f.write("br_chic0_over_mu lnN            -           -           1.15         -            -         -          -           -          -           -           -\n")
     f.write("br_chic1_over_mu lnN             -          -            -           1.15         -         -          -           -          -           -           -\n")
     f.write("br_chic2_over_mu lnN             -          -            -           -           1.15        -         -           -           -           -           -\n")
@@ -54,8 +52,10 @@ def create_datacard_pass(histos,name,label):
     f.write("br_psi2s_over_tau lnN            -           -           -           -           -           -         -           -           1.15        -           - \n")
     f.write("jpsi_plus_x       lnN            -           -           -           -           -           -           -           -           -         1.3         -\n")
     f.write("fake_rate         lnN            -           -           -           -           -           -           -           -           -          -           1.5\n")
-    f.write("muon_id           lnN        1.5       1.05        1.05        1.05        1.05        1.05        1.05        1.05         1.05       1.05             -\n")
+    f.write("muon_id           lnN        1.05       1.05        1.05        1.05        1.05        1.05        1.05        1.05         1.05       1.05             -\n")
     f.write("trigger           lnN           1.05        1.05        1.05        1.05        1.05        1.05        1.05        1.05         1.05       1.05        -\n")
+    for i in range(1,histos['jpsi_x_mu'].GetNbinsX()+1):
+        f.write("bbb"+str(i)+"pass            shape      -           -          -            -           -           -           -          -          -           1          -\n")
 
     f.write("----------------------------------------------------------------------------\n") 
     f.write("bc rateParam ch1 jpsi_mu 1\n") 
@@ -97,7 +97,6 @@ def create_datacard_fail(histos,name,label):
 
     f.write("ctau               shape      1           1          1            1           1           1           1          1          1           -             -\n")
     f.write("puWeight             shape      1           1          1            1           1           1           1          1          1           1             -\n")
-    f.write("binbybin            shape      -           -          -            -           -           -           -          -          -           1          -\n")
     f.write("bglvar_e0  shape      1           1          -            -           -           -           -          -          -           -          -\n")
     f.write("bglvar_e1  shape      1           1          -            -           -           -           -          -          -           -          -\n")
     f.write("bglvar_e2  shape      1           1          -            -           -           -           -          -          -           -          -\n")
@@ -122,7 +121,6 @@ def create_datacard_fail(histos,name,label):
     #f.write("jpsi_tau_bglvar_e9  shape      -           1          -            -           -           -           -          -          -           -          -\n")
     #f.write("jpsi_tau_bglvar_e10 shape      -           1          -            -           -           -           -          -          -           -          -\n")
     f.write("#bc               lnN            1.3         1.3        1.3          1.3         1.3         1.3        1.3         1.3        1.3         -          -\n")
-    f.write("br_tau_over_mu   lnN            -           1.15       -            -            -          -          -           -          -           -          -\n")
     f.write("br_chic0_over_mu lnN            -           -           1.15         -            -         -          -           -          -           -           -\n")
     f.write("br_chic1_over_mu lnN             -          -            -           1.15         -         -          -           -          -           -           -\n")
     f.write("br_chic2_over_mu lnN             -          -            -           -           1.15        -         -           -           -           -           -\n")
@@ -133,6 +131,9 @@ def create_datacard_fail(histos,name,label):
     f.write("jpsi_plus_x       lnN            -           -           -           -           -           -           -           -           -         1.3         -\n")
     f.write("muon_id lnN                 0.95        0.95        0.95        0.95        0.95        0.95        0.95        0.95        0.95      0.95         -\n")
     f.write("trigger lnN                 1.05        1.05        1.05        1.05        1.05        1.05        1.05        1.05        1.05         1.05      -\n")
+    #for i in range(1,histos['jpsi_x_mu'].GetNbinsX()+1):
+    #    f.write("bbb"+str(i)+"fail            shape      -           -          -            -           -           -           -          -          -           1          -\n")
+    f.write("fake_rate         lnN            -           -           -           -           -           -           -           -           -          -           1.5\n")
 
     f.write("----------------------------------------------------------------------------\n") 
     f.write("----------------------------------------------------------------------------\n") 
