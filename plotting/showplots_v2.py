@@ -16,12 +16,13 @@ from samples import weights, sample_names, titles, colours
 from selections import preselection, preselection_mc, pass_id, fail_id
 from officialStyle import officialStyle
 from create_datacard import create_datacard_pass,create_datacard_fail
+#from tmp import create_datacard_pass,create_datacard_fail
 from plot_shape_nuisances import plot_shape_nuisances
 
 from keras.models import load_model
 
 shape_nuisances = True
-flat_fakerate = False
+flat_fakerate = False # false mean that we use the NN weights for the fr
 blind_analysis = True
 rjpsi = 1
 
@@ -137,10 +138,14 @@ def make_binbybin(hist, flag, label, name):
         for nbin in range(1,hist.GetValue().GetNbinsX()+1):
             if nbin == i:
                 histo_up.SetBinContent(nbin,hist.GetValue().GetBinContent(nbin) + hist.GetValue().GetBinError(nbin))
+                histo_up.SetBinError(nbin,hist.GetValue().GetBinError(nbin) + math.sqrt(hist.GetValue().GetBinError(nbin)))
                 histo_down.SetBinContent(nbin,hist.GetValue().GetBinContent(nbin) - hist.GetValue().GetBinError(nbin))
+                histo_down.SetBinError(nbin,hist.GetValue().GetBinError(nbin) - math.sqrt(hist.GetValue().GetBinError(nbin)))
             else:
                 histo_up.SetBinContent(nbin,hist.GetValue().GetBinContent(nbin))
+                histo_up.SetBinError(nbin,hist.GetValue().GetBinError(nbin))
                 histo_down.SetBinContent(nbin,hist.GetValue().GetBinContent(nbin))
+                histo_down.SetBinError(nbin,hist.GetValue().GetBinError(nbin))
         fout.cd()
         histo_up.Write()
         histo_down.Write()
@@ -376,6 +381,41 @@ if __name__ == '__main__':
         make_binbybin(temp_hists[k]['%s_jpsi_x_mu'%k],'pass', label, k)
         make_binbybin(temp_hists_fake[k]['%s_jpsi_x_mu'%k],'fail', label, k)
         
+        #check that bins are not zero (if they are, correct)
+        for i, kv in enumerate(temp_hists[k].items()):
+            key = kv[0]
+            ihist = kv[1]
+            sample_name = key.split(k+'_')[1]
+            for i in range(1,ihist.GetNbinsX()+1):
+                if ihist.GetBinContent(i) <= 0:
+                    ihist.SetBinContent(i,0.0001)
+
+        for i, kv in enumerate(temp_hists_fake[k].items()):
+            key = kv[0]
+            ihist = kv[1]
+            sample_name = key.split(k+'_')[1]
+            for i in range(1,ihist.GetNbinsX()+1):
+                if ihist.GetBinContent(i) <= 0:
+                    ihist.SetBinContent(i,0.0001)
+
+        if shape_nuisances and k in datacards:
+            
+            for i, kv in enumerate(unc_hists[k].items()):
+                key = kv[0]
+                ihist = kv[1]
+                sample_name = key.split(k+'_')[1]
+                for i in range(1,ihist.GetNbinsX()+1):
+                    if ihist.GetBinContent(i) <= 0:
+                        ihist.SetBinContent(i,0.0001)
+
+            for i, kv in enumerate(unc_hists_fake[k].items()):
+                key = kv[0]
+                ihist = kv[1]
+                sample_name = key.split(k+'_')[1]
+                for i in range(1,ihist.GetNbinsX()+1):
+                    if ihist.GetBinContent(i) <= 0:
+                        ihist.SetBinContent(i,0.0001)
+
         c1.cd()
         leg = create_legend(temp_hists, sample_names, titles)
         main_pad.cd()
@@ -428,6 +468,11 @@ if __name__ == '__main__':
                 continue
             else:
                 fakes.Add(kv[1].GetPtr(), -1.)
+        #check fakes do not have <= 0 bins
+        for b in range(1,fakes.GetNbinsX()+1):
+            if fakes.GetBinContent(b)<=0.:
+                fakes.SetBinContent(b,0.0001)
+
         fakes.SetFillColor(colours['fakes'])
         fakes.SetFillStyle(1001)
         fakes.SetLineColor(colours['fakes'])

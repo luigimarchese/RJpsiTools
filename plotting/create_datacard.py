@@ -14,11 +14,13 @@ def create_datacard_pass(histos,name,label):
     f.write("bin                   ch1      ch1      ch1      ch1      ch1      ch1      ch1      ch1      ch1      ch1      ch1 \n") 
     f.write("process           jpsi_mu     jpsi_tau    chic0_mu    chic1_mu    chic2_mu    hc_mu       jpsi_hc     psi2s_mu    psi2s_tau   jpsi_x_mu   fakes\n") 
     f.write("process               1          0           2            3           4           5           6           7          8           9           10 \n") 
-    f.write("rate      %.2f        %.2f        %.2f        %.2f         %.2f        %.2f        %.2f        %.2f       %.2f        %.2f        %.2f\n"%(histos['jpsi_mu'].Integral(),histos['jpsi_tau'].Integral(),histos['chic0_mu'].Integral(),histos['chic1_mu' ].Integral(),histos['chic2_mu'].Integral(),histos['hc_mu'].Integral(),histos['jpsi_hc'].Integral(),histos['psi2s_mu'].Integral(),histos['psi2s_tau'].Integral(),histos['jpsi_x_mu'].Integral(),histos['fakes'].Integral()))
+    #f.write("rate      %.2f        %.2f        %.2f        %.2f         %.2f        %.2f        %.2f        %.2f       %.2f        %.2f        %.2f\n"%(histos['jpsi_mu'].Integral(),histos['jpsi_tau'].Integral(),histos['chic0_mu'].Integral(),histos['chic1_mu' ].Integral(),histos['chic2_mu'].Integral(),histos['hc_mu'].Integral(),histos['jpsi_hc'].Integral(),histos['psi2s_mu'].Integral(),histos['psi2s_tau'].Integral(),histos['jpsi_x_mu'].Integral(),histos['fakes'].Integral()))
+    f.write("rate      %.2f        %.2f        %.2f        %.2f         %.2f        %.2f        %.2f        %.2f       %.2f        %.2f        1\n"%(histos['jpsi_mu'].Integral(),histos['jpsi_tau'].Integral(),histos['chic0_mu'].Integral(),histos['chic1_mu' ].Integral(),histos['chic2_mu'].Integral(),histos['hc_mu'].Integral(),histos['jpsi_hc'].Integral(),histos['psi2s_mu'].Integral(),histos['psi2s_tau'].Integral(),histos['jpsi_x_mu'].Integral()))
     f.write("-------------------------------------------------------------------- --------------------\n")
 
     f.write("ctau               shape      1           1          1            1           1           1           1          1          1           -             -\n")
     f.write("puWeight            shape      1           1          1            1           1           1           1          1          1           1             -\n")
+    f.write("bbbfakes  shape      -           -          -            -           -           -           -          -          -           -          1 \n")
     f.write("bglvar_e0  shape      1           1          -            -           -           -           -          -          -           -          -\n")
     f.write("bglvar_e1  shape      1           1          -            -           -           -           -          -          -           -          -\n")
     f.write("bglvar_e2  shape      1           1          -            -           -           -           -          -          -           -          -\n")
@@ -92,7 +94,8 @@ def create_datacard_fail(histos,name,label):
     f.write("bin                   ch2      ch2      ch2      ch2      ch2      ch2      ch2      ch2      ch2      ch2      ch2 \n") 
     f.write("process           jpsi_mu     jpsi_tau    chic0_mu    chic1_mu    chic2_mu    hc_mu       jpsi_hc     psi2s_mu    psi2s_tau   jpsi_x_mu   fakes\n") 
     f.write("process               1          0           2            3           4           5           6           7          8           9           10 \n") 
-    f.write("rate      %.2f        %.2f        %.2f        %.2f         %.2f        %.2f        %.2f        %.2f       %.2f        %.2f        %.2f\n"%(histos['jpsi_mu'].Integral(),histos['jpsi_tau'].Integral(),histos['chic0_mu'].Integral(),histos['chic1_mu' ].Integral(),histos['chic2_mu'].Integral(),histos['hc_mu'].Integral(),histos['jpsi_hc'].Integral(),histos['psi2s_mu'].Integral(),histos['psi2s_tau'].Integral(),histos['jpsi_x_mu'].Integral(),histos['fakes'].Integral()))
+    #f.write("rate      %.2f        %.2f        %.2f        %.2f         %.2f        %.2f        %.2f        %.2f       %.2f        %.2f        %.2f\n"%(histos['jpsi_mu'].Integral(),histos['jpsi_tau'].Integral(),histos['chic0_mu'].Integral(),histos['chic1_mu' ].Integral(),histos['chic2_mu'].Integral(),histos['hc_mu'].Integral(),histos['jpsi_hc'].Integral(),histos['psi2s_mu'].Integral(),histos['psi2s_tau'].Integral(),histos['jpsi_x_mu'].Integral(),histos['fakes'].Integral()))
+    f.write("rate      %.2f        %.2f        %.2f        %.2f         %.2f        %.2f        %.2f        %.2f       %.2f        %.2f        1\n"%(histos['jpsi_mu'].Integral(),histos['jpsi_tau'].Integral(),histos['chic0_mu'].Integral(),histos['chic1_mu' ].Integral(),histos['chic2_mu'].Integral(),histos['hc_mu'].Integral(),histos['jpsi_hc'].Integral(),histos['psi2s_mu'].Integral(),histos['psi2s_tau'].Integral(),histos['jpsi_x_mu'].Integral()))
     f.write("-------------------------------------------------------------------- --------------------\n")
 
     f.write("ctau               shape      1           1          1            1           1           1           1          1          1           -             -\n")
@@ -131,9 +134,9 @@ def create_datacard_fail(histos,name,label):
     f.write("jpsi_plus_x       lnN            -           -           -           -           -           -           -           -           -         1.3         -\n")
     f.write("muon_id lnN                 0.95        0.95        0.95        0.95        0.95        0.95        0.95        0.95        0.95      0.95         -\n")
     f.write("trigger lnN                 1.05        1.05        1.05        1.05        1.05        1.05        1.05        1.05        1.05         1.05      -\n")
-    #for i in range(1,histos['jpsi_x_mu'].GetNbinsX()+1):
-    #    f.write("bbb"+str(i)+"fail            shape      -           -          -            -           -           -           -          -          -           1          -\n")
-    f.write("fake_rate         lnN            -           -           -           -           -           -           -           -           -          -           1.5\n")
+    for i in range(1,histos['jpsi_x_mu'].GetNbinsX()+1):
+        f.write("bbb"+str(i)+"fail            shape      -           -          -            -           -           -           -          -          -           1          -\n")
+    #f.write("fake_rate         lnN            -           -           -           -           -           -           -           -           -          -           1.5\n")
 
     f.write("----------------------------------------------------------------------------\n") 
     f.write("----------------------------------------------------------------------------\n") 
@@ -157,22 +160,8 @@ def create_datacard_fail(histos,name,label):
     f.write("-----------------------------------------------\n") 
     for i in range(1,histos['data'].GetNbinsX()+1):
         f.write("fakes_cr_bin"+str(i)+"  flatParam \n")
-    '''
-    f.write("misid_CR_bin2  flatParam \n")
-    f.write("misid_CR_bin3  flatParam \n")
-    f.write("misid_CR_bin4  flatParam \n")
-    f.write("misid_CR_bin5  flatParam \n")
-    f.write("misid_CR_bin6  flatParam \n")
-    f.write("misid_CR_bin7  flatParam \n")
-    f.write("misid_CR_bin8  flatParam \n")
-    f.write("misid_CR_bin9  flatParam \n")    
-    f.write("misid_CR_bin10  flatParam \n")
-    f.write("misid_CR_bin11  flatParam \n")
-    f.write("misid_CR_bin12  flatParam \n")
-    f.write("misid_CR_bin13  flatParam \n")
-    f.write("misid_CR_bin14  flatParam \n")
-    f.write("misid_CR_bin15  flatParam \n")
-    '''
+        #f.write("stat_bin"+str(i)+"  flatParam \n")
+
     f.close()
   
 def create_datacard_onlypass(histos,name,label):
