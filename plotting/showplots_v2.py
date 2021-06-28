@@ -200,7 +200,11 @@ if __name__ == '__main__':
     '''
 
     for k in sample_names:
-        samples[k] = ROOT.RDataFrame(tree_name,'%s/%s_fakerate.root'%(tree_dir,k))
+        #        samples[k] = ROOT.RDataFrame(tree_name,'%s/%s_fakerate.root'%(tree_dir,k)) #they don't have the scale factors
+        if k == 'data':
+            samples[k] = ROOT.RDataFrame(tree_name,'%s/%s_fakerate.root'%(tree_dir,k)) 
+        else:
+            samples[k] = ROOT.RDataFrame(tree_name,'%s/%s_sf.root'%(tree_dir,k))
     
     print("=============================")
     print("====== Samples loaded =======")
@@ -222,16 +226,16 @@ if __name__ == '__main__':
         samples[k] = samples[k].Define('br_weight', '%f' %weights[k])
         #for jpsi tau apply ctau, pu and ff weights. Plus the values for the blind analyss and rjpsi
         if k=='jpsi_tau':
-            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*%f*%f' %(blind,rjpsi))
+            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_total*%f*%f' %(blind,rjpsi))
             #samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight*hammer_bglvar*%f*%f' %(blind,rjpsi))
         # jpsi mu apply ctau, pu and ff weights
         elif k=='jpsi_mu':
-            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar')
+            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_total')
             #samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight*hammer_bglvar')
         #For all the other samples we apply ctau and pu
         #For the Bc samples the ctau contribution is != 1., while for the background it is ==1
         else:
-            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight' if k!='data' else 'br_weight') 
+            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*sf_total' if k!='data' else 'br_weight') 
             #samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight' if k!='data' else 'br_weight') 
 
         #define new columns
@@ -260,36 +264,36 @@ if __name__ == '__main__':
             if (sname != 'jpsi_x_mu' and sname != 'data' ):
                 shapes[sname + '_ctauUp'] = samples[sname]
                 if sname == 'jpsi_mu':
-                    shapes[sname +'_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight*hammer_bglvar')
+                    shapes[sname +'_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight*hammer_bglvar*sf_total')
                 elif sname == 'jpsi_tau':
-                    shapes[sname +'_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight*hammer_bglvar*%f*%f' %(blind,rjpsi))
+                    shapes[sname +'_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight*hammer_bglvar*sf_total*%f*%f' %(blind,rjpsi))
                 else:
-                    shapes[sname + '_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight')
+                    shapes[sname + '_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight*sf_total')
                 shapes[sname + '_ctauDown'] = samples[sname]
                 if sname == 'jpsi_mu':
-                    shapes[sname + '_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight*hammer_bglvar')
+                    shapes[sname + '_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight*hammer_bglvar*sf_total')
                 elif sname == 'jpsi_tau':
-                    shapes[sname +'_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight*hammer_bglvar*%f*%f' %(blind,rjpsi))
+                    shapes[sname +'_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight*hammer_bglvar*sf_total*%f*%f' %(blind,rjpsi))
                 else:
-                    shapes[sname + '_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight')
+                    shapes[sname + '_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight*sf_total')
         
             # Pile up nuisances
             if (sname != 'data'):
                 shapes[sname + '_puWeightUp'] = samples[sname]
                 if sname == 'jpsi_mu':
-                    shapes[sname +'_puWeightUp'] = shapes[sname + '_puWeightUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightUp*hammer_bglvar')
+                    shapes[sname +'_puWeightUp'] = shapes[sname + '_puWeightUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightUp*hammer_bglvar*sf_total')
                 elif sname == 'jpsi_tau':
-                    shapes[sname +'_puWeightUp'] = shapes[sname + '_puWeightUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightUp*hammer_bglvar*%f*%f' %(blind,rjpsi))
+                    shapes[sname +'_puWeightUp'] = shapes[sname + '_puWeightUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightUp*hammer_bglvar*sf_total*%f*%f' %(blind,rjpsi))
                 else:
-                    shapes[sname + '_puWeightUp'] = shapes[sname + '_puWeightUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightUp')
+                    shapes[sname + '_puWeightUp'] = shapes[sname + '_puWeightUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightUp*sf_total')
 
                 shapes[sname + '_puWeightDown'] = samples[sname]
                 if sname == 'jpsi_mu':
-                    shapes[sname + '_puWeightDown'] = shapes[sname + '_puWeightDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightDown*hammer_bglvar')
+                    shapes[sname + '_puWeightDown'] = shapes[sname + '_puWeightDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightDown*hammer_bglvar*sf_total')
                 elif sname == 'jpsi_tau':
-                    shapes[sname +'_puWeightDown'] = shapes[sname + '_puWeightDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightDown*hammer_bglvar*%f*%f' %(blind,rjpsi))
+                    shapes[sname +'_puWeightDown'] = shapes[sname + '_puWeightDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightDown*hammer_bglvar*sf_total*%f*%f' %(blind,rjpsi))
                 else:
-                    shapes[sname + '_puWeightDown'] = shapes[sname + '_puWeightDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightDown')
+                    shapes[sname + '_puWeightDown'] = shapes[sname + '_puWeightDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightDown*sf_total')
 
         # form factor shape nuisances for jpsi mu and jpsi tau datasets
         hammer_branches = ['hammer_bglvar_e0up',
@@ -324,9 +328,9 @@ if __name__ == '__main__':
                 new_name = new_name.replace('down','Down')
             
             shapes['jpsi_mu_'+new_name] = samples['jpsi_mu']
-            shapes['jpsi_mu_'+new_name] = shapes['jpsi_mu_'+new_name].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*'+ham)
+            shapes['jpsi_mu_'+new_name] = shapes['jpsi_mu_'+new_name].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*sf_total*'+ham)
             shapes['jpsi_tau_'+new_name] = samples['jpsi_tau']
-            shapes['jpsi_tau_'+new_name] = shapes['jpsi_tau_'+new_name].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*'+ham+'*%f*%f' %(blind,rjpsi))
+            shapes['jpsi_tau_'+new_name] = shapes['jpsi_tau_'+new_name].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*sf_total*'+ham+'*%f*%f' %(blind,rjpsi))
 
         if flat_fakerate == False:
             for name in shapes:
