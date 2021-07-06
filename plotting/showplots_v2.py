@@ -204,6 +204,9 @@ if __name__ == '__main__':
         if k == 'data':
             samples[k] = ROOT.RDataFrame(tree_name,'%s/%s_fakerate.root'%(tree_dir,k)) 
         else:
+            #if k == 'jpsi_x_mu':
+            #    samples[k] = ROOT.RDataFrame(tree_name,'%s/jpsi_x_sf.root'%(tree_dir))
+            #else:
             samples[k] = ROOT.RDataFrame(tree_name,'%s/%s_sf.root'%(tree_dir,k))
     
     print("=============================")
@@ -294,7 +297,43 @@ if __name__ == '__main__':
                     shapes[sname +'_puWeightDown'] = shapes[sname + '_puWeightDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightDown*hammer_bglvar*sf_total*%f*%f' %(blind,rjpsi))
                 else:
                     shapes[sname + '_puWeightDown'] = shapes[sname + '_puWeightDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightDown*sf_total')
+            
+            #scale factors reco
+            if (sname != 'data'):
+                shapes[sname + '_sfRecoUp'] = samples[sname]
+                if sname == 'jpsi_mu':
+                    shapes[sname +'_sfRecoUp'] = shapes[sname + '_sfRecoUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_reco_up')
+                elif sname == 'jpsi_tau':
+                    shapes[sname +'_sfRecoUp'] = shapes[sname + '_sfRecoUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_reco_up*%f*%f' %(blind,rjpsi))
+                else:
+                    shapes[sname + '_sfRecoUp'] = shapes[sname + '_sfRecoUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*sf_reco_up')
 
+                shapes[sname + '_sfRecoDown'] = samples[sname]
+                if sname == 'jpsi_mu':
+                    shapes[sname + '_sfRecoDown'] = shapes[sname + '_sfRecoDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_reco_down')
+                elif sname == 'jpsi_tau':
+                    shapes[sname +'_sfRecoDown'] = shapes[sname + '_sfRecoDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_reco_down*%f*%f' %(blind,rjpsi))
+                else:
+                    shapes[sname + '_sfRecoDown'] = shapes[sname + '_sfRecoDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*sf_reco_down')
+
+            #scale factors id
+            if (sname != 'data'):
+                shapes[sname + '_sfIdUp'] = samples[sname]
+                if sname == 'jpsi_mu':
+                    shapes[sname +'_sfIdUp'] = shapes[sname + '_sfIdUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_id_up')
+                elif sname == 'jpsi_tau':
+                    shapes[sname +'_sfIdUp'] = shapes[sname + '_sfIdUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_id_up*%f*%f' %(blind,rjpsi))
+                else:
+                    shapes[sname + '_sfIdUp'] = shapes[sname + '_sfIdUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*sf_id_up')
+
+                shapes[sname + '_sfIdDown'] = samples[sname]
+                if sname == 'jpsi_mu':
+                    shapes[sname + '_sfIdDown'] = shapes[sname + '_sfIdDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_id_down')
+                elif sname == 'jpsi_tau':
+                    shapes[sname +'_sfIdDown'] = shapes[sname + '_sfIdDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_id_down*%f*%f' %(blind,rjpsi))
+                else:
+                    shapes[sname + '_sfIdDown'] = shapes[sname + '_sfIdDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*sf_id_down')
+                
         # form factor shape nuisances for jpsi mu and jpsi tau datasets
         hammer_branches = ['hammer_bglvar_e0up',
                            'hammer_bglvar_e0down',
@@ -331,6 +370,7 @@ if __name__ == '__main__':
             shapes['jpsi_mu_'+new_name] = shapes['jpsi_mu_'+new_name].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*sf_total*'+ham)
             shapes['jpsi_tau_'+new_name] = samples['jpsi_tau']
             shapes['jpsi_tau_'+new_name] = shapes['jpsi_tau_'+new_name].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*sf_total*'+ham+'*%f*%f' %(blind,rjpsi))
+
 
         if flat_fakerate == False:
             for name in shapes:

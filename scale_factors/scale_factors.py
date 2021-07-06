@@ -14,11 +14,12 @@ with open('id_muon.json') as f:
 #print(reco['NUM_TrackerMuons_DEN_genTracks']['abseta_pt']['abseta:[1.20,2.10]'].keys())
 #print(id['NUM_MediumID_DEN_TrackerMuons']['abseta_pt'].keys())
 
-for sname in sample_names:
+for sname in sample_names+['jpsi_x']:
+#for sname in ['jpsi_x']:
     if sname == 'data':
         continue
     print("Computing sample ",sname)
-    df = read_root(path+'/'+sname+'_fakerate.root','BTo3Mu', warn_missing_tree=True)
+    df = read_root(path+'/'+sname+'_fakerate.root','BTo3Mu',warn_missing_tree=True)
     #rename the indices 
     df.index= [i for i in range(len(df))]
 
@@ -183,6 +184,12 @@ for sname in sample_names:
     df['sf_mediumid_error_k'] = k_error_id
 
     df['sf_total'] = df['sf_reco_value_mu1']*df['sf_mediumid_value_mu1']*df['sf_reco_value_mu2']*df['sf_mediumid_value_mu2']*df['sf_reco_value_k']*df['sf_mediumid_value_k']
+
+    df['sf_reco_up'] = (df['sf_reco_value_mu1']+df['sf_reco_error_mu1'])*df['sf_mediumid_value_mu1']*(df['sf_reco_value_mu2']+df['sf_reco_error_mu2'])*df['sf_mediumid_value_mu2']*(df['sf_reco_value_k']+df['sf_reco_error_k'])*df['sf_mediumid_value_k']
+    df['sf_reco_down'] = (df['sf_reco_value_mu1']-df['sf_reco_error_mu1'])*df['sf_mediumid_value_mu1']*(df['sf_reco_value_mu2']-df['sf_reco_error_mu2'])*df['sf_mediumid_value_mu2']*(df['sf_reco_value_k']-df['sf_reco_error_k'])*df['sf_mediumid_value_k']
+
+    df['sf_id_up'] = df['sf_reco_value_mu1']*(df['sf_mediumid_value_mu1']+df['sf_mediumid_error_mu1'])*df['sf_reco_value_mu2']*(df['sf_mediumid_value_mu2']+df['sf_mediumid_error_mu2'])*df['sf_reco_value_k']*(df['sf_mediumid_value_k']+df['sf_mediumid_error_k'])
+    df['sf_id_down'] = df['sf_reco_value_mu1']*(df['sf_mediumid_value_mu1']-df['sf_mediumid_error_mu1'])*df['sf_reco_value_mu2']*(df['sf_mediumid_value_mu2']-df['sf_mediumid_error_mu2'])*df['sf_reco_value_k']*(df['sf_mediumid_value_k']-df['sf_mediumid_error_k'])
 
     df.to_root(path+'/'+sname+'_sf.root', key='BTo3Mu')
     

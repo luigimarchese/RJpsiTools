@@ -20,6 +20,8 @@ def create_datacard_pass(histos,name,label):
 
     f.write("ctau               shape      1           1          1            1           1           1           1          1          1           -             -\n")
     f.write("puWeight            shape      1           1          1            1           1           1           1          1          1           1             -\n")
+    f.write("sfReco                  shape      1           1          1            1           1           1           1          1          1           1             -\n")
+    f.write("sfId                  shape      1           1          1            1           1           1           1          1          1           1             -\n")
     f.write("bbbfakes  shape      -           -          -            -           -           -           -          -          -           -          1 \n")
     f.write("bglvar_e0  shape      1           1          -            -           -           -           -          -          -           -          -\n")
     f.write("bglvar_e1  shape      1           1          -            -           -           -           -          -          -           -          -\n")
@@ -100,6 +102,8 @@ def create_datacard_fail(histos,name,label):
 
     f.write("ctau               shape      1           1          1            1           1           1           1          1          1           -             -\n")
     f.write("puWeight             shape      1           1          1            1           1           1           1          1          1           1             -\n")
+    f.write("sfReco                  shape      1           1          1            1           1           1           1          1          1           1             -\n")
+    f.write("sfId                  shape      1           1          1            1           1           1           1          1          1           1             -\n")
     f.write("bglvar_e0  shape      1           1          -            -           -           -           -          -          -           -          -\n")
     f.write("bglvar_e1  shape      1           1          -            -           -           -           -          -          -           -          -\n")
     f.write("bglvar_e2  shape      1           1          -            -           -           -           -          -          -           -          -\n")
