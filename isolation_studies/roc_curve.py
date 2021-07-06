@@ -96,6 +96,12 @@ for i in range(tree_bkg.GetEntries()):
 '''
 c = ROOT.TCanvas("c","c",700, 700)
 c.Draw()
+leg = ROOT.TLegend(0.10,.1,.75,.45)
+leg.SetBorderSize(0)
+leg.SetFillColor(0)
+leg.SetFillStyle(0)
+leg.SetTextFont(42)
+leg.SetTextSize(0.028)
 mg = ROOT.TMultiGraph()
 xy=array('d')
 for j,var in enumerate(variables):
@@ -154,10 +160,13 @@ for j,var in enumerate(variables):
     graph.SetMarkerColor(variables[var]['color'])
     graph.SetLineColor(variables[var]['color'])
     mg.Add(graph)
+    leg.AddEntry(graph,var,'L')
     xy.append(point)
 graph = ROOT.TGraph(n_cuts,xy, xy)
 #mg.Add(graph)
 mg.SetTitle("; bkg rejection;signal efficiency")
 mg.Draw("ac*")
-c.BuildLegend()
+leg.Draw()
+
+#c.BuildLegend()
 c.SaveAs("plot_allroc.png")
