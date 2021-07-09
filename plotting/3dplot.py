@@ -103,8 +103,8 @@ def create_datacard_prep(hists, shape_hists, shapes_names, pf_flag, q2_region, l
 def make_binbybin(hist, flag, label, name):
     fout = ROOT.TFile.Open('multi_plots/%s/datacards/datacard_%s_%s.root' %(label,flag, name), 'RECREATE')
     for i in range(1,hist.GetNbinsX()+1):
-        histo_up = ROOT.TH1D('jpsi_x_mu_bbb'+str(i)+flag+'Up','',hist.GetNbinsX(),hist.GetBinLowEdge(1), hist.GetBinLowEdge(hist.GetNbinsX() + 1))
-        histo_down = ROOT.TH1D('jpsi_x_mu_bbb'+str(i)+flag+'Down','',hist.GetNbinsX(),hist.GetBinLowEdge(1), hist.GetBinLowEdge(hist.GetNbinsX() + 1))
+        histo_up = ROOT.TH1D('jpsi_x_mu_bbb'+str(i)+"_"+name+"_"+flag+'Up','',hist.GetNbinsX(),hist.GetBinLowEdge(1), hist.GetBinLowEdge(hist.GetNbinsX() + 1))
+        histo_down = ROOT.TH1D('jpsi_x_mu_bbb'+str(i)+"_"+name+"_"+flag+'Down','',hist.GetNbinsX(),hist.GetBinLowEdge(1), hist.GetBinLowEdge(hist.GetNbinsX() + 1))
         for nbin in range(1,hist.GetNbinsX()+1):
             if nbin == i:
                 histo_up.SetBinContent(nbin,hist.GetBinContent(nbin) + hist.GetBinError(nbin))
@@ -253,6 +253,43 @@ if __name__ == '__main__':
                     shapes[sname +'_puWeightDown'] = shapes[sname + '_puWeightDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightDown*hammer_bglvar*sf_total*%f*%f' %(blind,rjpsi))
                 else:
                     shapes[sname + '_puWeightDown'] = shapes[sname + '_puWeightDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightDown*sf_total')
+                
+            #scale factor reco
+            if (sname != 'data'):
+                shapes[sname + '_sfRecoUp'] = samples[sname]
+                if sname == 'jpsi_mu':
+                    shapes[sname +'_sfRecoUp'] = shapes[sname + '_sfRecoUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_reco_up')
+                elif sname == 'jpsi_tau':
+                    shapes[sname +'_sfRecoUp'] = shapes[sname + '_sfRecoUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_reco_up*%f*%f' %(blind,rjpsi))
+                else:
+                    shapes[sname + '_sfRecoUp'] = shapes[sname + '_sfRecoUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*sf_reco_up')
+
+                shapes[sname + '_sfRecoDown'] = samples[sname]
+                if sname == 'jpsi_mu':
+                    shapes[sname + '_sfRecoDown'] = shapes[sname + '_sfRecoDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_reco_down')
+                elif sname == 'jpsi_tau':
+                    shapes[sname +'_sfRecoDown'] = shapes[sname + '_sfRecoDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_reco_down*%f*%f' %(blind,rjpsi))
+                else:
+                    shapes[sname + '_sfRecoDown'] = shapes[sname + '_sfRecoDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*sf_reco_down')
+
+            #scale factor id
+            if (sname != 'data'):
+                shapes[sname + '_sfIdUp'] = samples[sname]
+                if sname == 'jpsi_mu':
+                    shapes[sname +'_sfIdUp'] = shapes[sname + '_sfIdUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_id_up')
+                elif sname == 'jpsi_tau':
+                    shapes[sname +'_sfIdUp'] = shapes[sname + '_sfIdUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_id_up*%f*%f' %(blind,rjpsi))
+                else:
+                    shapes[sname + '_sfIdUp'] = shapes[sname + '_sfIdUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*sf_id_up')
+
+                shapes[sname + '_sfIdDown'] = samples[sname]
+                if sname == 'jpsi_mu':
+                    shapes[sname + '_sfIdDown'] = shapes[sname + '_sfIdDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_id_down')
+                elif sname == 'jpsi_tau':
+                    shapes[sname +'_sfIdDown'] = shapes[sname + '_sfIdDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_id_down*%f*%f' %(blind,rjpsi))
+                else:
+                    shapes[sname + '_sfIdDown'] = shapes[sname + '_sfIdDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*sf_id_down')
+
 
         # form factor shape nuisances for jpsi mu and jpsi tau datasets
         hammer_branches = ['hammer_bglvar_e0up',
@@ -304,16 +341,17 @@ if __name__ == '__main__':
 
     # 2D plots in 4 different regions of q^2
     q2_bins = {
-               'aa':'Q_sq>=0 && Q_sq<5',
-               'bb':'Q_sq>=5 && Q_sq<7',
-               'cc':'Q_sq>=7 && Q_sq<8.5',
-               'dd':'Q_sq>=8.5 && Q_sq<=10'
+               'aa':'Q_sq>=0 && Q_sq<6',
+               'bb':'Q_sq>=6 && Q_sq<8',
+               'cc':'Q_sq>=8 && Q_sq<8.7',
+               'dd':'Q_sq>=8.7 && Q_sq<=10'
     }
 
     #define 2D histos in the 4 qsq regions for each sample (e_mu_star vs m_miss_sq)
     histos = {}
+    nbins = 25
     for iter_q2,k in enumerate(q2_bins):
-        histos['estar_mmiss_'+k] = ROOT.RDF.TH2DModel('estar_mmiss_'+k, '', 50, 0.3, 2.3, 50, 0, 9)
+        histos['estar_mmiss_'+k] = ROOT.RDF.TH2DModel('estar_mmiss_'+k, '', nbins, 0.3, 2.3, nbins, 0, 9)
 
     temp_hists           = {}
     temp_hists_fake      = {}
@@ -377,7 +415,7 @@ if __name__ == '__main__':
         ths1      = ROOT.THStack('stack', '')
         ths1_fake = ROOT.THStack('stack_fake', '')
 
-        # stack histos for the unrolled histos (the 2D histo is unrolled for combine)
+        # stack histos for the unrolled histos (the 2D histo is unrolled to be used with combine)
         ths1_unrolled      = ROOT.THStack('unrolled stack', '')
         ths1_unrolled_fake = ROOT.THStack('unrolled stack fake', '')
         
@@ -386,9 +424,8 @@ if __name__ == '__main__':
             ihist = kv[1]            
             # adding 2d histos to their stack
             if key=='%s_data'%k: continue
-            ihist.Draw('hist' + 'same'*(i>0))
+            #ihist.Draw('hist' + 'same'*(i>0))
             ths1.Add(ihist.GetValue())
-
 
         # apply same aestethics to pass and fail (needed?)
         for kk in temp_hists[k].keys():
@@ -446,7 +483,7 @@ if __name__ == '__main__':
             sample_name = key.split(k+'_')[1]
             tmp_ihist_unrolled.SetLineColor(colours[sample_name])
             tmp_ihist_unrolled.SetFillColor(colours[sample_name] if key!='%s_data'%k else ROOT.kWhite)
-            tmp_ihist_unrolled.Draw('hist'+'same'*(i>0))
+            #tmp_ihist_unrolled.Draw('hist'+'same'*(i>0))
             tmp_hists_unrolled[key] = tmp_ihist_unrolled
             maxima_unrolled.append(tmp_ihist_unrolled.GetMaximum())
 
@@ -469,8 +506,13 @@ if __name__ == '__main__':
             flag_not_empty = 0. # this flag becomes 1. if the bin is not empty for at least one sample 
             for i, kv in enumerate(temp_hists[k].items()):
                 key = kv[0]
-                if tmp_hists_unrolled[key].GetBinContent(b) >= 0.0001:
+                #check which bins to keep
+                if tmp_hists_unrolled[key].GetBinContent(b) >= 80.:
                     flag_not_empty = 1.
+                else:
+                    if key == '%s_data'%k: #if data is empty, we skip the bin anyway
+                        flag_not_empty = 0.
+                        break 
             if flag_not_empty:
                 chosen_bins.append(b)
         
@@ -481,13 +523,16 @@ if __name__ == '__main__':
             ibin = 1
             for b in range(1,tmp_hists_unrolled[key].GetNbinsX()+1):
                 if b in chosen_bins:
-                    ihist_unrolled.SetBinContent(ibin,tmp_hists_unrolled[key].GetBinContent(b))
+                    if tmp_hists_unrolled[key].GetBinContent(b) <= 0.:
+                        ihist_unrolled.SetBinContent(ibin, 0.01)
+                    else:
+                        ihist_unrolled.SetBinContent(ibin,tmp_hists_unrolled[key].GetBinContent(b))
                     ihist_unrolled.SetBinError(ibin,tmp_hists_unrolled[key].GetBinError(b))
                     ibin += 1
             sample_name = key.split(k+'_')[1]
             ihist_unrolled.SetLineColor(colours[sample_name])
             ihist_unrolled.SetFillColor(colours[sample_name] if key!='%s_data'%k else ROOT.kWhite)
-            ihist_unrolled.Draw('hist'+'same'*(i>0))
+            #ihist_unrolled.Draw('hist'+'same'*(i>0))
             hists_unrolled[key]=ihist_unrolled
             if key == '%s_data'%k: continue # we don't want data in the stack
             ths1_unrolled.Add(ihist_unrolled)
@@ -509,13 +554,13 @@ if __name__ == '__main__':
             sample_name = key.split(k+'_')[1]
             tmp_ihist_unrolled.SetLineColor(colours[sample_name])
             tmp_ihist_unrolled.SetFillColor(colours[sample_name] if key!='%s_data'%k else ROOT.kWhite)
-            tmp_ihist_unrolled.Draw('hist'+'same'*(i>0))
+            #tmp_ihist_unrolled.Draw('hist'+'same'*(i>0))
             tmp_hists_unrolled_fake[key] = tmp_ihist_unrolled
             maxima_unrolled_fake.append(tmp_ihist_unrolled.GetMaximum())
 
         tmp_hists_unrolled_fake['%s_fakes'%k] = tmp_fakes_unrolled
 
-        # in chosen_bins, the final choice of bins that are not empty
+        '''# in chosen_bins, the final choice of bins that are not empty
         total_bins_fake = [i for i in range(1,tmp_hists_unrolled_fake['%s_data'%k].GetNbinsX()+1)]
         chosen_bins_fake = []
         # loop over the total bins
@@ -528,21 +573,24 @@ if __name__ == '__main__':
                     flag_not_empty = 1.
             if flag_not_empty:
                 chosen_bins_fake.append(b)
-        
+        '''
         # create the non empty histos + stack
         for i, kv in enumerate(tmp_hists_unrolled_fake.keys()):
             key = kv
             ihist_unrolled = ROOT.TH1F('clean_unrolled_'+ key,'', len(chosen_bins),0., len(chosen_bins))
             ibin = 1
             for b in range(1,tmp_hists_unrolled_fake[key].GetNbinsX()+1):
-                if b in chosen_bins_fake:
-                    ihist_unrolled.SetBinContent(ibin,tmp_hists_unrolled_fake[key].GetBinContent(b))
+                if b in chosen_bins:
+                    if tmp_hists_unrolled_fake[key].GetBinContent(b) <= 0.:
+                        ihist_unrolled.SetBinContent(ibin, 0.01)
+                    else:
+                        ihist_unrolled.SetBinContent(ibin,tmp_hists_unrolled_fake[key].GetBinContent(b))
                     ihist_unrolled.SetBinError(ibin,tmp_hists_unrolled_fake[key].GetBinError(b))
                     ibin += 1
             sample_name = key.split(k+'_')[1]
             ihist_unrolled.SetLineColor(colours[sample_name])
             ihist_unrolled.SetFillColor(colours[sample_name] if key!='%s_data'%k else ROOT.kWhite)
-            ihist_unrolled.Draw('hist'+'same'*(i>0))
+            #ihist_unrolled.Draw('hist'+'same'*(i>0))
             hists_unrolled_fake[key]=ihist_unrolled
             if key == '%s_data'%k: continue # we don't want data in the stack
             ths1_unrolled_fake.Add(ihist_unrolled)
@@ -584,7 +632,10 @@ if __name__ == '__main__':
                 ibin = 1
                 for b in range(1,tmp_shapes_hists_unrolled[key].GetNbinsX()+1):
                     if b in chosen_bins:
-                        ihist_unrolled.SetBinContent(ibin,tmp_shapes_hists_unrolled[key].GetBinContent(b))
+                        if tmp_shapes_hists_unrolled[key].GetBinContent(b) <= 0.:
+                            ihist_unrolled.SetBinContent(ibin, 0.01)
+                        else:
+                            ihist_unrolled.SetBinContent(ibin,tmp_shapes_hists_unrolled[key].GetBinContent(b))
                         ihist_unrolled.SetBinError(ibin,tmp_shapes_hists_unrolled[key].GetBinError(b))
                         ibin += 1
                 sample_name = key.split(k+'_')[1]
@@ -612,8 +663,11 @@ if __name__ == '__main__':
                 ihist_unrolled = ROOT.TH1F('clean_unrolled_'+ key,'', len(chosen_bins),0., len(chosen_bins))
                 ibin = 1
                 for b in range(1,tmp_shapes_hists_unrolled_fake[key].GetNbinsX()+1):
-                    if b in chosen_bins_fake:
-                        ihist_unrolled.SetBinContent(ibin,tmp_shapes_hists_unrolled_fake[key].GetBinContent(b))
+                    if b in chosen_bins:
+                        if tmp_shapes_hists_unrolled_fake[key].GetBinContent(b) <= 0.:
+                            ihist_unrolled.SetBinContent(ibin, 0.01)
+                        else:
+                            ihist_unrolled.SetBinContent(ibin,tmp_shapes_hists_unrolled_fake[key].GetBinContent(b))
                         ihist_unrolled.SetBinError(ibin,tmp_shapes_hists_unrolled_fake[key].GetBinError(b))
                         ibin += 1
                 shapes_hists_unrolled_fake[key]=ihist_unrolled
@@ -624,10 +678,10 @@ if __name__ == '__main__':
             make_binbybin(hists_unrolled_fake['%s_jpsi_x_mu'%k],'fail', label, k)
 
             create_datacard_prep(hists = hists_unrolled, shape_hists = shapes_hists_unrolled, shapes_names= shapes, pf_flag = 'pass', q2_region = k, label = label, nchannel = iter_q2+1)
-            plot_shape_nuisances(label, k, 'pass', path = '/work/friti/rjpsi_tools/CMSSW_10_6_14/src/RJpsiTools/plotting/multi_plots/')
+            plot_shape_nuisances(label, k, 'pass', path = '/work/friti/rjpsi_tools/CMSSW_10_6_14/src/RJpsiTools/plotting/multi_plots/', plot3d = True)
             
             create_datacard_prep(hists = hists_unrolled_fake, shape_hists = shapes_hists_unrolled_fake, shapes_names= shapes, pf_flag = 'fail', q2_region = k, label = label, nchannel = iter_q2+1)
-            plot_shape_nuisances(label, k, 'fail', path = '/work/friti/rjpsi_tools/CMSSW_10_6_14/src/RJpsiTools/plotting/multi_plots/')
+            plot_shape_nuisances(label, k, 'fail', path = '/work/friti/rjpsi_tools/CMSSW_10_6_14/src/RJpsiTools/plotting/multi_plots/', plot3d = True)
 
         
         ###############################
