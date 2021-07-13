@@ -2,6 +2,7 @@ import ROOT
 from itertools import product
 import matplotlib.pyplot as plt
 import xgboost as xgb
+import os
 # import modin.pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_curve
@@ -10,32 +11,23 @@ import numpy as np
 import pickle
 from root_pandas import read_root, to_root
 from new_branches import to_define 
-from selections import preselection as selection
+from selections import preselection, preselection_mc, pass_id, fail_id
 from datetime import datetime
 
-label = datetime.now().strftime('%d%b%Y_%Hh%Mm%Ss')
+train_bdt = True
+model_flag = '13Jul2021_11h10m53s'
 
-selection_mc = ' & '.join([
-    selection                        ,
-    'abs(k_genpdgId)==13'            ,
-    '(abs(k_mother_pdgId)==541 | abs(k_mother_pdgId)==15)',
-    'abs(mu1_genpdgId)==13'          ,
-    'abs(mu1_mother_pdgId)==443'     ,
-    'abs(mu2_genpdgId)==13'          ,
-    'abs(mu2_mother_pdgId)==443'     ,
-    'abs(mu1_grandmother_pdgId)==541',
-    'abs(mu2_grandmother_pdgId)==541',
-])
+label = datetime.now().strftime('%d%b%Y_%Hh%Mm%Ss')
 
 features = [
     'Bpt'                  ,
     'Bmass'                ,
     'kpt'                  ,
     'Bpt_reco'             ,
-    'bvtx_log10_svprob'    ,
-    'jpsivtx_log10_svprob' ,
-    'bvtx_log10_lxy_sig'   ,
-    'jpsivtx_log10_lxy_sig',
+    #'bvtx_log10_svprob'    ,
+    #'jpsivtx_log10_svprob' ,
+    #'bvtx_log10_lxy_sig'   ,
+    #'jpsivtx_log10_lxy_sig',
     'mmm_p4_par'           ,
     'mmm_p4_perp'          ,
 #     'm_miss_sq'            ,
@@ -50,18 +42,20 @@ features = [
     'dr13'                 ,
     'dr23'                 ,
     'dr_jpsi_mu'           ,
-    'mcorr'                ,
-    'decay_time'           ,
-    'bct'                  ,
+    #'mcorr'                ,
+    #'decay_time'           ,
+    #'bct'                  ,
 ]
 
 samples = dict()
-tree_dir = '/Users/manzoni/Documents/RJPsi/dataframes_december_2020'
 
-samples['tau'] = ROOT.RDataFrame('BTommm', '%s/BcToXToJpsi_is_jpsi_tau_merged.root'%tree_dir)
-samples['mu' ] = ROOT.RDataFrame('BTommm', '%s/BcToXToJpsi_is_jpsi_mu_merged.root' %tree_dir)
-samples['cmb'] = ROOT.RDataFrame('BTommm', '%s/BcToXToJpsi_is_onia_merged.root'    %tree_dir)    
-samples['bkg'] = ROOT.RDataFrame('BTommm', '%s/BcToXToJpsi_is_data_merged.root'    %tree_dir)    
+tree_name = 'BTo3Mu'
+tree_dir = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021May31_nn'
+
+samples['tau'] = ROOT.RDataFrame(tree_name, '%s/jpsi_tau_sf.root'     %tree_dir)
+samples['mu' ] = ROOT.RDataFrame(tree_name, '%s/jpsi_mu_sf.root'      %tree_dir)
+samples['cmb'] = ROOT.RDataFrame(tree_name, '%s/jpsi_x_mu_sf.root'    %tree_dir)    
+samples['bkg'] = ROOT.RDataFrame(tree_name, '%s/data_fakerate.root'   %tree_dir)    
 
 print('adding new columns')
 for k, v in samples.items():
@@ -69,40 +63,28 @@ for k, v in samples.items():
         if samples[k].HasColumn(new_column): continue
         samples[k] = samples[k].Define(new_column, new_definition)
 
-print('convert to pandas, exclude LorentzVector branches, as they do not cope well with pandas')
-to_exclude = [
-    'mu1_p4'     ,
-    'mu2_p4'     ,
-    'mu3_p4'     ,
-    'kaon_p4'    ,
-    'mmm_p4'     ,
-    'jpsiK_p4'   ,
-    'pion_p4'    ,
-    'jpsipi_p4'  ,
-    'jpsi_p4'    ,
-    'Bdir_eta'   ,
-    'Bdir_phi'   ,
-]
 
-tau = pd.DataFrame(samples['tau'].Filter(' & '.join([selection_mc                  ])).AsNumpy(exclude=to_exclude))
-mu  = pd.DataFrame(samples['mu' ].Filter(' & '.join([selection_mc                  ])).AsNumpy(exclude=to_exclude))
-cmb = pd.DataFrame(samples['cmb'].Filter(' & '.join([selection                     ])).AsNumpy(exclude=to_exclude))
-bkg = pd.DataFrame(samples['bkg'].Filter(' & '.join([selection   , 'k_mediumID<0.5'])).AsNumpy(exclude=to_exclude))
+tau = pd.DataFrame(samples['tau'].Filter(' & '.join([preselection_mc                  ])).AsNumpy())
+mu  = pd.DataFrame(samples['mu' ].Filter(' & '.join([preselection_mc                  ])).AsNumpy())
+cmb = pd.DataFrame(samples['cmb'].Filter(' & '.join([preselection_mc                  ])).AsNumpy()) # combinatorial bkg (already clean from signal)
+bkg = pd.DataFrame(samples['bkg'].Filter(' & '.join([preselection   , fail_id])).AsNumpy())          # fakes
 
 # merge together all backgrounds
 bkg = pd.concat([bkg, cmb])
 bkg.sample(frac=1).reset_index(drop=True)
 
 print('defining targets')
-tau['target'] = np.ones ( tau.shape[0]).astype(np.int)
-mu ['target'] = np.zeros( mu .shape[0]).astype(np.int)
+tau['target'] = np.ones ( tau.shape[0]).astype(int)
+mu ['target'] = np.zeros( mu .shape[0]).astype(int)
 bkg['target'] = np.full ((bkg.shape[0]), 2)
 
-# import pdb ; pdb.set_trace()
+# weights
+# why 1000?
 tau['w'] = np.ones(tau.shape[0]) * 1000./tau.shape[0]
 mu ['w'] = np.ones(mu .shape[0]) * 1000./mu .shape[0]
 bkg['w'] = np.ones(bkg.shape[0]) * 1000./bkg.shape[0]
 
+#print(tau.shape[0],mu .shape[0],bkg.shape[0])
 
 print('Splitting into train, validation and test...')
 data = pd.concat([bkg, tau, mu])
@@ -112,14 +94,13 @@ train, test = train_test_split(data, test_size=0.2, random_state=1986)
 X_train, X_test = train[features], test[features]
 y_train, y_test = train['target'], test['target']
 
-print('Fitting BDT...')
-    
+
 clf = xgb.XGBClassifier(
-#     n_jobs           = -1, # use all cores BROKWN in 1.2.0
+    #     n_jobs           = -1, # use all cores BROKWN in 1.2.0
     n_jobs           = 4, # use all cores
     max_depth        = 6,
     learning_rate    = 1e-1, # 0.01
-    n_estimators     = 1000, # 400
+    n_estimators     = 400, # 400
     silent           = False,
     subsample        = 0.6,
     colsample_bytree = 0.8,
@@ -133,28 +114,40 @@ clf = xgb.XGBClassifier(
     num_class       = 3,
 )
 
-# http://rstudio-pubs-static.s3.amazonaws.com/368478_bf9700befeba4283a4640a9a1285af22.html
-clf.fit(
-    X_train, 
-    y_train,
-    eval_set              = [(X_train, y_train), (X_test, y_test)],
-    early_stopping_rounds = 20,
-    eval_metric           = 'mlogloss',
-#     eval_metric           = 'auc',
-    verbose               = True,
-#     nfold                 = 5, 
-#     showsd                = TRUE, 
-#     stratified            = TRUE, 
-#     print.every.n = 10, early_stop_round = 20, maximize = FALSE, prediction = TRUE
-    sample_weight         = train['w'],
-)
- 
 flag = label   
-pickle.dump(clf, open('bdtModel/BDT_Model_' +flag+ '.pck', 'wb'))
-print('Model saved  ')
-pickle.dump(features, open('bdtModel/BDT_Model_' +flag+ '_features.pck', 'wb'))
-print('Features saved')
 
+if train_bdt:
+    print('Fitting BDT...')
+    
+    # http://rstudio-pubs-static.s3.amazonaws.com/368478_bf9700befeba4283a4640a9a1285af22.html
+    clf.fit(
+        X_train, 
+        y_train,
+        eval_set              = [(X_train, y_train), (X_test, y_test)],
+        early_stopping_rounds = 20,
+        eval_metric           = 'mlogloss',
+        #     eval_metric           = 'auc',
+        verbose               = True,
+        #     nfold                 = 5, 
+        #     showsd                = TRUE, 
+        #     stratified            = TRUE, 
+        #     print.every.n = 10, early_stop_round = 20, maximize = FALSE, prediction = TRUE
+        sample_weight         = train['w'],
+    )
+    
+    
+    if not os.path.exists('bdtModel'):
+        os.mkdir('bdtModel')
+        
+    pickle.dump(clf, open('bdtModel/BDT_Model_' +flag+ '.pck', 'wb'))
+    print('Model saved  ')
+    pickle.dump(features, open('bdtModel/BDT_Model_' +flag+ '_features.pck', 'wb'))
+    print('Features saved')
+
+# Load model and features
+else:
+    clf = pickle.load(open('bdtModel/BDT_Model_' +model_flag+ '.pck','rb'))
+    features = pickle.load(open('bdtModel/BDT_Model_' +model_flag+ '_features.pck','rb'))
 
 print('enrich the data')
 for i, label in zip(range(3), ['mu', 'tau', 'bkg']):
@@ -185,8 +178,7 @@ plt.ylabel('True Positive Rate')
 
 fpr, tpr, wps = roc_curve(data.target, data.bdt_bkg, pos_label=2)
 plt.plot(fpr, tpr, label='bkg vs. all', color='b')
-
-cuts_to_display = np.arange(0, 0.1, 0.02)
+cuts_to_display = np.arange(0, 1, 0.1)
 
 wp_x = []
 wp_y = []
@@ -232,3 +224,4 @@ for i, note in enumerate(cuts_to_display):
 plt.legend()
 
 plt.savefig('rocs_%s.pdf' %flag)
+
