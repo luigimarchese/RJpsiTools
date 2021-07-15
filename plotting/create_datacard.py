@@ -20,8 +20,8 @@ def create_datacard_pass(histos,name,label):
 
     f.write("ctau               shape      1           1          1            1           1           1           1          1          1           -             -\n")
     f.write("puWeight            shape      1           1          1            1           1           1           1          1          1           1             -\n")
-    f.write("sfReco                  shape      1           1          1            1           1           1           1          1          1           1             -\n")
-    f.write("sfId                  shape      1           1          1            1           1           1           1          1          1           1             -\n")
+    f.write("sfReco                  lnN      1.0043           1.0043          1.0043            1.0043           1.0043           1.0043           1.0043          1.0043          1.0043           1.0043             -\n")
+    f.write("sfId                  lnN      1.0035           1.0035          1.0035            1.0035           1.0035           1.0035           1.0035          1.0035          1.0035           1.0035             -\n")
     f.write("bbbfakes  shape      -           -          -            -           -           -           -          -          -           -          1 \n")
     f.write("bglvar_e0  shape      1           1          -            -           -           -           -          -          -           -          -\n")
     f.write("bglvar_e1  shape      1           1          -            -           -           -           -          -          -           -          -\n")
@@ -58,6 +58,8 @@ def create_datacard_pass(histos,name,label):
     f.write("fake_rate         lnN            -           -           -           -           -           -           -           -           -          -           1.5\n")
     f.write("muon_id           lnN        1.05       1.05        1.05        1.05        1.05        1.05        1.05        1.05         1.05       1.05             -\n")
     f.write("trigger           lnN           1.05        1.05        1.05        1.05        1.05        1.05        1.05        1.05         1.05       1.05        -\n")
+    f.write("sfReco           shape        1       1        1        1        1        1        1        1         1       1             -\n")
+    f.write("sfId           shape        1       1        1        1        1        1        1        1         1       1             -\n")
     for i in range(1,histos['jpsi_x_mu'].GetNbinsX()+1):
         f.write("bbb"+str(i)+"pass            shape      -           -          -            -           -           -           -          -          -           1          -\n")
 
@@ -102,8 +104,8 @@ def create_datacard_fail(histos,name,label):
 
     f.write("ctau               shape      1           1          1            1           1           1           1          1          1           -             -\n")
     f.write("puWeight             shape      1           1          1            1           1           1           1          1          1           1             -\n")
-    f.write("sfReco                  shape      1           1          1            1           1           1           1          1          1           1             -\n")
-    f.write("sfId                  shape      1           1          1            1           1           1           1          1          1           1             -\n")
+    f.write("sfReco                  lnN     1.0038           1.0038          1.0038            1.0038           1.0038           1.0038           1.0038          1.0038          1.0038           1.0038             -\n")
+    f.write("sfId                  lnN      1.0031           1.0031          1.0031            1.0031           1.0031           1.0031           1.0031          1.0031          1.0031           1.0031             -\n")
     f.write("bglvar_e0  shape      1           1          -            -           -           -           -          -          -           -          -\n")
     f.write("bglvar_e1  shape      1           1          -            -           -           -           -          -          -           -          -\n")
     f.write("bglvar_e2  shape      1           1          -            -           -           -           -          -          -           -          -\n")
@@ -138,6 +140,8 @@ def create_datacard_fail(histos,name,label):
     f.write("jpsi_plus_x       lnN            -           -           -           -           -           -           -           -           -         1.3         -\n")
     f.write("muon_id lnN                 0.95        0.95        0.95        0.95        0.95        0.95        0.95        0.95        0.95      0.95         -\n")
     f.write("trigger lnN                 1.05        1.05        1.05        1.05        1.05        1.05        1.05        1.05        1.05         1.05      -\n")
+    f.write("sfReco           shape        1       1        1        1        1        1        1        1         1       1             -\n")
+    f.write("sfId           shape        1       1        1        1        1        1        1        1         1       1             -\n")
     for i in range(1,histos['jpsi_x_mu'].GetNbinsX()+1):
         f.write("bbb"+str(i)+"fail            shape      -           -          -            -           -           -           -          -          -           1          -\n")
     #f.write("fake_rate         lnN            -           -           -           -           -           -           -           -           -          -           1.5\n")

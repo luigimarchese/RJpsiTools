@@ -1,3 +1,6 @@
+'''
+Script to compute the scale factors id and reco for the muons
+'''
 from root_pandas import read_root
 from root_pandas import to_root
 from samples import sample_names
@@ -5,14 +8,52 @@ import json
 import pandas as pd
 import ROOT
 import sys
+import numpy as np
+
+# This variable is False because all the shape euncertainties are actually normalisations only, so we apply a unique normalisation uncertainty (the max one) to the fit (see plots in `15Jul2021_13h18m04s`)
+# Normalisation nuisances :
+#- reco 1.0043494353691738; id: 1.003517006834348 -> pass
+#- reco:1.0038005262613297; id: 1.0030679007371266 ->fail
+
+compute_error = False
+
 path = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021May31_nn'
 with open('reco_muon.json') as f:
-  reco = json.load(f)
+  reco_json = json.load(f)
 with open('id_muon.json') as f:
-  id = json.load(f)
+  id_json = json.load(f)
 
-#print(reco['NUM_TrackerMuons_DEN_genTracks']['abseta_pt']['abseta:[1.20,2.10]'].keys())
-#print(id['NUM_MediumID_DEN_TrackerMuons']['abseta_pt'].keys())
+def find_sf(df, i, which_mu, json, initial_folder):
+  '''Function to compute the scale factor for each event;
+  Takes as input:
+  - df -> dataframe of the ntuples
+  - i -> number of event
+  - which_mu -> string that indicated which of the three muons 
+  - json -> which json file (reco or id)
+  - initial_folder -> depending on the json file, the initial folder is different
+  '''
+  flag_pt = 0.
+  flag_eta = 0.
+  for ieta,eta_key in enumerate(json[initial_folder]['abseta_pt'].keys()):
+    low_bound_eta = eta_key.strip('abseta:').strip(']').strip('[').split(',')[0]
+    high_bound_eta = eta_key.strip('abseta:').strip(']').strip('[').split(',')[1]
+    if abs(df[which_mu+'eta'][i])<= float(high_bound_eta) and abs(df[which_mu+'eta'][i])>= float(low_bound_eta):
+      flag_eta =1.
+      flag_pt = 0.
+      for ipt,pt_key in enumerate(json[initial_folder]['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']'].keys()):
+        low_bound_pt = pt_key.strip('pt:').strip(']').strip('[').split(',')[0]
+        high_bound_pt = pt_key.strip('pt:').strip(']').strip('[').split(',')[1]
+        if abs(df[which_mu+'pt'][i])<= float(high_bound_pt) and abs(df[which_mu+'pt'][i])>= float(low_bound_pt):
+          flag_pt = 1.
+          value = json[initial_folder]['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']']['pt:['+low_bound_pt+','+high_bound_pt+']']['value']
+          error = json[initial_folder]['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']']['pt:['+low_bound_pt+','+high_bound_pt+']']['error']
+          cell =  ipt + 16 * ieta 
+  if flag_pt==0. or flag_eta==0.:
+    value = 1.
+    error = 1.
+    cell = None
+
+  return value, error, cell
 
 for sname in sample_names+['jpsi_x']:
 #for sname in ['jpsi_x']:
@@ -20,179 +61,63 @@ for sname in sample_names+['jpsi_x']:
         continue
     print("Computing sample ",sname)
     df = read_root(path+'/'+sname+'_fakerate.root','BTo3Mu',warn_missing_tree=True)
-    #rename the indices 
+    
+    #reorder the indices 
     df.index= [i for i in range(len(df))]
 
-    # save the scale factors
-    # reco
-    mu1_value = []
-    mu1_error = []
-    mu2_value = []
-    mu2_error = []
-    k_value = []
-    k_error = []
-    # id (medium)
-    mu1_value_id = []
-    mu1_error_id = []
-    mu2_value_id = []
-    mu2_error_id = []
-    k_value_id = []
-    k_error_id = []
-
-    print(len(df))
+    mu1_reco_features = []
+    mu2_reco_features = []
+    k_reco_features = []
+    mu1_id_features = []
+    mu2_id_features = []
+    k_id_features = []
+    
     for i in range(len(df)):
-        ##############################################
-        ###### RECO Scale Factor #####################
-        ##############################################        
+      mu1_reco_features.append( find_sf(df,i,'mu1', reco_json, 'NUM_TrackerMuons_DEN_genTracks') )
+      mu2_reco_features.append( find_sf(df,i,'mu2', reco_json, 'NUM_TrackerMuons_DEN_genTracks') )
+      k_reco_features.append( find_sf(df,i,'k', reco_json, 'NUM_TrackerMuons_DEN_genTracks') )
 
-        # mu1
-        flag_eta = 0.
-        for eta_key in reco['NUM_TrackerMuons_DEN_genTracks']['abseta_pt'].keys():
-            low_bound_eta = eta_key.strip('abseta:').strip(']').strip('[').split(',')[0]
-            high_bound_eta = eta_key.strip('abseta:').strip(']').strip('[').split(',')[1]
-            if abs(df.mu1eta[i])<= float(high_bound_eta) and abs(df.mu1eta[i])>= float(low_bound_eta):
-                flag_eta =1.
-                flag_pt = 0.
-                for pt_key in reco['NUM_TrackerMuons_DEN_genTracks']['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']'].keys():
-                    low_bound_pt = pt_key.strip('pt:').strip(']').strip('[').split(',')[0]
-                    high_bound_pt = pt_key.strip('pt:').strip(']').strip('[').split(',')[1]
-                    if abs(df.mu1pt[i])<= float(high_bound_pt) and abs(df.mu1pt[i])>= float(low_bound_pt):
-                        flag_pt = 1.
-                        mu1_value.append(reco['NUM_TrackerMuons_DEN_genTracks']['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']']['pt:['+low_bound_pt+','+high_bound_pt+']']['value'])
-                        mu1_error.append(reco['NUM_TrackerMuons_DEN_genTracks']['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']']['pt:['+low_bound_pt+','+high_bound_pt+']']['error'])
-        if flag_pt==0. or flag_eta==0.:
-            mu1_value.append(1.)
-            mu1_error.append(1.)
+      mu1_id_features.append( find_sf(df,i,'mu1', id_json, 'NUM_MediumID_DEN_TrackerMuons') )
+      mu2_id_features.append( find_sf(df,i,'mu2', id_json, 'NUM_MediumID_DEN_TrackerMuons') )
+      k_id_features.append( find_sf(df,i,'k', id_json, 'NUM_MediumID_DEN_TrackerMuons') )
 
-        # mu2
-        flag_eta = 0.
-        for eta_key in reco['NUM_TrackerMuons_DEN_genTracks']['abseta_pt'].keys():
-            low_bound_eta = eta_key.strip('abseta:').strip(']').strip('[').split(',')[0]
-            high_bound_eta = eta_key.strip('abseta:').strip(']').strip('[').split(',')[1]
-            if abs(df.mu2eta[i])<= float(high_bound_eta) and abs(df.mu2eta[i])>= float(low_bound_eta):
-                flag_eta =1.
-                flag_pt = 0.
-                for pt_key in reco['NUM_TrackerMuons_DEN_genTracks']['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']'].keys():
-                    low_bound_pt = pt_key.strip('pt:').strip(']').strip('[').split(',')[0]
-                    high_bound_pt = pt_key.strip('pt:').strip(']').strip('[').split(',')[1]
-                    if abs(df.mu2pt[i])<= float(high_bound_pt) and abs(df.mu2pt[i])>= float(low_bound_pt):
-                        flag_pt = 1.
-                        mu2_value.append(reco['NUM_TrackerMuons_DEN_genTracks']['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']']['pt:['+low_bound_pt+','+high_bound_pt+']']['value'])
-                        mu2_error.append(reco['NUM_TrackerMuons_DEN_genTracks']['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']']['pt:['+low_bound_pt+','+high_bound_pt+']']['error'])
-        if flag_pt==0. or flag_eta==0.:
-            mu2_value.append(1.)
-            mu2_error.append(1.)
+    # transpose the 2d array
+    mu1_reco_features = np.array(mu1_reco_features).T
+    mu2_reco_features = np.array(mu2_reco_features).T
+    k_reco_features = np.array(k_reco_features).T
+    mu1_id_features = np.array(mu1_id_features).T
+    mu2_id_features = np.array(mu2_id_features).T
+    k_id_features = np.array(k_id_features).T
 
-        # mu
-        flag_eta = 0.
-        for eta_key in reco['NUM_TrackerMuons_DEN_genTracks']['abseta_pt'].keys():
-            low_bound_eta = eta_key.strip('abseta:').strip(']').strip('[').split(',')[0]
-            high_bound_eta = eta_key.strip('abseta:').strip(']').strip('[').split(',')[1]
-            if abs(df.keta[i])< float(high_bound_eta) and abs(df.keta[i])>= float(low_bound_eta):
-                flag_eta =1.
-                flag_pt = 0.
-                for pt_key in reco['NUM_TrackerMuons_DEN_genTracks']['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']'].keys():
-                    low_bound_pt = pt_key.strip('pt:').strip(']').strip('[').split(',')[0]
-                    high_bound_pt = pt_key.strip('pt:').strip(']').strip('[').split(',')[1]
-                    if abs(df.kpt[i])< float(high_bound_pt) and abs(df.kpt[i])>= float(low_bound_pt):
-                        flag_pt = 1.
-                        k_value.append(reco['NUM_TrackerMuons_DEN_genTracks']['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']']['pt:['+low_bound_pt+','+high_bound_pt+']']['value'])
-                        k_error.append(reco['NUM_TrackerMuons_DEN_genTracks']['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']']['pt:['+low_bound_pt+','+high_bound_pt+']']['error'])
-        if flag_pt==0. or flag_eta==0.:
-            k_value.append(1.)
-            k_error.append(1.)
-
-        if len(k_value)!= i+1:
-            print("ERR",len(k_value), i, df.kpt[i],df.keta[i],flag_eta,flag_pt)
-            sys.exit()
-        ##############################################
-        ###### ID Scale Factor #######################
-        ##############################################        
-
-        # mu1
-        flag_eta = 0.
-        for eta_key in id['NUM_MediumID_DEN_TrackerMuons']['abseta_pt'].keys():
-            low_bound_eta = eta_key.strip('abseta:').strip(']').strip('[').split(',')[0]
-            high_bound_eta = eta_key.strip('abseta:').strip(']').strip('[').split(',')[1]
-            if abs(df.mu1eta[i])<= float(high_bound_eta) and abs(df.mu1eta[i])>= float(low_bound_eta):
-                flag_eta =1.
-                flag_pt = 0.
-                for pt_key in id['NUM_MediumID_DEN_TrackerMuons']['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']'].keys():
-                    low_bound_pt = pt_key.strip('pt:').strip(']').strip('[').split(',')[0]
-                    high_bound_pt = pt_key.strip('pt:').strip(']').strip('[').split(',')[1]
-                    if abs(df.mu1pt[i])<= float(high_bound_pt) and abs(df.mu1pt[i])>= float(low_bound_pt):
-                        flag_pt = 1.
-                        mu1_value_id.append(id['NUM_MediumID_DEN_TrackerMuons']['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']']['pt:['+low_bound_pt+','+high_bound_pt+']']['value'])
-                        mu1_error_id.append(id['NUM_MediumID_DEN_TrackerMuons']['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']']['pt:['+low_bound_pt+','+high_bound_pt+']']['error'])
-        if flag_pt==0. or flag_eta==0.:
-            mu1_value_id.append(1.)
-            mu1_error_id.append(1.)
-
-        # mu2
-        flag_eta = 0.
-        for eta_key in id['NUM_MediumID_DEN_TrackerMuons']['abseta_pt'].keys():
-            low_bound_eta = eta_key.strip('abseta:').strip(']').strip('[').split(',')[0]
-            high_bound_eta = eta_key.strip('abseta:').strip(']').strip('[').split(',')[1]
-            if abs(df.mu2eta[i])<= float(high_bound_eta) and abs(df.mu2eta[i])>= float(low_bound_eta):
-                flag_eta =1.
-                flag_pt = 0.
-                for pt_key in id['NUM_MediumID_DEN_TrackerMuons']['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']'].keys():
-                    low_bound_pt = pt_key.strip('pt:').strip(']').strip('[').split(',')[0]
-                    high_bound_pt = pt_key.strip('pt:').strip(']').strip('[').split(',')[1]
-                    if abs(df.mu2pt[i])<= float(high_bound_pt) and abs(df.mu2pt[i])>= float(low_bound_pt):
-                        flag_pt = 1.
-                        mu2_value_id.append(id['NUM_MediumID_DEN_TrackerMuons']['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']']['pt:['+low_bound_pt+','+high_bound_pt+']']['value'])
-                        mu2_error_id.append(id['NUM_MediumID_DEN_TrackerMuons']['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']']['pt:['+low_bound_pt+','+high_bound_pt+']']['error'])
-        if flag_pt==0. or flag_eta==0.:
-            mu2_value_id.append(1.)
-            mu2_error_id.append(1.)
-
-        # mu
-        flag_eta = 0.
-        for eta_key in id['NUM_MediumID_DEN_TrackerMuons']['abseta_pt'].keys():
-            low_bound_eta = eta_key.strip('abseta:').strip(']').strip('[').split(',')[0]
-            high_bound_eta = eta_key.strip('abseta:').strip(']').strip('[').split(',')[1]
-            if abs(df.keta[i])< float(high_bound_eta) and abs(df.keta[i])>= float(low_bound_eta):
-                flag_eta =1.
-                flag_pt = 0.
-                for pt_key in id['NUM_MediumID_DEN_TrackerMuons']['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']'].keys():
-                    low_bound_pt = pt_key.strip('pt:').strip(']').strip('[').split(',')[0]
-                    high_bound_pt = pt_key.strip('pt:').strip(']').strip('[').split(',')[1]
-                    if abs(df.kpt[i])< float(high_bound_pt) and abs(df.kpt[i])>= float(low_bound_pt):
-                        flag_pt = 1.
-                        k_value_id.append(id['NUM_MediumID_DEN_TrackerMuons']['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']']['pt:['+low_bound_pt+','+high_bound_pt+']']['value'])
-                        k_error_id.append(id['NUM_MediumID_DEN_TrackerMuons']['abseta_pt']['abseta:['+low_bound_eta+','+high_bound_eta+']']['pt:['+low_bound_pt+','+high_bound_pt+']']['error'])
-        if flag_pt==0. or flag_eta==0.:
-            k_value_id.append(1.)
-            k_error_id.append(1.)
-
-
-    #print(len(mu1_value),len(mu2_value),len(k_value))
+    # weights for the central value
+    df['sf_reco_total'] = (mu1_reco_features[0] * mu2_reco_features[0] * k_reco_features[0]).astype(float)
+    df['sf_id_jpsi'] = (mu1_id_features[0] * mu2_id_features[0] ).astype(float)
+    df['sf_id_k'] = (k_id_features[0]).astype(float)
     
-    df['sf_reco_value_mu1'] = mu1_value
-    df['sf_reco_error_mu1'] = mu1_error
-    df['sf_reco_value_mu2'] = mu2_value
-    df['sf_reco_error_mu2'] = mu2_error
-    df['sf_reco_value_k'] = k_value
-    df['sf_reco_error_k'] = k_error
+    if compute_error:
+      # build weights for the shape/ normalisation uncertainties (one for each cell)
+      for ireco in range(0, 16*4):      
+        # transfor the cell number in bool (yes or not)
+        weight_mu1_reco = list(map(lambda item: item == ireco, mu1_reco_features[2])) #cell number
+        weight_mu2_reco = list(map(lambda item: item == ireco, mu2_reco_features[2]))
+        weight_k_reco = list(map(lambda item: item == ireco, k_reco_features[2]))
 
-    df['sf_mediumid_value_mu1'] = mu1_value_id
-    df['sf_mediumid_error_mu1'] = mu1_error_id
-    df['sf_mediumid_value_mu2'] = mu2_value_id
-    df['sf_mediumid_error_mu2'] = mu2_error_id
-    df['sf_mediumid_value_k'] = k_value_id
-    df['sf_mediumid_error_k'] = k_error_id
 
-    df['sf_total'] = df['sf_reco_value_mu1']*df['sf_mediumid_value_mu1']*df['sf_reco_value_mu2']*df['sf_mediumid_value_mu2']*df['sf_reco_value_k']*df['sf_mediumid_value_k']
-
-    df['sf_reco_up'] = (df['sf_reco_value_mu1']+df['sf_reco_error_mu1'])*df['sf_mediumid_value_mu1']*(df['sf_reco_value_mu2']+df['sf_reco_error_mu2'])*df['sf_mediumid_value_mu2']*(df['sf_reco_value_k']+df['sf_reco_error_k'])*df['sf_mediumid_value_k']
-    df['sf_reco_down'] = (df['sf_reco_value_mu1']-df['sf_reco_error_mu1'])*df['sf_mediumid_value_mu1']*(df['sf_reco_value_mu2']-df['sf_reco_error_mu2'])*df['sf_mediumid_value_mu2']*(df['sf_reco_value_k']-df['sf_reco_error_k'])*df['sf_mediumid_value_k']
-
-    df['sf_id_up'] = df['sf_reco_value_mu1']*(df['sf_mediumid_value_mu1']+df['sf_mediumid_error_mu1'])*df['sf_reco_value_mu2']*(df['sf_mediumid_value_mu2']+df['sf_mediumid_error_mu2'])*df['sf_reco_value_k']*(df['sf_mediumid_value_k']+df['sf_mediumid_error_k'])
-    df['sf_id_down'] = df['sf_reco_value_mu1']*(df['sf_mediumid_value_mu1']-df['sf_mediumid_error_mu1'])*df['sf_reco_value_mu2']*(df['sf_mediumid_value_mu2']-df['sf_mediumid_error_mu2'])*df['sf_reco_value_k']*(df['sf_mediumid_value_k']-df['sf_mediumid_error_k'])
-
+        # value + error * true/false
+        df['sf_reco_'+str(ireco)+'_up'] = ((mu1_reco_features[0]+mu1_reco_features[1]*weight_mu1_reco)*(mu2_reco_features[0]+mu2_reco_features[1]*weight_mu2_reco)*(k_reco_features[0]+k_reco_features[1]*weight_k_reco)).astype(float)
+        df['sf_reco_'+str(ireco)+'_down'] = ((mu1_reco_features[0]-mu1_reco_features[1]*weight_mu1_reco)*(mu2_reco_features[0]-mu2_reco_features[1]*weight_mu2_reco)*(k_reco_features[0]-k_reco_features[1]*weight_k_reco)).astype(float)
+      
+        for iid in range(0, 16*4):
+          # transfor the cell number in bool (yes or not)
+          weight_mu1_id = list(map(lambda item: item == iid, mu1_id_features[2])) #cell number
+          weight_mu2_id = list(map(lambda item: item == iid, mu2_id_features[2]))
+          weight_k_id = list(map(lambda item: item == iid, k_id_features[2]))
+          
+          # value + error * true/false
+          # I divide into jpsi and muon because in the fail region the third muon doesn't want the sf_id
+          df['sf_id_'+str(iid)+'_jpsi_up'] = ((mu1_id_features[0]+mu1_id_features[1]*weight_mu1_id)*(mu2_id_features[0]+mu2_id_features[1]*weight_mu2_id)).astype(float)
+          df['sf_id_'+str(iid)+'_jpsi_down'] = ((mu1_id_features[0]-mu1_id_features[1]*weight_mu1_id)*(mu2_id_features[0]-mu2_id_features[1]*weight_mu2_id)).astype(float)
+          df['sf_id_'+str(iid)+'_k_up'] = ((k_id_features[0]+k_id_features[1]*weight_k_id)).astype(float)
+          df['sf_id_'+str(iid)+'_k_down'] = ((k_id_features[0]-k_id_features[1]*weight_k_id)).astype(float)
+          
     df.to_root(path+'/'+sname+'_sf.root', key='BTo3Mu')
-    
-
-
-    

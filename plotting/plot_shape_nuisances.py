@@ -9,7 +9,7 @@ import numpy as np
 ROOT.gROOT.SetBatch()   
 ROOT.gStyle.SetOptStat(0)
 
-def plot_shape_nuisances(histos_folder, variable, pf = 'pass', fakes = True, path = '/work/friti/rjpsi_tools/CMSSW_10_6_14/src/RJpsiTools/plotting/plots_ul/', verbose = False):
+def plot_shape_nuisances(histos_folder, variable, pf = 'pass', plot3d = False, fakes = True, path = '/work/friti/rjpsi_tools/CMSSW_10_6_14/src/RJpsiTools/plotting/plots_ul/', compute_sf = False, verbose = False):
     '''
     Function that plots the systematic shape uncertainties in a root file.
     It takes as input the 
@@ -52,17 +52,36 @@ def plot_shape_nuisances(histos_folder, variable, pf = 'pass', fakes = True, pat
 
     his_tmp = fin.Get('jpsi_x_mu')
     nbins = his_tmp.GetNbinsX()
-    if pf == 'pass':
-        bbb_syst = ['bbb'+str(i)+'pass' for i in range(1,nbins+1)]
-    if pf == 'fail':
-        bbb_syst = ['bbb'+str(i)+'fail' for i in range(1,nbins+1)]
+    if plot3d:
+        if pf == 'pass':
+            bbb_syst = ['bbb'+str(i)+'_'+variable+'_pass' for i in range(1,nbins+1)]
+        if pf == 'fail':
+            bbb_syst = ['bbb'+str(i)+'_'+variable+'_fail' for i in range(1,nbins+1)]
+    else:
+        if pf == 'pass':
+            bbb_syst = ['bbb'+str(i)+'pass' for i in range(1,nbins+1)]
+        if pf == 'fail':
+            bbb_syst = ['bbb'+str(i)+'fail' for i in range(1,nbins+1)]
+
+    total_syst = hammer_syst + ctau_syst + pu_syst + bbb_syst 
+
+    # Don't compute these because they are approximable to a normalisation nuisance
+    # Keep the code in case we need to compute average and max again
+    if compute_sf:
+        sf_reco_syst = ['sfReco_'+str(i) for i in range(16*4)]
+        sf_id_syst = ['sfId_'+str(i) for i in range(16*4)]
+        total_syst = total_syst + sf_reco_syst + sf_id_syst
+        reco = []
+        id = []
+
     # Plot 
-    c2 = ROOT.TCanvas('c2', '', 700, 700)
-    c2.Draw()
-    c2.cd()
-    c2.SetTicks(True)
-    c2.SetBottomMargin(0.15)
+    c3 = ROOT.TCanvas('c3', '', 700, 700)
+    c3.Draw()
+    c3.cd()
+    c3.SetTicks(True)
+    c3.SetBottomMargin(0.15)
     #ROOT.gPad.SetLogx()    
+
 
     for sname in sample_names:
         # Only data and fakes don't have any shape nuisance
@@ -82,7 +101,7 @@ def plot_shape_nuisances(histos_folder, variable, pf = 'pass', fakes = True, pat
                 histo_central.SetBinContent(i,his_central.GetBinContent(i))
                 histo_central.SetBinError(i,his_central.GetBinError(i))
         
-            for syst in hammer_syst + ctau_syst + pu_syst + bbb_syst:
+            for syst in total_syst:
                 if verbose: print("Plotting variable "+syst+"for dataset "+sname)
                 maxx = []
 
@@ -113,7 +132,11 @@ def plot_shape_nuisances(histos_folder, variable, pf = 'pass', fakes = True, pat
                     histo_down.SetBinError(i,his_down.GetBinError(i))
                 maxx.append(histo_down.GetMaximum())
                 
-                histo_central.SetTitle(sname+' '+syst+';'+histos[variable][1]+';events')
+                if path == '/work/friti/rjpsi_tools/CMSSW_10_6_14/src/RJpsiTools/plotting/multi_plots/':
+                    histo_central.SetTitle(sname+' '+syst+';Unrolled 2D bins;events')
+                else:
+                    histo_central.SetTitle(sname+' '+syst+';'+histos[variable][1]+';events')
+                    
                 histo_central.SetLineColor(ROOT.kBlack)
                 histo_central.SetMarkerStyle(8)
                 histo_central.SetMarkerColor(ROOT.kBlack)
@@ -139,12 +162,36 @@ def plot_shape_nuisances(histos_folder, variable, pf = 'pass', fakes = True, pat
                 leg.AddEntry(histo_down, 'down value',  'EP')
                 leg.Draw('same')
                 
-                #CMS_lumi(c2, 4, 0, cmsText = 'CMS', extraText = ' Preliminary', lumi_13TeV = '')
+                #CMS_lumi(c3, 4, 0, cmsText = 'CMS', extraText = ' Preliminary', lumi_13TeV = '')
                 
-                c2.Modified()
-                c2.Update()
+                c3.Modified()
+                c3.Update()
                 
-                c2.SaveAs(path_out+"/"+sname+'_'+syst+'.png')
+                c3.SaveAs(path_out+"/"+sname+'_'+syst+'.png')
+                if compute_sf:
+                    if syst in sf_reco_syst or syst in sf_id_syst:
+                        histo_up.Divide(histo_central)
+                        histo_up.Draw("ep")
+                        avg = 0.
+                        for b in range(1,histo_up.GetNbinsX()+1):
+                            avg += histo_up.GetBinContent(b)
+                        avg = avg/histo_up.GetNbinsX()
+                        if syst in sf_reco_syst:
+                            reco.append(avg)
+                        elif syst in sf_id_syst:
+                            id.append(avg)
+                        avg_value = ROOT.TPaveText(0.7, 0.65, 0.88, 0.72, 'nbNDC')
+                        avg_value.AddText('avg = %.10f' %avg)
+                        avg_value.SetFillColor(0)
+                        avg_value.Draw('EP same')
+
+                        c3.Modified()
+                        c3.Update()
+                    
+                        c3.SaveAs(path_out+"/"+sname+'_'+syst+'_RATIO.png')
+    
+    if compute_sf:    
+        print(max(reco), max(id))
 
 if __name__ == "__main__":
 

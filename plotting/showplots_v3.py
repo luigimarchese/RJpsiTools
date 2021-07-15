@@ -1,29 +1,37 @@
+#system
 import os
 import copy
-import ROOT
-import numpy as np
 from datetime import datetime
-from bokeh.palettes import viridis, all_palettes
 import random
 import time
+
+# computation libraries
+import ROOT
+import pandas as pd
+import numpy as np
 from array import array
 import pickle
 import math 
-from histos import histos
+from bokeh.palettes import viridis, all_palettes
+from keras.models import load_model
+
+# cms libs
 from cmsstyle import CMS_lumi
+from officialStyle import officialStyle
+
+# personal libs
+from histos import histos
 from new_branches import to_define
 from samples import weights, sample_names, titles, colours
 from selections import preselection, preselection_mc, pass_id, fail_id
-from officialStyle import officialStyle
 from create_datacard import create_datacard_pass,create_datacard_fail
-#from tmp import create_datacard_pass,create_datacard_fail
 from plot_shape_nuisances import plot_shape_nuisances
 
-from keras.models import load_model
 
 shape_nuisances = True
 flat_fakerate = False # false mean that we use the NN weights for the fr
 blind_analysis = True
+compute_sf = False # compute scale factors SHAPE nuisances
 rjpsi = 1
 
 start_time = time.time()
@@ -150,7 +158,26 @@ def make_binbybin(hist, flag, label, name):
         histo_up.Write()
         histo_down.Write()
     fout.Close()
-        
+
+def define_shape_nuisances(sname, nuisance_name, central_value, up_value, down_value, central_weights_string):
+    shapes[sname + '_' + nuisance_name + 'Up'] = samples[sname]
+    if sname == 'jpsi_mu':
+        shapes[sname + '_' + nuisance_name + 'Up'] = shapes[sname + '_' + nuisance_name + 'Up'].Define('shape_weight_tmp', central_weights_string.replace(central_value,up_value)+'*hammer_bglvar')
+    elif sname == 'jpsi_tau':
+        shapes[sname + '_' + nuisance_name + 'Up'] = shapes[sname + '_' + nuisance_name + 'Up'].Define('shape_weight_tmp', central_weights_string.replace(central_value,up_value)+'*hammer_bglvar*%f*%f' %(blind,rjpsi))
+
+    else:
+        shapes[sname + '_' + nuisance_name + 'Up'] = shapes[sname + '_' + nuisance_name + 'Up'].Define('shape_weight_tmp', central_weights_string.replace(central_value,up_value))
+
+    shapes[sname + '_' + nuisance_name + 'Down'] = samples[sname]
+    if sname == 'jpsi_mu':
+        shapes[sname + '_' + nuisance_name + 'Down'] = shapes[sname + '_' + nuisance_name + 'Down'].Define('shape_weight_tmp', central_weights_string.replace(central_value,down_value)+'*hammer_bglvar')
+    elif sname == 'jpsi_tau':
+        shapes[sname + '_' + nuisance_name + 'Down'] = shapes[sname + '_' + nuisance_name + 'Down'].Define('shape_weight_tmp', central_weights_string.replace(central_value,down_value)+'*hammer_bglvar*%f*%f' %(blind,rjpsi))
+
+    else:
+        shapes[sname + '_' + nuisance_name + 'Down'] = shapes[sname + '_' + nuisance_name + 'Down'].Define('shape_weight_tmp', central_weights_string.replace(central_value,down_value))
+    return shapes[sname + '_' + nuisance_name + 'Up'], shapes[sname + '_' + nuisance_name + 'Down']
 
 # Canvas and Pad gymnastics
 c1 = ROOT.TCanvas('c1', '', 700, 700)
@@ -177,14 +204,17 @@ ratio_pad.SetBottomMargin(0.45)
 
 if __name__ == '__main__':
     
-    datacards = ['mu1pt', 'Q_sq', 'm_miss_sq', 'E_mu_star', 'E_mu_canc', 'bdt_tau', 'Bmass', 'mcorr', 'decay_time_ps','k_raw_db_corr_iso04_rel']
-    
+    #datacards = ['mu1pt', 'Q_sq', 'm_miss_sq', 'E_mu_star', 'E_mu_canc', 'bdt_tau', 'Bmass', 'mcorr', 'decay_time_ps','k_raw_db_corr_iso04_rel']
+    datacards = ['Q_sq']
+
     # timestamp
     label = datetime.now().strftime('%d%b%Y_%Hh%Mm%Ss')
 
     # create plot directories
     make_directories(label)
     
+    central_weights_string = 'ctau_weight_central*br_weight*puWeight*sf_reco_total*sf_id_jpsi'
+
     # access the samples, via RDataFrames
     samples = dict()
 
@@ -200,14 +230,13 @@ if __name__ == '__main__':
     '''
 
     for k in sample_names:
-        #        samples[k] = ROOT.RDataFrame(tree_name,'%s/%s_fakerate.root'%(tree_dir,k)) #they don't have the scale factors
         if k == 'data':
             samples[k] = ROOT.RDataFrame(tree_name,'%s/%s_fakerate.root'%(tree_dir,k)) 
         else:
-            #if k == 'jpsi_x_mu':
-            #    samples[k] = ROOT.RDataFrame(tree_name,'%s/jpsi_x_sf.root'%(tree_dir))
-            #else:
             samples[k] = ROOT.RDataFrame(tree_name,'%s/%s_sf.root'%(tree_dir,k))
+
+    #for k in sample_names:
+    #    samples[k] = ROOT.RDataFrame(tree_name,'%s/%s_bdtenriched.root'%(tree_dir,k)) 
     
     print("=============================")
     print("====== Samples loaded =======")
@@ -227,19 +256,12 @@ if __name__ == '__main__':
     #################################################
     for k, v in samples.items():
         samples[k] = samples[k].Define('br_weight', '%f' %weights[k])
-        #for jpsi tau apply ctau, pu and ff weights. Plus the values for the blind analyss and rjpsi
         if k=='jpsi_tau':
-            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_total*%f*%f' %(blind,rjpsi))
-            #samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight*hammer_bglvar*%f*%f' %(blind,rjpsi))
-        # jpsi mu apply ctau, pu and ff weights
+            samples[k] = samples[k].Define('tmp_weight', central_weights_string +'*hammer_bglvar*%f*%f' %(blind,rjpsi))
         elif k=='jpsi_mu':
-            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_total')
-            #samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight*hammer_bglvar')
-        #For all the other samples we apply ctau and pu
-        #For the Bc samples the ctau contribution is != 1., while for the background it is ==1
+            samples[k] = samples[k].Define('tmp_weight', central_weights_string +'*hammer_bglvar')
         else:
-            samples[k] = samples[k].Define('total_weight', 'ctau_weight_central*br_weight*puWeight*sf_total' if k!='data' else 'br_weight') 
-            #samples[k] = samples[k].Define('total_weight', 'br_weight*puWeight' if k!='data' else 'br_weight') 
+            samples[k] = samples[k].Define('tmp_weight', central_weights_string  if k!='data' else 'br_weight') 
 
         #define new columns
         for new_column, new_definition in to_define: 
@@ -249,91 +271,67 @@ if __name__ == '__main__':
 
     if flat_fakerate == False:
         for sample in samples:
-            samples[sample] = samples[sample].Define('total_weight_wfr', 'total_weight*nn/(1-nn)') 
+            samples[sample] = samples[sample].Define('total_weight_wfr', 'tmp_weight*nn/(1-nn)') 
+
+    # the scale factor on the id on the third muon only for the PASS region
+    for sample in samples:
+        samples[sample] = samples[sample].Define('total_weight', 'tmp_weight*sf_id_k' if sample!='data' else 'tmp_weight')
+            
+    ##############################################
+    ##### Preselection ###########################
+    ##############################################
 
     #Apply preselection. 
     for k, v in samples.items():
         filter = preselection_mc if k!='data' else preselection
         samples[k] = samples[k].Filter(filter)
 
+
+    ###########################################################
+    ######### NUISANCES Defininition ##########################
+    ###########################################################
+
     # Shape nuisances definition
     # Create a new disctionary "shapes", similar to the "samples" one defined for the datasets
     # Each entry of the dic is a nuisance for a different dataset
     if shape_nuisances :
         shapes = dict()
-        #ctau nuisances
-        for sname in samples:
-            #Only Bc samples want this nuisance
-            if (sname != 'jpsi_x_mu' and sname != 'data' ):
-                shapes[sname + '_ctauUp'] = samples[sname]
-                if sname == 'jpsi_mu':
-                    shapes[sname +'_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight*hammer_bglvar*sf_total')
-                elif sname == 'jpsi_tau':
-                    shapes[sname +'_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight*hammer_bglvar*sf_total*%f*%f' %(blind,rjpsi))
-                else:
-                    shapes[sname + '_ctauUp'] = shapes[sname + '_ctauUp'].Define('shape_weight', 'ctau_weight_up*br_weight*puWeight*sf_total')
-                shapes[sname + '_ctauDown'] = samples[sname]
-                if sname == 'jpsi_mu':
-                    shapes[sname + '_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight*hammer_bglvar*sf_total')
-                elif sname == 'jpsi_tau':
-                    shapes[sname +'_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight*hammer_bglvar*sf_total*%f*%f' %(blind,rjpsi))
-                else:
-                    shapes[sname + '_ctauDown'] = shapes[sname + '_ctauDown'].Define('shape_weight', 'ctau_weight_down*br_weight*puWeight*sf_total')
+
+        ############################
+        ########  CTAU  ############
+        ############################
         
-            # Pile up nuisances
-            if (sname != 'data'):
-                shapes[sname + '_puWeightUp'] = samples[sname]
-                if sname == 'jpsi_mu':
-                    shapes[sname +'_puWeightUp'] = shapes[sname + '_puWeightUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightUp*hammer_bglvar*sf_total')
-                elif sname == 'jpsi_tau':
-                    shapes[sname +'_puWeightUp'] = shapes[sname + '_puWeightUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightUp*hammer_bglvar*sf_total*%f*%f' %(blind,rjpsi))
-                else:
-                    shapes[sname + '_puWeightUp'] = shapes[sname + '_puWeightUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightUp*sf_total')
+        for sname in samples:
+            if (sname != 'jpsi_x_mu' and sname != 'data' ):    #Only Bc samples want this nuisance
+                shapes[sname + '_ctauUp'], shapes[sname + '_ctauDown'] = define_shape_nuisances(sname, 'ctau', 'ctau_weight_central', 'ctau_weight_up', 'ctau_weight_down', central_weights_string)
+            ###############################
+            ########  PILE UP  ############
+            ###############################
 
-                shapes[sname + '_puWeightDown'] = samples[sname]
-                if sname == 'jpsi_mu':
-                    shapes[sname + '_puWeightDown'] = shapes[sname + '_puWeightDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightDown*hammer_bglvar*sf_total')
-                elif sname == 'jpsi_tau':
-                    shapes[sname +'_puWeightDown'] = shapes[sname + '_puWeightDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightDown*hammer_bglvar*sf_total*%f*%f' %(blind,rjpsi))
-                else:
-                    shapes[sname + '_puWeightDown'] = shapes[sname + '_puWeightDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeightDown*sf_total')
-            
-            #scale factors reco
-            if (sname != 'data'):
-                shapes[sname + '_sfRecoUp'] = samples[sname]
-                if sname == 'jpsi_mu':
-                    shapes[sname +'_sfRecoUp'] = shapes[sname + '_sfRecoUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_reco_up')
-                elif sname == 'jpsi_tau':
-                    shapes[sname +'_sfRecoUp'] = shapes[sname + '_sfRecoUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_reco_up*%f*%f' %(blind,rjpsi))
-                else:
-                    shapes[sname + '_sfRecoUp'] = shapes[sname + '_sfRecoUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*sf_reco_up')
+            if (sname != 'data'): # all MC samples
+                shapes[sname + '_puWeightUp'], shapes[sname + '_puWeightDown'] = define_shape_nuisances(sname, 'puWeight', 'puWeight', 'puWeightUp', 'puWeightDown', central_weights_string)
 
-                shapes[sname + '_sfRecoDown'] = samples[sname]
-                if sname == 'jpsi_mu':
-                    shapes[sname + '_sfRecoDown'] = shapes[sname + '_sfRecoDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_reco_down')
-                elif sname == 'jpsi_tau':
-                    shapes[sname +'_sfRecoDown'] = shapes[sname + '_sfRecoDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_reco_down*%f*%f' %(blind,rjpsi))
-                else:
-                    shapes[sname + '_sfRecoDown'] = shapes[sname + '_sfRecoDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*sf_reco_down')
+            if compute_sf:
+		###############################
+		########  SF RECO  ############
+		###############################
+                if (sname != 'data'):
+                    for ireco in range(0, 16 * 4):
+                        shapes[sname + '_sfReco_'+str(ireco)+'Up'], shapes[sname + '_sfReco_'+str(ireco)+'Down'] = define_shape_nuisances(sname, 'sfReco_'+str(ireco), 'sf_reco_total', 'sf_reco_'+str(ireco)+'_up', 'sf_reco_'+str(ireco)+'_down', central_weights_string)
 
-            #scale factors id
-            if (sname != 'data'):
-                shapes[sname + '_sfIdUp'] = samples[sname]
-                if sname == 'jpsi_mu':
-                    shapes[sname +'_sfIdUp'] = shapes[sname + '_sfIdUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_id_up')
-                elif sname == 'jpsi_tau':
-                    shapes[sname +'_sfIdUp'] = shapes[sname + '_sfIdUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_id_up*%f*%f' %(blind,rjpsi))
-                else:
-                    shapes[sname + '_sfIdUp'] = shapes[sname + '_sfIdUp'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*sf_id_up')
+		###############################
+		########  SF ID  ##############
+		###############################
+		
+		# Only jpsi for now, bc the sf_id for the third muon is only in the pass region!
+                if (sname != 'data'):
+                    for iid in range(0, 16 *4):
+                        shapes[sname + '_sfId_'+str(iid)+'Up'], shapes[sname + '_sfId_'+str(iid)+'Down'] = define_shape_nuisances(sname, 'sfId_'+str(iid), 'sf_id_total', 'sf_id_'+str(iid)+'_up', 'sf_id_'+str(iid)+'_down', central_weights_string)
 
-                shapes[sname + '_sfIdDown'] = samples[sname]
-                if sname == 'jpsi_mu':
-                    shapes[sname + '_sfIdDown'] = shapes[sname + '_sfIdDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_id_down')
-                elif sname == 'jpsi_tau':
-                    shapes[sname +'_sfIdDown'] = shapes[sname + '_sfIdDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*hammer_bglvar*sf_id_down*%f*%f' %(blind,rjpsi))
-                else:
-                    shapes[sname + '_sfIdDown'] = shapes[sname + '_sfIdDown'].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*sf_id_down')
-                
+        ######################################
+        ########  FORM FACTORS  ##############
+        #####################################
+                        
         # form factor shape nuisances for jpsi mu and jpsi tau datasets
         hammer_branches = ['hammer_bglvar_e0up',
                            'hammer_bglvar_e0down',
@@ -367,21 +365,32 @@ if __name__ == '__main__':
                 new_name = new_name.replace('down','Down')
             
             shapes['jpsi_mu_'+new_name] = samples['jpsi_mu']
-            shapes['jpsi_mu_'+new_name] = shapes['jpsi_mu_'+new_name].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*sf_total*'+ham)
+            shapes['jpsi_mu_'+new_name] = shapes['jpsi_mu_'+new_name].Define('shape_weight_tmp', central_weights_string+'*'+ham)
             shapes['jpsi_tau_'+new_name] = samples['jpsi_tau']
-            shapes['jpsi_tau_'+new_name] = shapes['jpsi_tau_'+new_name].Define('shape_weight', 'ctau_weight_central*br_weight*puWeight*sf_total*'+ham+'*%f*%f' %(blind,rjpsi))
+            shapes['jpsi_tau_'+new_name] = shapes['jpsi_tau_'+new_name].Define('shape_weight_tmp', central_weights_string+'*'+ham+'*%f*%f' %(blind,rjpsi))
 
 
         if flat_fakerate == False:
             for name in shapes:
-                shapes[name] = shapes[name].Define('shape_weight_wfr','shape_weight*nn/(1-nn)')
+                shapes[name] = shapes[name].Define('shape_weight_wfr','shape_weight_tmp*nn/(1-nn)')
+        
+        # For the Pass region we add the sf_id_k and its shape uncetrtainty
+        for name in shapes:
+                if 'sfId' not in name:
+                    shapes[name] = shapes[name].Define('shape_weight','shape_weight_tmp*sf_id_k')
+                else:
+                    if 'Up' in name:
+                        number = name.split('_')[-1].strip('Up')
+                        shapes[name] = shapes[name].Define('shape_weight','shape_weight_tmp*sf_id_'+number+'_k_up')
+                    elif 'Down' in name:
+                        number = name.split('_')[-1].strip('Down')
+                        shapes[name] = shapes[name].Define('shape_weight','shape_weight_tmp*sf_id_'+number+'_k_down')
 
-    #colours = list(map(ROOT.TColor.GetColor, all_palettes['Spectral'][len(samples)]))
 
-    # CREATE THE SMART POINTERS IN ONE GO AND PRODUCE RESULTS IN ONE SHOT,
-    # SEE MAX GALLI PRESENTATION
-    # https://github.com/maxgalli/dask-pyroot-tutorial/blob/master/2_rdf_basics.ipynb
-    # https://indico.cern.ch/event/882824/contributions/3929999/attachments/2073718/3481850/PyROOT_PyHEP_2020.pdf
+    ##################################
+    ###### HISTOS ###################
+    ##################################
+
 
     # first create all the pointers
     print('====> creating pointers to histo')
@@ -609,7 +618,7 @@ if __name__ == '__main__':
         
         if k in datacards and shape_nuisances:
             create_datacard_prep(temp_hists[k],unc_hists[k],shapes,'pass',k,label)
-            plot_shape_nuisances(label, k, 'pass')
+            plot_shape_nuisances(label, k, 'pass', compute_sf = compute_sf)
         #####################################################
         # Now creating and saving the stack of the fail region
 
@@ -702,7 +711,7 @@ if __name__ == '__main__':
 
         if k in datacards and shape_nuisances:
             create_datacard_prep(temp_hists_fake[k],unc_hists_fake[k],shapes,'fail',k,label)
-            plot_shape_nuisances(label, k, 'fail')
+            plot_shape_nuisances(label, k, 'fail', compute_sf = compute_sf)
         
     save_yields(label, temp_hists)
     save_selection(label, preselection)
