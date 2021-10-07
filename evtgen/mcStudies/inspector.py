@@ -1,3 +1,13 @@
+'''
+Script to inspect the GEN files (also AODs). It saves a flat root file with the chosen branches.
+For this MC study the GEN samples are of the jpsi+mu background (HbToJpsiX_3MuFilter MC)
+- Old sample (already produced up to miniAOD, in DAS): from files_HbToJPsiMuMu_3MuFilter_old import files
+- New sample with scaleToFilter 3 (and mu1 and mu2 pt >3.5): /pnfs/psi.ch/cms/trivcat/store/user/friti/RJpsi-HbToJpsiMuMu-3MuFilter_GEN_27Sep21_v7/*.root
+- New sample with scaleToFilter 5 (and mu1 and mu2 pt >3.5): /pnfs/psi.ch/cms/trivcat/store/user/friti/RJpsi-HbToJpsiMuMu-3MuFilter_GEN_27Sep21_v5/*.root
+
+Be careful to change the output name!
+'''
+
 from __future__ import print_function
 import ROOT
 import argparse
@@ -14,9 +24,6 @@ from PhysicsTools.HeppyCore.utils.deltar import deltaR, deltaPhi
 from particle import Particle
 #from files_HbToJPsiMuMu_3MuFilter_old import files
 
-
-
-
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--files_per_job', dest='files_per_job', default=2    , type=int)
 parser.add_argument('--jobid'        , dest='jobid'        , default=0    , type=int)
@@ -31,7 +38,7 @@ verbose       = args.verbose
 destination   = args.destination
 maxevents     = args.maxevents
 
-files = glob('/pnfs/psi.ch/cms/trivcat/store/user/friti/RJpsi-HbToJpsiMuMu-3MuFilter_GEN_27Sep21_v3/*.root')
+files = glob('/pnfs/psi.ch/cms/trivcat/store/user/friti/RJpsi-HbToJpsiMuMu-3MuFilter_GEN_27Sep21_v7/*.root')
 
 diquarks = [
     1103,
@@ -191,6 +198,12 @@ branches = [
     'mu3_q',
 
     'dr_jpsi_m',
+    'dr12',
+    'dr23',
+    'dr13',
+    'm12',
+    'm13',
+    'm23',
 
     'is3m',
 
@@ -220,7 +233,7 @@ branches = [
 #     'ctau_weight_down_lhe',
 ]
 
-fout = ROOT.TFile('%s/RJpsi-_HbToJPsiMuMu_3MuFilter_v3.root' %(destination), 'recreate')
+fout = ROOT.TFile('%s/RJpsi_HbToJPsiMuMu_3MuFilter.root' %(destination), 'recreate')
 ntuple = ROOT.TNtuple('tree', 'tree', ':'.join(branches))
 tofill = OrderedDict(zip(branches, [np.nan]*len(branches)))
 
@@ -375,7 +388,14 @@ for i, event in enumerate(events):
             tofill['mmm_m'  ] = three_mu_p4.mass()
             tofill['mmm_q'  ] = extra_mu.charge()
             
+            tofill['m12'] = (jpsi_muons[0].p4() + jpsi_muons[1].p4()).mass()
+            tofill['m13'] = (jpsi_muons[0].p4() + extra_mu.p4()).mass()
+            tofill['m23'] = (jpsi_muons[1].p4() + extra_mu.p4()).mass()
+
             tofill['dr_jpsi_m'] = deltaR(extra_mu, jpsi)
+            tofill['dr13'] = deltaR(jpsi_muons[0], extra_mu)
+            tofill['dr12'] = deltaR(jpsi_muons[0], jpsi_muons[1])
+            tofill['dr23'] = deltaR(jpsi_muons[1], extra_mu)
 
             tofill['n_extra_mu'] = len(final_state_muons_non_jpsi)
 
