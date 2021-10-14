@@ -25,8 +25,7 @@ files = ['root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18RECO/HbToJPsi
 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18RECO/HbToJPsiMuMu_3MuFilter_TuneCP5_13TeV-pythia8-evtgen/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v1/00000/8232CC13-C3F1-C947-9850-2CF945754911.root',
 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18RECO/HbToJPsiMuMu_3MuFilter_TuneCP5_13TeV-pythia8-evtgen/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v1/00000/B7C169D4-03DF-7247-93CE-931EDFC6E0EF.root',
 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18RECO/HbToJPsiMuMu_3MuFilter_TuneCP5_13TeV-pythia8-evtgen/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v1/00000/89B5FEED-435A-E746-A2C7-14B065446F38.root',
-'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18RECO/HbToJPsiMuMu_3MuFilter_TuneCP5_13TeV-pythia8-evtgen/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v1/00000/E506E0FF-6550-6D4C-AACD-FFD15510B51C.root']
-''',
+'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18RECO/HbToJPsiMuMu_3MuFilter_TuneCP5_13TeV-pythia8-evtgen/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v1/00000/E506E0FF-6550-6D4C-AACD-FFD15510B51C.root',
 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18RECO/HbToJPsiMuMu_3MuFilter_TuneCP5_13TeV-pythia8-evtgen/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v1/00000/E36CD907-3522-7E4D-99A1-AB06D55E6470.root',
 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18RECO/HbToJPsiMuMu_3MuFilter_TuneCP5_13TeV-pythia8-evtgen/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v1/00000/231B0A00-68C7-4143-86B1-31F66B6E6869.root',
 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18RECO/HbToJPsiMuMu_3MuFilter_TuneCP5_13TeV-pythia8-evtgen/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v1/00000/B097033B-8F2B-134A-9148-9CC1187F01EB.root',
@@ -1027,4 +1026,3 @@ files = ['root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18RECO/HbToJPsi
 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18RECO/HbToJPsiMuMu_3MuFilter_TuneCP5_13TeV-pythia8-evtgen/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v1/00000/1DB7F760-31FF-7343-B77D-6DA86596B86F.root',
 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18RECO/HbToJPsiMuMu_3MuFilter_TuneCP5_13TeV-pythia8-evtgen/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v1/230000/109FD217-36C8-934C-B442-6523EEC6B685.root',
 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer20UL18RECO/HbToJPsiMuMu_3MuFilter_TuneCP5_13TeV-pythia8-evtgen/AODSIM/106X_upgrade2018_realistic_v11_L1v1-v1/00000/D085FAC3-235A-6342-B33E-5872AD11CF8A.root']
-'''

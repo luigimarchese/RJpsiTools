@@ -22,7 +22,7 @@ from DataFormats.FWLite import Events, Handle
 from PhysicsTools.HeppyCore.utils.deltar import deltaR, deltaPhi
 # https://pypi.org/project/particle/
 from particle import Particle
-#from files_HbToJPsiMuMu_3MuFilter_old import files
+from files_HbToJPsiMuMu_3MuFilter_old import files
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--files_per_job', dest='files_per_job', default=2    , type=int)
@@ -38,8 +38,10 @@ verbose       = args.verbose
 destination   = args.destination
 maxevents     = args.maxevents
 
-files = glob('/pnfs/psi.ch/cms/trivcat/store/user/friti/RJpsi-HbToJpsiMuMu-3MuFilter_GEN_27Sep21_v7/*.root')
-
+#files = glob('/pnfs/psi.ch/cms/trivcat/store/user/friti/HOOK_INPUT/*.root')
+files.sort()
+files = files[(jobid)*files_per_job:(jobid+1)*files_per_job]
+print("files: ",files)
 diquarks = [
     1103,
     2101,
@@ -133,6 +135,7 @@ handles['genInfo'] = ('generator'   , Handle('GenEventInfoProduct'           ))
 #files = ['/pnfs/psi.ch/cms/trivcat/store/user/manzoni/RJPsi_BcToJpsiMuNu_GEN_FF_Ebert_28jan21_v1/BcToJpsiMuNu-Ebert-RunIISummer19UL18GEN_100.root','/pnfs/psi.ch/cms/trivcat/store/user/manzoni/RJPsi_BcToJpsiMuNu_GEN_FF_Ebert_28jan21_v1/BcToJpsiMuNu-Ebert-RunIISummer19UL18GEN_20.root']
 events = Events(files)
 
+print("Events loaded")
 branches = [
     'run',
     'lumi',
@@ -233,13 +236,14 @@ branches = [
 #     'ctau_weight_down_lhe',
 ]
 
-fout = ROOT.TFile('%s/RJpsi_HbToJPsiMuMu_3MuFilter_br.root' %(destination), 'recreate')
+fout = ROOT.TFile('HOOK_FILE_OUT', 'recreate')
 ntuple = ROOT.TNtuple('tree', 'tree', ':'.join(branches))
 tofill = OrderedDict(zip(branches, [np.nan]*len(branches)))
 
 start = time()
 maxevents = maxevents if maxevents>=0 else events.size() # total number of events in the files
 
+print("Starting the loop")
 for i, event in enumerate(events):
 
     if (i+1)>maxevents:
@@ -459,4 +463,5 @@ for i, event in enumerate(events):
 fout.cd()
 ntuple.Write()
 fout.Close()
-    
+print("Success!")    
+print("File HOOK_FILE_OUT saved!" )

@@ -8,23 +8,18 @@ from IOMC.RandomEngine.RandomServiceHelper import  RandomNumberServiceHelper
 randHelper =  RandomNumberServiceHelper(process.RandomNumberGeneratorService)
 randHelper.populate()
 process.RandomNumberGeneratorService.saveFileName =  cms.untracked.string("RandomEngineState.log")
-
-
 '''
 import os
 from glob import glob
 
-
-# formfactors = 'Kiselev'
-# njobs = len(files)
+# Define n of jobs; name of output directory; numnber of events per job
 njobs = 500
-# njobs = 2
-out_dir = 'RJpsi-HbToJpsiMuMu-3MuFilter_GEN_27Sep21_v3'
-# events_per_job = -1
 events_per_job = 5000
+out_dir = 'RJpsi-HbToJpsiMuMu-3MuFilter_GEN_11Oct_S1_v1'
 
-template_cfg = "RJpsi-HbToJpsiMuMu-3MuFilter-RunIISummer19UL18GEN_TEMPLATE_cfg.py"
-template_fileout = "RJpsi-HbToJpsiMuMu-3MuFilter-RunIISummer19UL18GEN_TEMPLATE.root"
+# Indicate the name of the template configuration file
+template_cfg = "RJpsi-HbToJpsiMuMu-3MuFilter-RunIISummer19UL18GEN_scale1_TEMPLATE_cfg.py"
+template_fileout = "RJpsi-HbToJpsiMuMu-3MuFilter-RunIISummer19UL18GEN_scale1_TEMPLATE.root"
 
 ##########################################################################################
 ##########################################################################################
@@ -61,8 +56,6 @@ for ijob in range(njobs):
 
     to_write = '\n'.join([
         '#!/bin/bash',
-        'source /cvmfs/cms.cern.ch/cmsset_default.sh',
-        'export SCRAM_ARCH=slc6_amd64_gcc630',
         'cd {dir}',
         'scramv1 runtime -sh',
         'mkdir -p /scratch/friti/{scratch_dir}',
@@ -88,7 +81,7 @@ for ijob in range(njobs):
         '--account=t3', 
         '-o %s/logs/chunk%d.log' %(out_dir, ijob),
         '-e %s/errs/chunk%d.err' %(out_dir, ijob), 
-        '--job-name=%s' %out_dir, 
+        '--job-name=%s_gen' %str(ijob), 
         #'--time=60', 
         '%s/submitter_chunk%d.sh' %(out_dir, ijob), 
     ])
