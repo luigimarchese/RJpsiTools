@@ -48,6 +48,13 @@ cmsDriver.py Configuration/GenProduction/python/RJpsi-HbToJpsiMuMu-RunIISummer19
 # now run
 cmsRun RJpsi-HbToJpsiMuMu-RunIISummer19UL18GEN_cfg.py
 
+# in case you are submitting the jobs, don't forget to add the following lines at the end of the configuration file 
+from IOMC.RandomEngine.RandomServiceHelper import  RandomNumberServiceHelper
+randHelper =  RandomNumberServiceHelper(process.RandomNumberGeneratorService)
+randHelper.populate()
+process.RandomNumberGeneratorService.saveFileName =  cms.untracked.string("RandomEngineState.log")
+
+
 # get the cmsdriver command for the JPsi(mm) + mu, mass(mu,mu,mu)<10 sample
 cmsDriver.py Configuration/GenProduction/python/RJpsi-HbToJpsiMuMu-3MuFilter-RunIISummer19UL18-fragment.py \
 --fileout file:RJpsi-HbToJpsiMuMu-3MuFilter-RunIISummer19UL18GEN.root \
@@ -67,6 +74,11 @@ cmsDriver.py Configuration/GenProduction/python/RJpsi-HbToJpsiMuMu-3MuFilter-Run
 # now run
 cmsRun RJpsi-HbToJpsiMuMu-3MuFilter-RunIISummer19UL18GEN_cfg.py
 
+# in case you are submitting the jobs, don't forget to add the following lines at the end of the configuration file 
+from IOMC.RandomEngine.RandomServiceHelper import  RandomNumberServiceHelper
+randHelper =  RandomNumberServiceHelper(process.RandomNumberGeneratorService)
+randHelper.populate()
+process.RandomNumberGeneratorService.saveFileName =  cms.untracked.string("RandomEngineState.log")
 
 # and inspect the file you produced
 ipython -i -- inspector.py --verbose
