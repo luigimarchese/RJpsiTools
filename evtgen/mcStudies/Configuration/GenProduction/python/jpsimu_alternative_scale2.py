@@ -15,9 +15,9 @@ generator = cms.EDFilter("Pythia8GeneratorFilter",
         pythia8CP5SettingsBlock,
         processParameters = cms.vstring(
             'SoftQCD:nonDiffractive = on',
-			'PTFilter:filter = on', # this turn on the filter
+            'PTFilter:filter = on', # this turn on the filter
             'PTFilter:quarkToFilter = 5', # PDG id of q quark
-            'PTFilter:scaleToFilter = 3.0', # RM: increase to 5 GeV
+            'PTFilter:scaleToFilter = 2.0', 
         ),
         parameterSets = cms.vstring(
             'pythia8CommonSettings',
@@ -427,23 +427,23 @@ End
 '''            
             ),
             list_forced_decays     = cms.vstring(
-                'MyB+',
+                'MyB+', #521
                 'MyB-',
-                'MyBc+',
-                'MyBc-',
-                'Myanti-B0',
+                'MyBc+', #541
+                'MyBc-', 
+                'Myanti-B0', #511
                 'MyB0',
-                'Myanti-Bs',
+                'Myanti-Bs', #531
                 'MyBs',
-                'MyLambda_b0',
-                'MyXi_b-',
+                'MyLambda_b0', #5122
+                'MyXi_b-',     #20553 (xi_b1 ?)
                 'Myanti-Xi_b+',
-                'MyXi_b0',
+                'MyXi_b0',     #10551
                 'Myanti-Xi_b0',
-                'MyOmega_b-',
+                'MyOmega_b-',  #5332
                 'Myanti-Omega_b+',
             ),        
-            operates_on_particles = cms.vint32(),    
+            operates_on_particles = cms.vint32(521,541,511,531,5122,10551,20553,5332),    
             convertPythiaCodes = cms.untracked.bool(False),
         ),
         parameterSets = cms.vstring('EvtGen130'),
@@ -456,12 +456,12 @@ generator.PythiaParameters.processParameters.extend(EvtGenExtraParticles)
 jpsi_from_b_hadron_filter = cms.EDFilter(
     "PythiaFilterMultiAncestor",
     ParticleID      = cms.untracked.int32 (443),
-    MinPt           = cms.untracked.double(6.),
-    MinEta          = cms.untracked.double(-3.),
-    MaxEta          = cms.untracked.double( 3.),
+    MinPt           = cms.untracked.double(0.),
+    MinEta          = cms.untracked.double(-100.),
+    MaxEta          = cms.untracked.double( 100.),
     MotherIDs       = cms.untracked.vint32([5]),
     DaughterIDs     = cms.untracked.vint32([-13, 13]),
-    DaughterMinPts  = cms.untracked.vdouble([ 3.5 , 3.5  ]), # RM: raise to 3.5
+    DaughterMinPts  = cms.untracked.vdouble([ 3.2 , 3.2  ]), 
     DaughterMaxPts  = cms.untracked.vdouble([ 1.e6,  1.e6]),
     DaughterMinEtas = cms.untracked.vdouble([-2.52 , -2.52 ]),
     DaughterMaxEtas = cms.untracked.vdouble([ 2.52 ,  2.52 ]),
@@ -472,7 +472,7 @@ three_mu_filter = cms.EDFilter(
     NumRequired = cms.int32(3),
     AcceptMore  = cms.bool(True),
     ParticleID  = cms.vint32(13,13,13),
-    PtMin       = cms.vdouble(2.8, 2.8, 2.),
+    PtMin       = cms.vdouble(3.2, 3.2, 3.2),
     EtaMax      = cms.vdouble(2.52, 2.52, 2.52),
     Status      = cms.vint32(1, 1, 1),
 )
@@ -483,11 +483,11 @@ three_mu_filter = cms.EDFilter(
 # In addition, the invariant mass of these two can't be too large 
 mu_mu_same_charge_filter = cms.EDFilter(
     "MCParticlePairFilter",
-    particleID1    = cms.untracked.vint32(13), # mu
-    particleID2    = cms.untracked.vint32(13), # mu
-    ParticleCharge = cms.untracked.int32(-1), # same charge
+    ParticleID1    = cms.untracked.vint32(13), # mu
+    ParticleID2    = cms.untracked.vint32(13), # mu
+    ParticleCharge = cms.untracked.int32(1), # same charge
     MaxInvMass     = cms.untracked.double(10.),
-    MinPt          = cms.untracked.vdouble(2.8, 2.), # raise to 3.5, 3.5
+    MinPt          = cms.untracked.vdouble(3.2, 3.2), 
     MinEta         = cms.untracked.vdouble(-2.52, -2.52),
     MaxEta         = cms.untracked.vdouble( 2.52,  2.52),
     Status         = cms.untracked.vint32(1, 1),
@@ -499,9 +499,9 @@ configurationMetadata = cms.untracked.PSet(
     annotation = cms.untracked.string(
         'QCD bbbar production, '\
         'Jpsi from any b-hadron (either directly or feeddown), '\
-        'Jpsi->mumu, mu pt>2.8, mu |eta|<2.52, '\
-        'additional mu with pt>2. and |eta|<2.52, '\
-        'invariannt mass(Jpsi, mu)<10, '\
+        'Jpsi->mumu, mu pt>3.2, mu |eta|<2.52, '\
+        'additional mu with pt>3.2 and |eta|<2.52, '\
+        'invariant mass(Jpsi, mu)<10, '\
         '13 TeV, '\
         'TuneCP5'
     )

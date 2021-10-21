@@ -47,9 +47,12 @@ for SF,folder in zip([1,3,5],folders):
                 saved_line = saved_line.strip(' ')
                 time_per_event.append(float(saved_line))
     
-    #Compute the average for the filter efficiency
-
+    #Compute the weighted average for the filter efficiency
+    # media pesata? O media?
+    filter_eff_weighted = [(eff*unc) for eff,unc in zip(filter_efficiency,filter_efficiency_unc)] 
+    average = np.sqrt(sum(filter_eff_weighted)/len(filter_eff_weighted))
     print("Filter efficiency for ScaleToFilter " + str(SF) + " is: " + str(sum(filter_efficiency)/len(filter_efficiency)))
     print("Average time per event for ScaleToFilter " + str(SF) + " is: " + str(sum(time_per_event)/len(time_per_event)))
-    
+    #print(average)
+
 
