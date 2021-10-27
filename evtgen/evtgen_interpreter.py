@@ -1,3 +1,6 @@
+# Updated to PDG 2021
+# some decays taken from https://gitlab.cern.ch/lhcb-datapkg/Gen/DecFiles/-/blob/master/dkfiles/incl_b=2xJpsi.dec when "from link" is indicated
+
 from collections import defaultdict
 
 class Decay():
@@ -89,14 +92,14 @@ if __name__ == '__main__':
     particles['MyJ/psi'] = Particle(
         'MyJ/psi',
         [
-            Decay(0.0593, [particles['mu+'], particles['mu-']], 'PHOTOS  VLL', ''),
+            Decay(0.0596, [particles['mu+'], particles['mu-']], 'PHOTOS  VLL', ''),
         ]
     )
     
     particles['Mychi_c0'] = Particle(
         'Mychi_c0',
         [
-            Decay(0.0116, [particles['gamma'], particles['MyJ/psi']], 'PHSP', ''),
+            Decay(0.0140, [particles['gamma'], particles['MyJ/psi']], 'PHSP', ''),
         ]
     )
 
@@ -123,13 +126,13 @@ if __name__ == '__main__':
     particles['Mypsi(2S)'] = Particle(
         'Mypsi(2S)',
         [
-            Decay(0.3360, [particles['MyJ/psi'], particles['pi+'     ], particles['pi-']], 'VVPIPI'                          ),     
-            Decay(0.1773, [particles['MyJ/psi'], particles['pi0'     ], particles['pi0']], 'VVPIPI'                          ),     
-            Decay(0.0328, [particles['MyJ/psi'], particles['eta'     ]                  ], 'PARTWAVE 0.0 0.0 1.0 0.0 0.0 0.0'),     
+            Decay(0.3468, [particles['MyJ/psi'], particles['pi+'     ], particles['pi-']], 'VVPIPI'                          ),     
+            Decay(0.1824, [particles['MyJ/psi'], particles['pi0'     ], particles['pi0']], 'VVPIPI'                          ),     
+            Decay(0.0337, [particles['MyJ/psi'], particles['eta'     ]                  ], 'PARTWAVE 0.0 0.0 1.0 0.0 0.0 0.0'),     
             Decay(0.0013, [particles['MyJ/psi'], particles['pi0'     ]                  ], 'PARTWAVE 0.0 0.0 1.0 0.0 0.0 0.0'),     
-            Decay(0.0962, [particles['gamma'  ], particles['Mychi_c0']                  ], 'PHSP'                            ),     
-            Decay(0.0920, [particles['gamma'  ], particles['Mychi_c1']                  ], 'PHSP'                            ),     
-            Decay(0.0874, [particles['gamma'  ], particles['Mychi_c2']                  ], 'PHSP'                            ),     
+            Decay(0.0979, [particles['gamma'  ], particles['Mychi_c0']                  ], 'PHSP'                            ),     
+            Decay(0.0975, [particles['gamma'  ], particles['Mychi_c1']                  ], 'PHSP'                            ),     
+            Decay(0.0952, [particles['gamma'  ], particles['Mychi_c2']                  ], 'PHSP'                            ),     
             Decay(0.0008, [particles['Myh_c'  ], particles['gamma'   ]                  ], 'PHSP'                            ),     
         ]
     )
@@ -142,7 +145,7 @@ if __name__ == '__main__':
             Decay(0.000900000, [particles['MyJ/psi'],  particles['eta'     ]                  ], 'PHSP'),     
             Decay(0.00000000,  [particles['MyJ/psi'],  particles['pi0'     ]                  ], 'PARTWAVE 0.0 0.0 1.0 0.0 0.0 0.0'),     #0 BR
             Decay(0.0069,      [particles['Mychi_c0'], particles['gamma'   ]                  ], 'PHSP'),     
-            Decay(0.00249,     [particles['Mychi_c1'], particles['gamma'   ]                  ], 'VVP'),     
+            Decay(0.00249,     [particles['Mychi_c1'], particles['gamma'   ]                  ], 'VVP 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0'),     
             Decay(0.00000,     [particles['Mychi_c2'], particles['gamma'   ]                  ], 'PHSP'),     
         ]
     )
@@ -150,79 +153,79 @@ if __name__ == '__main__':
     particles['MyB+'] = Particle(
         'MyB+',
         [
-            Decay(0.001014000   , [particles['MyJ/psi'    ], particles['K+'      ],                                   ], 'SVS'                                                               ),
+            Decay(0.001020000   , [particles['MyJ/psi'    ], particles['K+'      ],                                   ], 'SVS'                                                               ),
             Decay(0.001430000   , [particles['MyJ/psi'    ], particles['K*+'     ],                                   ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'),
-            Decay(0.000049000   , [particles['MyJ/psi'    ], particles['pi+'     ],                                   ], 'SVS'                                                               ),
-            Decay(0.000050000   , [particles['MyJ/psi'    ], particles['rho+'    ],                                   ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'), 
-            Decay(0.0002        , [particles['MyJ/psi'    ], particles['K0'      ], particles['pi+']                  ], 'PHSP'                                                              ),
-            Decay(0.0001        , [particles['MyJ/psi'    ], particles['K+'      ], particles['pi0']                  ], 'PHSP'                                                              ),
-            Decay(0.0001        , [particles['MyJ/psi'    ], particles["K'_1+"   ],                                   ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0'                                ),
-            Decay(0.0005        , [particles['MyJ/psi'    ], particles['K_2*+'   ],                                   ], 'PHSP'                                                              ),
-            Decay(0.001800000   , [particles['MyJ/psi'    ], particles['K_1+'    ],                                   ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0'                                ),
-            Decay(0.000052000   , [particles['MyJ/psi'    ], particles['phi'     ], particles['K+' ]                  ], 'PHSP'                                                              ), 
-            Decay(0.001070000   , [particles['MyJ/psi'    ], particles['K+'      ], particles['pi+'], particles['pi-']], 'PHSP'                                                              ), 
-            Decay(0.000108000   , [particles['MyJ/psi'    ], particles['eta'     ], particles['K+']                   ], 'PHSP'                                                              ), 
-            Decay(0.000350000   , [particles['MyJ/psi'    ], particles['omega'   ], particles['K+']                   ], 'PHSP'                                                              ), 
-            Decay(0.000011800   , [particles['MyJ/psi'    ], particles['p+'      ], particles['anti-Lambda0']         ], 'PHSP'                                                              ),  #BR from https://gitlab.cern.ch/lhcb-datapkg/Gen/DecFiles/-/blob/master/dkfiles/incl_b=2xJpsi.dec
+            Decay(0.000039200   , [particles['MyJ/psi'    ], particles['pi+'     ],                                   ], 'SVS'                                                               ),
+            Decay(0.000041000   , [particles['MyJ/psi'    ], particles['rho+'    ],                                   ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'), 
+            Decay(0.00114       , [particles['MyJ/psi'    ], particles['K0'      ], particles['pi+']                  ], 'PHSP'                                                              ),
+            Decay(0.0001        , [particles['MyJ/psi'    ], particles['K+'      ], particles['pi0']                  ], 'PHSP'                                                              ), 
+            Decay(0.0001        , [particles['MyJ/psi'    ], particles["K'_1+"   ],                                   ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0'                                ), 
+            Decay(0.0005        , [particles['MyJ/psi'    ], particles['K_2*+'   ],                                   ], 'PHSP'                                                              ), 
+            Decay(0.001800000   , [particles['MyJ/psi'    ], particles['K_1+'    ],                                   ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0'                                ), 
+            Decay(0.000050000   , [particles['MyJ/psi'    ], particles['phi'     ], particles['K+' ]                  ], 'PHSP'                                                              ), 
+            Decay(0.000810000   , [particles['MyJ/psi'    ], particles['K+'      ], particles['pi+'], particles['pi-']], 'PHSP'                                                              ), #high SF
+            Decay(0.000124000   , [particles['MyJ/psi'    ], particles['eta'     ], particles['K+']                   ], 'PHSP'                                                              ), 
+            Decay(0.000320000   , [particles['MyJ/psi'    ], particles['omega'   ], particles['K+']                   ], 'PHSP'                                                              ), 
+            Decay(0.000014600   , [particles['MyJ/psi'    ], particles['p+'      ], particles['anti-Lambda0']         ], 'PHSP'                                                              ),  
             Decay(0.000033700   , [particles['MyJ/psi'    ], particles['K+'      ], particles['K-'], particles['K+']  ], 'PHSP'                                                              ), 
-            Decay(0.0000165     , [particles['MyJ/psi'    ], particles['K+'      ], particles['pi0'], particles['pi0']], 'PHSP'                                                              ), 
-            Decay(0.000046      , [particles['MyJ/psi'    ], particles['K+'      ], particles['pi0'], particles['eta']], 'PHSP'                                                              ), 
-            Decay(0.0000106     , [particles['MyJ/psi'    ], particles['K+'      ], particles['pi0'], particles['eta\'']], 'PHSP'                                                              ), 
-            Decay(0.0000025     , [particles['MyJ/psi'    ], particles['K+'      ], particles['eta'], particles['eta\'']], 'PHSP'                                                              ), 
-            Decay(0.00000907    , [particles['MyJ/psi'    ], particles['K0'      ], particles['pi+'], particles['eta']], 'PHSP'                                                              ), 
-            Decay(0.0000207     , [particles['MyJ/psi'    ], particles['K0'      ], particles['pi+'], particles['eta\'']], 'PHSP'                                                              ), 
-            Decay(0.000646000   , [particles['Mypsi(2S)'  ], particles['K+'      ],                                   ], 'SVS'                                                               ),
-            Decay(0.000620000   , [particles['Mypsi(2S)'  ], particles['K*+'     ],                                   ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'), 
-            Decay(0.0004        , [particles['Mypsi(2S)'  ], particles['K0'      ], particles['pi+']                  ], 'PHSP'                                                              ),
-            Decay(0.0002        , [particles['Mypsi(2S)'  ], particles['K+'      ], particles['pi0']                  ], 'PHSP'                                                              ),
-            Decay(0.001900000   , [particles['Mypsi(2S)'  ], particles['K+'      ], particles['pi-'], particles['pi+']], 'PHSP'                                                              ),
-            Decay(0.0001        , [particles['Mypsi(2S)'  ], particles['K+'      ], particles['pi0'], particles['pi0']], 'PHSP'                                                              ),
-            Decay(0.0001        , [particles['Mypsi(2S)'  ], particles['K0'      ], particles['pi+'], particles['pi0']], 'PHSP'                                                              ),
-            Decay(0.0004        , [particles['Mypsi(2S)'  ], particles['K_1+'    ],                                   ], 'PHSP'                                                              ),
-            Decay(0.000025800   , [particles['Mypsi(2S)'  ], particles['pi+'     ],                                   ], 'PHSP'                                                              ),
-            Decay(0.000136      , [particles['Mypsi(2S)'  ], particles['K\'_1+'  ],                                   ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0'                                ),
-            Decay(0.0001200     , [particles['Mypsi(2S)'  ], particles['K_2*+'   ],                                   ], 'PHSP'                                                              ),
-            Decay(0.0000148     , [particles['Mypsi(2S)'  ], particles['eta'     ],particles['K+']                    ], 'PHSP'                                                              ),
-            Decay(0.00000879    , [particles['Mypsi(2S)'  ], particles['omega'   ],particles['K+']                    ], 'PHSP'                                                              ),
-            Decay(0.0000233     , [particles['Mypsi(2S)'  ], particles['rho+'    ],                                   ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'),
-            Decay(0.000490000   , [particles['Mypsi(3770)'], particles['K+'      ],                                   ], 'SVS'                                                               ),
-            Decay(0.0005        , [particles['Mypsi(3770)'], particles['K*+'     ],                                   ], 'PHSP'                                                              ),
-            Decay(0.0003        , [particles['Mypsi(3770)'], particles['K0'      ], particles['pi+']                  ], 'PHSP'                                                              ),
-            Decay(0.0002        , [particles['Mypsi(3770)'], particles['K+'      ], particles['pi0']                  ], 'PHSP'                                                              ),
-            Decay(0.0002        , [particles['Mypsi(3770)'], particles['K+'      ], particles['pi-'], particles['pi+']], 'PHSP'                                                              ),
-            Decay(0.0001        , [particles['Mypsi(3770)'], particles['K+'      ], particles['pi0'], particles['pi0']], 'PHSP'                                                              ),
-            Decay(0.0001        , [particles['Mypsi(3770)'], particles['K0'      ], particles['pi+'], particles['pi0']], 'PHSP'                                                              ),
-            Decay(0.0003        , [particles['Mypsi(3770)'], particles['K_1+'    ],                                   ], 'PHSP'                                                              ),
-            Decay(0.000133000   , [particles['Mychi_c0'   ], particles['K+'      ],                                   ], 'PHSP'                                                              ),
-            Decay(0.0004        , [particles['K*+'        ], particles['Mychi_c0'],                                   ], 'SVS'                                                               ),
-            Decay(0.0002        , [particles['Mychi_c0'   ], particles['K0'      ], particles['pi+']                  ], 'PHSP'                                                              ),
-            Decay(0.0001        , [particles['Mychi_c0'   ], particles['K+'      ], particles['pi0']                  ], 'PHSP'                                                              ),
-            Decay(0.0002        , [particles['Mychi_c0'   ], particles['K+'      ], particles['pi-'], particles['pi+']], 'PHSP'                                                              ),
-            Decay(0.0001        , [particles['Mychi_c0'   ], particles['K+'      ], particles['pi0'], particles['pi0']], 'PHSP'                                                              ),
-            Decay(0.0001        , [particles['Mychi_c0'   ], particles['K0'      ], particles['pi+'], particles['pi0']], 'PHSP'                                                              ),
-            Decay(0.000237      , [particles['Mychi_c0'   ], particles['K_1+'    ],                                   ], 'SVS'                                                               ),
-            Decay(0.000460000   , [particles['Mychi_c1'   ], particles['K+'      ],                                   ], 'SVS'                                                               ),
+            Decay(0.0000165     , [particles['MyJ/psi'    ], particles['K+'      ], particles['pi0'], particles['pi0']], 'PHSP'                                                              ), # from link 
+            Decay(0.000046      , [particles['MyJ/psi'    ], particles['K+'      ], particles['pi0'], particles['eta']], 'PHSP'                                                              ), # from link
+            Decay(0.0000106     , [particles['MyJ/psi'    ], particles['K+'      ], particles['pi0'], particles['eta\'']], 'PHSP'                                                            ), # from link
+            Decay(0.0000025     , [particles['MyJ/psi'    ], particles['K+'      ], particles['eta'], particles['eta\'']], 'PHSP'                                                            ), # from link
+            Decay(0.00000907    , [particles['MyJ/psi'    ], particles['K0'      ], particles['pi+'], particles['eta']], 'PHSP'                                                              ), # from link
+            Decay(0.0000207     , [particles['MyJ/psi'    ], particles['K0'      ], particles['pi+'], particles['eta\'']], 'PHSP'                                                            ), # from link
+            Decay(0.000624000   , [particles['Mypsi(2S)'  ], particles['K+'      ],                                   ], 'SVS'                                                               ),
+            Decay(0.000670000   , [particles['Mypsi(2S)'  ], particles['K*+'     ],                                   ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'), 
+            Decay(0.0004        , [particles['Mypsi(2S)'  ], particles['K0'      ], particles['pi+']                  ], 'PHSP'                                                              ), 
+            Decay(0.0002        , [particles['Mypsi(2S)'  ], particles['K+'      ], particles['pi0']                  ], 'PHSP'                                                              ), 
+            Decay(0.000430000   , [particles['Mypsi(2S)'  ], particles['K+'      ], particles['pi-'], particles['pi+']], 'PHSP'                                                              ), 
+            Decay(0.0001        , [particles['Mypsi(2S)'  ], particles['K+'      ], particles['pi0'], particles['pi0']], 'PHSP'                                                              ), 
+            Decay(0.0001        , [particles['Mypsi(2S)'  ], particles['K0'      ], particles['pi+'], particles['pi0']], 'PHSP'                                                              ), 
+            Decay(0.0004        , [particles['Mypsi(2S)'  ], particles['K_1+'    ],                                   ], 'PHSP'                                                              ), # from link
+            Decay(0.000024400   , [particles['Mypsi(2S)'  ], particles['pi+'     ],                                   ], 'PHSP'                                                              ), 
+            Decay(0.000136      , [particles['Mypsi(2S)'  ], particles['K\'_1+'  ],                                   ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0'                                ), # from link
+            Decay(0.0001200     , [particles['Mypsi(2S)'  ], particles['K_2*+'   ],                                   ], 'PHSP'                                                              ), # from link
+            Decay(0.0000148     , [particles['Mypsi(2S)'  ], particles['eta'     ],particles['K+']                    ], 'PHSP'                                                              ), # from link
+            Decay(0.00000879    , [particles['Mypsi(2S)'  ], particles['omega'   ],particles['K+']                    ], 'PHSP'                                                              ), # from link
+            Decay(0.0000233     , [particles['Mypsi(2S)'  ], particles['rho+'    ],                                   ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'), # from link
+            Decay(0.000430000   , [particles['Mypsi(3770)'], particles['K+'      ],                                   ], 'SVS'                                                               ), 
+            Decay(0.0005        , [particles['Mypsi(3770)'], particles['K*+'     ],                                   ], 'PHSP'                                                              ), 
+            Decay(0.0003        , [particles['Mypsi(3770)'], particles['K0'      ], particles['pi+']                  ], 'PHSP'                                                              ), 
+            Decay(0.0002        , [particles['Mypsi(3770)'], particles['K+'      ], particles['pi0']                  ], 'PHSP'                                                              ), 
+            Decay(0.0002        , [particles['Mypsi(3770)'], particles['K+'      ], particles['pi-'], particles['pi+']], 'PHSP'                                                              ), 
+            Decay(0.0001        , [particles['Mypsi(3770)'], particles['K+'      ], particles['pi0'], particles['pi0']], 'PHSP'                                                              ), 
+            Decay(0.0001        , [particles['Mypsi(3770)'], particles['K0'      ], particles['pi+'], particles['pi0']], 'PHSP'                                                              ), 
+            Decay(0.0003        , [particles['Mypsi(3770)'], particles['K_1+'    ],                                   ], 'PHSP'                                                              ), 
+            Decay(0.000151000   , [particles['Mychi_c0'   ], particles['K+'      ],                                   ], 'PHSP'                                                              ), 
+            Decay(0.0004        , [particles['K*+'        ], particles['Mychi_c0'],                                   ], 'SVS'                                                               ), 
+            Decay(0.0002        , [particles['Mychi_c0'   ], particles['K0'      ], particles['pi+']                  ], 'PHSP'                                                              ), 
+            Decay(0.0001        , [particles['Mychi_c0'   ], particles['K+'      ], particles['pi0']                  ], 'PHSP'                                                              ), 
+            Decay(0.0002        , [particles['Mychi_c0'   ], particles['K+'      ], particles['pi-'], particles['pi+']], 'PHSP'                                                              ), 
+            Decay(0.0001        , [particles['Mychi_c0'   ], particles['K+'      ], particles['pi0'], particles['pi0']], 'PHSP'                                                              ), 
+            Decay(0.0001        , [particles['Mychi_c0'   ], particles['K0'      ], particles['pi+'], particles['pi0']], 'PHSP'                                                              ), 
+            Decay(0.000237      , [particles['Mychi_c0'   ], particles['K_1+'    ],                                   ], 'PHSP'                                                               ), # from link
+            Decay(0.000474000   , [particles['Mychi_c1'   ], particles['K+'      ],                                   ], 'SVS'                                                               ),
             Decay(0.000300000   , [particles['Mychi_c1'   ], particles['K*+'     ],                                   ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'), 
-            Decay(0.0004        , [particles['Mychi_c1'   ], particles['K0'      ], particles['pi+']                  ], 'PHSP'                                                              ),
-            Decay(0.0002        , [particles['Mychi_c1'   ], particles['K+'      ], particles['pi0']                  ], 'PHSP'                                                              ),
-            Decay(0.0004        , [particles['Mychi_c1'   ], particles['K+'      ], particles['pi-'], particles['pi+']], 'PHSP'                                                              ),
-            Decay(0.0002        , [particles['Mychi_c1'   ], particles['K+'      ], particles['pi0'], particles['pi0']], 'PHSP'                                                              ),
-            Decay(0.0002        , [particles['Mychi_c1'   ], particles['K0'      ], particles['pi+'], particles['pi0']], 'PHSP'                                                              ),
-            Decay(0.000020000   , [particles['Mychi_c1'   ], particles['pi+'     ],                                   ], 'PHSP'                                                              ),
-            Decay(0.000339      , [particles['Mychi_c1'   ], particles['K_1+'    ],                                   ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0'                                ),
-            Decay(0.0000748     , [particles['Mychi_c1'   ], particles['K\'_1+'  ],                                   ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0'                                ),
-            Decay(0.0000687     , [particles['Mychi_c1'   ], particles['K_2*+'   ],                                   ], 'PHSP'                                                              ),
-            Decay(0.0000105     , [particles['Mychi_c1'   ], particles['K+'      ],particles['eta']                   ], 'PHSP'                                                              ),
-            Decay(0.00000869    , [particles['Mychi_c1'   ], particles['K+'      ],particles['omega']                 ], 'PHSP'                                                              ),
-            Decay(0.0000104     , [particles['Mychi_c1'   ], particles['rho+'    ],                                   ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'),
-            Decay(0.00002       , [particles['Mychi_c2'   ], particles['K+'      ],                                   ], 'STS'                                                               ),
+            Decay(0.00058       , [particles['Mychi_c1'   ], particles['K0'      ], particles['pi+']                  ], 'PHSP'                                                              ),
+            Decay(0.000329      , [particles['Mychi_c1'   ], particles['K+'      ], particles['pi0']                  ], 'PHSP'                                                              ),
+            Decay(0.000374      , [particles['Mychi_c1'   ], particles['K+'      ], particles['pi-'], particles['pi+']], 'PHSP'                                                              ),
+            Decay(0.0002        , [particles['Mychi_c1'   ], particles['K+'      ], particles['pi0'], particles['pi0']], 'PHSP'                                                              ), 
+            Decay(0.0002        , [particles['Mychi_c1'   ], particles['K0'      ], particles['pi+'], particles['pi0']], 'PHSP'                                                              ), 
+            Decay(0.000022000   , [particles['Mychi_c1'   ], particles['pi+'     ],                                   ], 'PHSP'                                                              ),
+            Decay(0.000339      , [particles['Mychi_c1'   ], particles['K_1+'    ],                                   ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0'                                ), #from link
+            Decay(0.0000748     , [particles['Mychi_c1'   ], particles['K\'_1+'  ],                                   ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0'                                ), #from link
+            Decay(0.0000687     , [particles['Mychi_c1'   ], particles['K_2*+'   ],                                   ], 'PHSP'                                                              ), #from link
+            Decay(0.0000105     , [particles['Mychi_c1'   ], particles['K+'      ],particles['eta']                   ], 'PHSP'                                                              ), #from link
+            Decay(0.00000869    , [particles['Mychi_c1'   ], particles['K+'      ],particles['omega']                 ], 'PHSP'                                                              ), #from link
+            Decay(0.0000104     , [particles['Mychi_c1'   ], particles['rho+'    ],                                   ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'), #from link
+            Decay(0.000011      , [particles['Mychi_c2'   ], particles['K+'      ],                                   ], 'STS'                                                               ),
             Decay(0.00002       , [particles['Mychi_c2'   ], particles['K*+'     ],                                   ], 'PHSP'                                                              ),
-            Decay(0.0002        , [particles['Mychi_c2'   ], particles['K0'      ], particles['pi+']                  ], 'PHSP'                                                              ),
+            Decay(0.000116      , [particles['Mychi_c2'   ], particles['K0'      ], particles['pi+']                  ], 'PHSP'                                                              ),
             Decay(0.0001        , [particles['Mychi_c2'   ], particles['K+'      ], particles['pi0']                  ], 'PHSP'                                                              ),
-            Decay(0.0002        , [particles['Mychi_c2'   ], particles['K+'      ], particles['pi-'], particles['pi+']], 'PHSP'                                                              ),
-            Decay(0.0001        , [particles['Mychi_c2'   ], particles['K+'      ], particles['pi0'], particles['pi0']], 'PHSP'                                                              ),
-            Decay(0.0001        , [particles['Mychi_c2'   ], particles['K0'      ], particles['pi+'], particles['pi0']], 'PHSP'                                                              ),
-            Decay(0.00001628    , [particles['Mychi_c2'   ], particles['K_1+'    ],                                   ], 'PHSP'                                                              ),
+            Decay(0.000134      , [particles['Mychi_c2'   ], particles['K+'      ], particles['pi-'], particles['pi+']], 'PHSP'                                                              ),
+            Decay(0.0001        , [particles['Mychi_c2'   ], particles['K+'      ], particles['pi0'], particles['pi0']], 'PHSP'                                                              ), 
+            Decay(0.0001        , [particles['Mychi_c2'   ], particles['K0'      ], particles['pi+'], particles['pi0']], 'PHSP'                                                              ), 
+            Decay(0.00001628    , [particles['Mychi_c2'   ], particles['K_1+'    ],                                   ], 'PHSP'                                                              ), # from link
         ],
         charge_conjugate = 'MyB-'
     )
@@ -230,66 +233,65 @@ if __name__ == '__main__':
     particles['Myanti-B0'] = Particle(
         'Myanti-B0',
         [                                                    
-            Decay(0.000871000, [particles['MyJ/psi'    ], particles['anti-K0'   ]                                        ], 'PHSP'                                                              ),
-            Decay(0.000310000, [particles['MyJ/psi'    ], particles['omega'     ], particles['anti-K0']                  ], 'PHSP'                                                              ),
-            Decay(0.000009500, [particles['MyJ/psi'    ], particles['eta'       ]                                        ], 'PHSP'                                                              ),
-            Decay(0.000019000, [particles['MyJ/psi'    ], particles['pi-'       ], particles['pi+'    ]                  ], 'PHSP'                                                              ),
-            Decay(0.000460000, [particles['MyJ/psi'    ], particles['anti-K0'   ], particles['pi-'    ], particles['pi+']], 'PHSP'                                                              ),
+            Decay(0.000891000, [particles['MyJ/psi'    ], particles['anti-K0'   ]                                        ], 'PHSP'                                                              ),
+            Decay(0.000230000, [particles['MyJ/psi'    ], particles['omega'     ], particles['anti-K0']                  ], 'PHSP'                                                              ),
+            Decay(0.000010800, [particles['MyJ/psi'    ], particles['eta'       ]                                        ], 'PHSP'                                                              ),
+            Decay(0.000040000, [particles['MyJ/psi'    ], particles['pi-'       ], particles['pi+'    ]                  ], 'PHSP'                                                              ),
+            Decay(0.000450000, [particles['MyJ/psi'    ], particles['anti-K0'   ], particles['pi-'    ], particles['pi+']], 'PHSP'                                                              ),
             Decay(0.000540000, [particles['MyJ/psi'    ], particles['anti-K0'   ], particles['rho0'   ]                  ], 'PHSP'                                                              ),
             Decay(0.000800000, [particles['MyJ/psi'    ], particles['K*-'       ], particles['pi+'    ]                  ], 'PHSP'                                                              ),
             Decay(0.000660000, [particles['MyJ/psi'    ], particles['anti-K*0'  ], particles['pi-'    ], particles['pi+']], 'PHSP'                                                              ),
-            Decay(0.000435500, [particles['MyJ/psi'    ], particles['K_S0'      ]                                        ], 'SVS'                                                               ),
-            Decay(0.000435500, [particles['MyJ/psi'    ], particles['K_L0'      ]                                        ], 'SVS'                                                               ),
-            Decay(0.001330000, [particles['MyJ/psi'    ], particles['anti-K*0'  ]                                        ], 'SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus'),
-            Decay(0.000017600, [particles['MyJ/psi'    ], particles['pi0'       ]                                        ], 'SVS'                                                               ),
-            Decay(0.000027000, [particles['MyJ/psi'    ], particles['rho0'      ]                                        ], 'SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus'),
-            Decay(0.000030   , [particles['MyJ/psi'    ], particles['omega'     ]                                        ], 'SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus'),
-            Decay(0.000000000, [particles['MyJ/psi'    ], particles['K-'        ], particles['pi+'    ]                  ], 'PHSP'                                                              ),
+            Decay(0.000435500, [particles['MyJ/psi'    ], particles['K_S0'      ]                                        ], 'SVS'                                                               ), 
+            Decay(0.000435500, [particles['MyJ/psi'    ], particles['K_L0'      ]                                        ], 'SVS'                                                               ), 
+            Decay(0.001270000, [particles['MyJ/psi'    ], particles['anti-K*0'  ]                                        ], 'SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus'),
+            Decay(0.000016600, [particles['MyJ/psi'    ], particles['pi0'       ]                                        ], 'SVS'                                                               ),
+            Decay(0.000010800, [particles['MyJ/psi'    ], particles['rho0'      ]                                        ], 'SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus'),
+            Decay(0.000018   , [particles['MyJ/psi'    ], particles['omega'     ]                                        ], 'SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus'),
+            Decay(0.00115    , [particles['MyJ/psi'    ], particles['K-'        ], particles['pi+'    ]                  ], 'PHSP'                                                              ),
             Decay(0.0001     , [particles['MyJ/psi'    ], particles['anti-K0'   ], particles['pi0'    ]                  ], 'PHSP'                                                              ),
-            Decay(0.001300000, [particles['MyJ/psi'    ], particles['anti-K_10' ]                                        ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0'                                ),
-            Decay(0.0001     , [particles['MyJ/psi'    ], particles["anti-K'_10"]                                        ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0'                                ),
-            Decay(0.0005     , [particles['MyJ/psi'    ], particles['anti-K_2*0']                                        ], 'PHSP'                                                              ),
+            Decay(0.001300000, [particles['MyJ/psi'    ], particles['anti-K_10' ]                                        ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0'                                ), 
+            Decay(0.0001     , [particles['MyJ/psi'    ], particles["anti-K'_10"]                                        ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0'                                ), 
+            Decay(0.0005     , [particles['MyJ/psi'    ], particles['anti-K_2*0']                                        ], 'PHSP'                                                              ), 
             Decay(0.000049000, [particles['MyJ/psi'    ], particles['phi'       ], particles['anti-K0']                  ], 'PHSP'                                                              ),
-            Decay(0.001136   , [particles['MyJ/psi'    ], particles['K-'        ], particles['rho+']                     ], 'PHSP'                                                              ),
-            Decay(0.00016    , [particles['MyJ/psi'    ], particles['K0'        ], particles['eta']                      ], 'PHSP'                                                              ),
-            Decay(0.00023    , [particles['MyJ/psi'    ], particles['K0'        ], particles['omega']                    ], 'PHSP'                                                              ),
-            Decay(0.0000065  , [particles['MyJ/psi'    ], particles['sigma_0'   ]                                        ], 'SVS'                                                               ),
-            Decay(0.0000042  , [particles['MyJ/psi'    ], particles['f_2'       ]                                        ], 'PHSP'                                                              ),
-            Decay(0.0000021  , [particles['MyJ/psi'    ], particles['rho(2S)0'  ]                                        ], 'PHSP'                                                              ),
-            Decay(0.0000529  , [particles['MyJ/psi'    ], particles['anti-K0'   ], particles['K-'    ],  particles['K+'] ], 'PHSP'                                                              ),
-            Decay(0.0000145  , [particles['MyJ/psi'    ], particles['anti-K0'   ], particles['pi0'    ], particles['pi0']], 'PHSP'                                                              ),
-            Decay(0.0000275  , [particles['MyJ/psi'    ], particles['anti-K0'   ], particles['anti-K0'],  particles['K0']], 'PHSP'                                                              ),
-            Decay(0.0000038  , [particles['MyJ/psi'    ], particles['anti-K0'   ], particles['pi0'],     particles['eta']], 'PHSP'                                                              ),
-            Decay(0.0000088  , [particles['MyJ/psi'    ], particles['anti-K0'   ], particles['pi0'],     particles['eta\'']], 'PHSP'                                                            ),
-            Decay(0.0000022  , [particles['MyJ/psi'    ], particles['anti-K0'   ], particles['eta'],     particles['eta']], 'PHSP'                                                              ),
-            Decay(0.0000078  , [particles['MyJ/psi'    ], particles['K-'        ], particles['pi+'],     particles['eta']], 'PHSP'                                                              ),
-            Decay(0.0000180  , [particles['MyJ/psi'    ], particles['K-'        ], particles['pi+'],     particles['eta\'']], 'PHSP'                                                            ),
-            Decay(0.000620000, [particles['Mypsi(2S)'  ], particles['anti-K0'   ]                                        ], 'PHSP'                                                              ),
-            Decay(0.000310000, [particles['Mypsi(2S)'  ], particles['K_S0'      ]                                        ], 'SVS'                                                               ),
-            Decay(0.000310000, [particles['Mypsi(2S)'  ], particles['K_L0'      ]                                        ], 'SVS'                                                               ),
-            Decay(0.000610000, [particles['Mypsi(2S)'  ], particles['anti-K*0'  ]                                        ], 'SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus'),
-            Decay(0.0004     , [particles['Mypsi(2S)'  ], particles['K-'        ], particles['pi+'    ]                  ], 'PHSP'                                                              ),
-            Decay(0.0002     , [particles['Mypsi(2S)'  ], particles['anti-K0'   ], particles['pi0'    ]                  ], 'PHSP'                                                              ),
-            Decay(0.0002     , [particles['Mypsi(2S)'  ], particles['anti-K0'   ], particles['pi+'    ], particles['pi-']], 'PHSP'                                                              ),
-            Decay(0.0001     , [particles['Mypsi(2S)'  ], particles['anti-K0'   ], particles['pi0'    ], particles['pi0']], 'PHSP'                                                              ),
-            Decay(0.0001     , [particles['Mypsi(2S)'  ], particles['K-'        ], particles['pi+'    ], particles['pi0']], 'PHSP'                                                              ),
-            Decay(0.0004     , [particles['Mypsi(2S)'  ], particles['anti-K_10' ]                                        ], 'PHSP'                                                              ),
-            Decay(0.000811   , [particles['Mypsi(2S)'  ], particles['K*-'       ], particles['pi+']                      ], 'PHSP'                                                              ),
-            Decay(0.000695   , [particles['Mypsi(2S)'  ], particles['anti-K*0'  ], particles['pi+'], particles['pi-']    ], 'PHSP'                                                              ),
-            Decay(0.0013     , [particles['Mypsi(2S)'  ], particles['anti-K_10' ]                                        ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0 '                               ),
-            Decay(0.000308   , [particles['Mypsi(2S)'  ], particles['anti-K\'_10']                                       ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0 '                               ),
-            Decay(0.000288   , [particles['Mypsi(2S)'  ], particles['anti-K_2*0']                                        ], 'PHSP '                                                             ),
-            Decay(0.000568   , [particles['Mypsi(2S)'  ], particles['anti-K0'   ], particles['rho0'   ]                  ], 'PHSP'                                                              ),
-            Decay(0.001136   , [particles['Mypsi(2S)'  ], particles['K-'        ], particles['rho+'   ]                  ], 'PHSP'                                                              ),
-            Decay(0.00016    , [particles['Mypsi(2S)'  ], particles['anti-K0'   ], particles['eta'   ]                   ], 'PHSP'                                                              ),
-            Decay(0.000017   , [particles['Mypsi(2S)'  ], particles['pi0'       ]                                        ], 'PHSP'                                                              ),
-            Decay(0.0000095  , [particles['Mypsi(2S)'  ], particles['eta'       ]                                        ], 'PHSP'                                                              ),
-            Decay(0.000027   , [particles['Mypsi(2S)'  ], particles['rho0'      ]                                        ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'),
-            Decay(0.0000065  , [particles['Mypsi(2S)'  ], particles['sigma_0'   ]                                        ], 'SVS'                                                               ),
-            Decay(0.0000042  , [particles['Mypsi(2S)'  ], particles['f_2'       ]                                        ], 'PHSP'                                                               ),
-            Decay(0.00024    , [particles['Mypsi(3770)'], particles['K_S0'      ]                                        ], 'SVS'                                                               ),
-            Decay(0.00024    , [particles['Mypsi(3770)'], particles['K_L0'      ]                                        ], 'SVS'                                                               ),
-            Decay(0.00048    , [particles['Mypsi(3770)'], particles['anti-K*0'  ]                                        ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'),
+            Decay(0.001136   , [particles['MyJ/psi'    ], particles['K-'        ], particles['rho+']                     ], 'PHSP'                                                              ), # from link
+            Decay(0.00016    , [particles['MyJ/psi'    ], particles['K0'        ], particles['eta']                      ], 'PHSP'                                                              ), # from link
+            Decay(0.00023    , [particles['MyJ/psi'    ], particles['K0'        ], particles['omega']                    ], 'PHSP'                                                              ), # from link
+            Decay(0.0000065  , [particles['MyJ/psi'    ], particles['sigma_0'   ]                                        ], 'SVS'                                                               ), # from link
+            Decay(0.0000042  , [particles['MyJ/psi'    ], particles['f_2'       ]                                        ], 'PHSP'                                                              ), # from link
+            Decay(0.0000021  , [particles['MyJ/psi'    ], particles['rho(2S)0'  ]                                        ], 'PHSP'                                                              ), # from link
+            Decay(0.0000529  , [particles['MyJ/psi'    ], particles['anti-K0'   ], particles['K-'    ],  particles['K+'] ], 'PHSP'                                                              ), # from link
+            Decay(0.0000145  , [particles['MyJ/psi'    ], particles['anti-K0'   ], particles['pi0'    ], particles['pi0']], 'PHSP'                                                              ), # from link
+            Decay(0.0000275  , [particles['MyJ/psi'    ], particles['anti-K0'   ], particles['anti-K0'],  particles['K0']], 'PHSP'                                                              ), # from link
+            Decay(0.0000038  , [particles['MyJ/psi'    ], particles['anti-K0'   ], particles['pi0'],     particles['eta']], 'PHSP'                                                              ), # from link
+            Decay(0.0000088  , [particles['MyJ/psi'    ], particles['anti-K0'   ], particles['pi0'],     particles['eta\'']], 'PHSP'                                                            ), # from link
+            Decay(0.0000022  , [particles['MyJ/psi'    ], particles['anti-K0'   ], particles['eta'],     particles['eta']], 'PHSP'                                                              ), # from link
+            Decay(0.0000078  , [particles['MyJ/psi'    ], particles['K-'        ], particles['pi+'],     particles['eta']], 'PHSP'                                                              ), # from link
+            Decay(0.0000180  , [particles['MyJ/psi'    ], particles['K-'        ], particles['pi+'],     particles['eta\'']], 'PHSP'                                                            ), # from link
+            Decay(0.000580000, [particles['Mypsi(2S)'  ], particles['anti-K0'   ]                                        ], 'PHSP'                                                              ),
+            Decay(0.000310000, [particles['Mypsi(2S)'  ], particles['K_S0'      ]                                        ], 'SVS'                                                               ), 
+            Decay(0.000310000, [particles['Mypsi(2S)'  ], particles['K_L0'      ]                                        ], 'SVS'                                                               ), 
+            Decay(0.000590000, [particles['Mypsi(2S)'  ], particles['anti-K*0'  ]                                        ], 'SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus'), 
+            Decay(0.00058    , [particles['Mypsi(2S)'  ], particles['K-'        ], particles['pi+'    ]                  ], 'PHSP'                                                              ),
+            Decay(0.0002     , [particles['Mypsi(2S)'  ], particles['anti-K0'   ], particles['pi0'    ]                  ], 'PHSP'                                                              ), 
+            Decay(0.0002     , [particles['Mypsi(2S)'  ], particles['anti-K0'   ], particles['pi+'    ], particles['pi-']], 'PHSP'                                                              ), 
+            Decay(0.0001     , [particles['Mypsi(2S)'  ], particles['anti-K0'   ], particles['pi0'    ], particles['pi0']], 'PHSP'                                                              ), 
+            Decay(0.0001     , [particles['Mypsi(2S)'  ], particles['K-'        ], particles['pi+'    ], particles['pi0']], 'PHSP'                                                              ), 
+            Decay(0.0004     , [particles['Mypsi(2S)'  ], particles['anti-K_10' ]                                        ], 'PHSP'                                                              ), 
+            Decay(0.000811   , [particles['Mypsi(2S)'  ], particles['K*-'       ], particles['pi+']                      ], 'PHSP'                                                              ), # from link
+            Decay(0.000695   , [particles['Mypsi(2S)'  ], particles['anti-K*0'  ], particles['pi+'], particles['pi-']    ], 'PHSP'                                                              ), # from link
+            Decay(0.000308   , [particles['Mypsi(2S)'  ], particles['anti-K\'_10']                                       ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0 '                               ), # from link
+            Decay(0.000288   , [particles['Mypsi(2S)'  ], particles['anti-K_2*0']                                        ], 'PHSP '                                                             ), # from link
+            Decay(0.000568   , [particles['Mypsi(2S)'  ], particles['anti-K0'   ], particles['rho0'   ]                  ], 'PHSP'                                                              ), # from link
+            Decay(0.001136   , [particles['Mypsi(2S)'  ], particles['K-'        ], particles['rho+'   ]                  ], 'PHSP'                                                              ), # from link
+            Decay(0.00016    , [particles['Mypsi(2S)'  ], particles['anti-K0'   ], particles['eta'   ]                   ], 'PHSP'                                                              ), # from link
+            Decay(0.000017   , [particles['Mypsi(2S)'  ], particles['pi0'       ]                                        ], 'PHSP'                                                              ), # from link
+            Decay(0.0000095  , [particles['Mypsi(2S)'  ], particles['eta'       ]                                        ], 'PHSP'                                                              ), # from link
+            Decay(0.000027   , [particles['Mypsi(2S)'  ], particles['rho0'      ]                                        ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'), # from link
+            Decay(0.0000065  , [particles['Mypsi(2S)'  ], particles['sigma_0'   ]                                        ], 'SVS'                                                               ), # from link
+            Decay(0.0000042  , [particles['Mypsi(2S)'  ], particles['f_2'       ]                                        ], 'PHSP'                                                              ), # from link
+            Decay(0.00024    , [particles['Mypsi(3770)'], particles['K_S0'      ]                                        ], 'SVS'                                                               ), 
+            Decay(0.00024    , [particles['Mypsi(3770)'], particles['K_L0'      ]                                        ], 'SVS'                                                               ), 
+            Decay(0.00048    , [particles['Mypsi(3770)'], particles['anti-K*0'  ]                                        ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'), 
             Decay(0.00014    , [particles['Mypsi(3770)'], particles['K-'        ], particles['pi+'    ]                  ], 'PHSP'                                                              ),
             Decay(0.00014    , [particles['Mypsi(3770)'], particles['anti-K0'   ], particles['pi0'    ]                  ], 'PHSP'                                                              ),
             Decay(0.00014    , [particles['Mypsi(3770)'], particles['anti-K0'   ], particles['pi+'    ], particles['pi-']], 'PHSP'                                                              ),
@@ -305,43 +307,42 @@ if __name__ == '__main__':
             Decay(0.0001     , [particles['Mychi_c0'   ], particles['anti-K0'   ], particles['pi0'    ], particles['pi0']], 'PHSP'                                                              ),
             Decay(0.0001     , [particles['Mychi_c0'   ], particles['K-'        ], particles['pi+'    ], particles['pi0']], 'PHSP'                                                              ),
             Decay(0.000140000, [particles['Mychi_c0'   ], particles['anti-K0'   ]                                        ], 'PHSP'                                                              ),
-            Decay(0.000150000, [particles['Mychi_c0'   ], particles['anti-K_10' ]                                        ], 'SVS'                                                               ),
+            Decay(0.000150000, [particles['Mychi_c0'   ], particles['anti-K_10' ]                                        ], 'PHSP'                                                               ), # from link
             Decay(0.000195000, [particles['Mychi_c1'   ], particles['K_S0'      ]                                        ], 'SVS'                                                               ),
             Decay(0.000195000, [particles['Mychi_c1'   ], particles['K_L0'      ]                                        ], 'SVS'                                                               ),
-            Decay(0.000222000, [particles['Mychi_c1'   ], particles['anti-K*0'  ]                                        ], 'SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus'),
-            Decay(0.0004     , [particles['Mychi_c1'   ], particles['K-'        ], particles['pi+'    ]                  ], 'PHSP'                                                              ),
+            Decay(0.000238000, [particles['Mychi_c1'   ], particles['anti-K*0'  ]                                        ], 'SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus'),
+            Decay(0.000497   , [particles['Mychi_c1'   ], particles['K-'        ], particles['pi+'    ]                  ], 'PHSP'                                                              ),
             Decay(0.0002     , [particles['Mychi_c1'   ], particles['anti-K0'   ], particles['pi0'    ]                  ], 'PHSP'                                                              ),
-            Decay(0.0004     , [particles['Mychi_c1'   ], particles['anti-K0'   ], particles['pi+'    ], particles['pi-']], 'PHSP'                                                              ),
-            Decay(0.0002     , [particles['Mychi_c1'   ], particles['anti-K0'   ], particles['pi0'    ], particles['pi0']], 'PHSP'                                                              ),
+            Decay(0.00032    , [particles['Mychi_c1'   ], particles['anti-K0'   ], particles['pi+'    ], particles['pi-']], 'PHSP'                                                              ),
+            Decay(0.00035    , [particles['Mychi_c1'   ], particles['anti-K0'   ], particles['pi0'    ], particles['pi0']], 'PHSP'                                                              ),
             Decay(0.0002     , [particles['Mychi_c1'   ], particles['K-'        ], particles['pi+'    ], particles['pi0']], 'PHSP'                                                              ),
             Decay(0.000011200, [particles['Mychi_c1'   ], particles['pi0'       ]                                        ], 'PHSP'                                                              ),
             Decay(0.000390000, [particles['Mychi_c1'   ], particles['anti-K0'   ]                                        ], 'PHSP'                                                              ),
             Decay(0.000158000, [particles['Mychi_c1'   ], particles['K+'        ], particles['pi-'    ]                  ], 'PHSP'                                                              ),
-            Decay(0.000238   , [particles['Mychi_c1'   ], particles['anti-K*0'  ]                                        ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'),
-            Decay(0.0000608  , [particles['Mychi_c1'   ], particles['K*-'       ], particles['pi+'    ]                  ], 'PHSP'                                                              ),
-            Decay(0.0000185  , [particles['Mychi_c1'   ], particles['anti-K*0'  ], particles['pi+'    ], particles['pi-']], 'PHSP'                                                              ),
-            Decay(0.000193   , [particles['Mychi_c1'   ], particles['anti-K_10' ]                                        ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0 '                               ),
-            Decay(0.000193   , [particles['Mychi_c1'   ], particles['anti-K\'_10']                                       ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0 '                               ),
-            Decay(0.0000394  , [particles['Mychi_c1'   ], particles['anti-K_2*0']                                        ], 'PHSP '                                                             ),
-            Decay(0.0000256  , [particles['Mychi_c1'   ], particles['anti-K0'], particles['rho0']                        ], 'PHSP '                                                             ),
-            Decay(0.0000516  , [particles['Mychi_c1'   ], particles['K-'        ], particles['rho+']                     ], 'PHSP '                                                             ),
-            Decay(0.000124   , [particles['Mychi_c1'   ], particles['anti-K0'   ], particles['phi']                      ], 'PHSP '                                                             ),
-            Decay(0.0000129  , [particles['Mychi_c1'   ], particles['anti-K0'   ], particles['omega']                    ], 'PHSP '                                                             ),
-            Decay(0.00000448 , [particles['Mychi_c1'   ], particles['rho0'      ]                                        ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'),
+            Decay(0.0000608  , [particles['Mychi_c1'   ], particles['K*-'       ], particles['pi+'    ]                  ], 'PHSP'                                                              ), #from link
+            Decay(0.0000185  , [particles['Mychi_c1'   ], particles['anti-K*0'  ], particles['pi+'    ], particles['pi-']], 'PHSP'                                                              ), #from link
+            Decay(0.000193   , [particles['Mychi_c1'   ], particles['anti-K_10' ]                                        ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0 '                               ), #from link
+            Decay(0.000193   , [particles['Mychi_c1'   ], particles['anti-K\'_10']                                       ], 'SVV_HELAMP 0.5 0.0 1.0 0.0 0.5 0.0 '                               ), #from link
+            Decay(0.0000394  , [particles['Mychi_c1'   ], particles['anti-K_2*0']                                        ], 'PHSP '                                                             ), #from link
+            Decay(0.0000256  , [particles['Mychi_c1'   ], particles['anti-K0'], particles['rho0']                        ], 'PHSP '                                                             ), #from link
+            Decay(0.0000516  , [particles['Mychi_c1'   ], particles['K-'        ], particles['rho+']                     ], 'PHSP '                                                             ), #from link
+            Decay(0.000124   , [particles['Mychi_c1'   ], particles['anti-K0'   ], particles['phi']                      ], 'PHSP '                                                             ), #from link
+            Decay(0.0000129  , [particles['Mychi_c1'   ], particles['anti-K0'   ], particles['omega']                    ], 'PHSP '                                                             ), #from link
+            Decay(0.00000448 , [particles['Mychi_c1'   ], particles['rho0'      ]                                        ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'), #from link
             Decay(0.00005    , [particles['Mychi_c2'   ], particles['K_S0'      ]                                        ], 'STS'                                                               ),
             Decay(0.00005    , [particles['Mychi_c2'   ], particles['K_L0'      ]                                        ], 'STS'                                                               ),
-            Decay(0.00003    , [particles['Mychi_c2'   ], particles['anti-K*0'  ]                                        ], 'PHSP'                                                              ),
-            Decay(0.0002     , [particles['Mychi_c2'   ], particles['K-'        ], particles['pi+'    ]                  ], 'PHSP'                                                              ),
+            Decay(0.000049   , [particles['Mychi_c2'   ], particles['anti-K*0'  ]                                        ], 'PHSP'                                                              ),
+            Decay(0.000072   , [particles['Mychi_c2'   ], particles['K-'        ], particles['pi+'    ]                  ], 'PHSP'                                                              ),
             Decay(0.0001     , [particles['Mychi_c2'   ], particles['anti-K0'   ], particles['pi0'    ]                  ], 'PHSP'                                                              ),
             Decay(0.0002     , [particles['Mychi_c2'   ], particles['anti-K0'   ], particles['pi+'    ], particles['pi-']], 'PHSP'                                                              ),
             Decay(0.0001     , [particles['Mychi_c2'   ], particles['anti-K0'   ], particles['pi0'    ], particles['pi0']], 'PHSP'                                                              ),
             Decay(0.0001     , [particles['Mychi_c2'   ], particles['K-'        ], particles['pi+'    ], particles['pi0']], 'PHSP'                                                              ),
-            Decay(0.000016   , [particles['Mychi_c2'   ], particles['K*-'       ], particles['pi-'    ]                  ], 'PHSP'                                                              ),
-            Decay(0.0000057  , [particles['Mychi_c2'   ], particles['anti-K_10' ],                                       ], 'PHSP'                                                              ),
-            Decay(0.0000123  , [particles['Mychi_c2'   ], particles['anti-K\'_10' ],                                     ], 'PHSP'                                                              ),
-            Decay(0.0000112  , [particles['Mychi_c2'   ], particles['anti-K_2*0' ],                                      ], 'PHSP'                                                              ),
-            Decay(0.0000061  , [particles['Mychi_c2'   ], particles['anti-K_0'  ], particles['rho0']                     ], 'PHSP'                                                              ),
-            Decay(0.0000012  , [particles['Mychi_c2'   ], particles['K-'        ], particles['rho+']                     ], 'PHSP'                                                              ),
+            Decay(0.000016   , [particles['Mychi_c2'   ], particles['K*-'       ], particles['pi+'    ]                  ], 'PHSP'                                                              ), #from link
+            Decay(0.0000057  , [particles['Mychi_c2'   ], particles['anti-K_10' ],                                       ], 'PHSP'                                                              ), #from link
+            Decay(0.0000123  , [particles['Mychi_c2'   ], particles['anti-K\'_10' ],                                     ], 'PHSP'                                                              ), #from link
+            Decay(0.0000112  , [particles['Mychi_c2'   ], particles['anti-K_2*0' ],                                      ], 'PHSP'                                                              ), #from link
+            Decay(0.0000061  , [particles['Mychi_c2'   ], particles['anti-K0'  ], particles['rho0']                     ], 'PHSP'                                                              ), #from link
+            Decay(0.0000012  , [particles['Mychi_c2'   ], particles['K-'        ], particles['rho+']                     ], 'PHSP'                                                              ), #from link
         ],
         charge_conjugate = 'MyB0'
     )
@@ -349,13 +350,13 @@ if __name__ == '__main__':
     particles['MyBs'] = Particle(
         'MyBs',
         [
-            Decay(0.00064    , [particles['MyJ/psi'  ], particles["eta'"    ]		                             ], 'SVS'                                 ),
-            Decay(0.00032    , [particles['MyJ/psi'  ], particles["eta"	    ]                                    ], 'SVS'                                 ),
-            Decay(0.001300000, [particles['MyJ/psi'  ], particles["phi"     ]                                    ], 'SVV_HELAMP  1.0 0.0 1.0 0.0 1.0 0.0' ),
+            Decay(0.00033    , [particles['MyJ/psi'  ], particles["eta'"    ]		                         ], 'SVS'                                 ),
+            Decay(0.00040    , [particles['MyJ/psi'  ], particles["eta"	    ]                                    ], 'SVS'                                 ),
+            Decay(0.001080000, [particles['MyJ/psi'  ], particles["phi"     ]                                    ], 'SVV_HELAMP  1.0 0.0 1.0 0.0 1.0 0.0' ),
             Decay(0.00008    , [particles['MyJ/psi'  ], particles["K0"	    ]	                                 ], 'SVS'                                 ),
-            Decay(0.00070    , [particles['MyJ/psi'  ], particles["K-"      ], particles["K+" ]                  ], 'PHSP'                                ),
+            Decay(0.00079    , [particles['MyJ/psi'  ], particles["K-"      ], particles["K+" ]                  ], 'PHSP'                                ),
             Decay(0.00070    , [particles['MyJ/psi'  ], particles["anti-K0" ], particles["K0" ]                  ], 'PHSP'                                ),
-            Decay(0.00070    , [particles['MyJ/psi'  ], particles["K0"      ], particles["K-" ], particles["pi+"]], 'PHSP'                                ),
+            Decay(0.00095    , [particles['MyJ/psi'  ], particles["K0"      ], particles["K-" ], particles["pi+"]], 'PHSP'                                ),
             Decay(0.00070    , [particles['MyJ/psi'  ], particles["anti-K0" ], particles["K0" ], particles["pi0"]], 'PHSP'                                ),
             Decay(0.00070    , [particles['MyJ/psi'  ], particles["K-"      ], particles["K+" ], particles["pi0"]], 'PHSP'                                ),
             Decay(0.00039    , [particles['MyJ/psi'  ], particles["phi"     ], particles["pi+"], particles["pi-"]], 'PHSP'                                ),
@@ -364,17 +365,17 @@ if __name__ == '__main__':
             Decay(0.0002     , [particles['MyJ/psi'  ], particles["eta"     ], particles["pi0"], particles["pi0"]], 'PHSP'                                ),
             Decay(0.0004     , [particles['MyJ/psi'  ], particles["eta'"    ], particles["pi+"], particles["pi-"]], 'PHSP'                                ),
             Decay(0.0004     , [particles['MyJ/psi'  ], particles["eta'"    ], particles["pi0"], particles["pi0"]], 'PHSP'                                ),
-            Decay(0.0002     , [particles['MyJ/psi'  ], particles["pi+"     ], particles["pi-"]                  ], 'PHSP'                                ),
+            Decay(0.000209   , [particles['MyJ/psi'  ], particles["pi+"     ], particles["pi-"]                  ], 'PHSP'                                ),
             Decay(0.0002     , [particles['MyJ/psi'  ], particles["pi0"     ], particles["pi0"]                  ], 'PHSP'                                ),
-            Decay(0.000046   , [particles['MyJ/psi'  ], particles["K*0"	    ]	                                 ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'), #from https://gitlab.cern.ch/lhcb-datapkg/Gen/DecFiles/-/blob/master/dkfiles/incl_b=2xJpsi.dec using 270 as factor
-            Decay(0.000136   , [particles['MyJ/psi'  ], particles["f_0"	    ]	                                 ], 'SVS'                                 ), 
-            Decay(0.000041   , [particles['MyJ/psi'  ], particles["f'_0"    ]	                                 ], 'SVS'                                 ), 
-            Decay(0.00000104 , [particles['MyJ/psi'  ], particles["f_2"     ]	                                 ], 'PHSP'                                ), 
-            Decay(0.000274   , [particles['MyJ/psi'  ], particles["f'_2"     ]	                                 ], 'PHSP'                                ), 
-            Decay(0.00000529 , [particles['MyJ/psi'  ], particles["anti-K0" ], particles["K+" ], particles["pi-"]], 'PHSP'                                ),
-            Decay(0.000465   , [particles['Mypsi(2S)'], particles["eta'"    ]	                                 ], 'SVS'                                 ),
-            Decay(0.000235   , [particles['Mypsi(2S)'], particles["eta"     ]                                    ], 'SVS'                                 ),
-            Decay(0.000680000, [particles['Mypsi(2S)'], particles["phi"     ]                                    ], 'SVV_HELAMP  1.0 0.0 1.0 0.0 1.0 0.0' ),
+            Decay(0.000046   , [particles['MyJ/psi'  ], particles["K*0"	    ]	                                 ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'), # from link
+            Decay(0.000136   , [particles['MyJ/psi'  ], particles["f_0"	    ]	                                 ], 'SVS'                                 ), #from link 
+            Decay(0.000041   , [particles['MyJ/psi'  ], particles["f'_0"    ]	                                 ], 'SVS'                                 ), #from link 
+            Decay(0.00000104 , [particles['MyJ/psi'  ], particles["f_2"     ]	                                 ], 'PHSP'                                ), #from link 
+            Decay(0.000274   , [particles['MyJ/psi'  ], particles["f'_2"     ]	                                 ], 'PHSP'                                ), #from link 
+            Decay(0.00000529 , [particles['MyJ/psi'  ], particles["anti-K0" ], particles["K+" ], particles["pi-"]], 'PHSP'                                ), #from link 
+            Decay(0.000129   , [particles['Mypsi(2S)'], particles["eta'"    ]	                                 ], 'SVS'                                 ), 
+            Decay(0.000330   , [particles['Mypsi(2S)'], particles["eta"     ]                                    ], 'SVS'                                 ),
+            Decay(0.000540000, [particles['Mypsi(2S)'], particles["phi"     ]                                    ], 'SVV_HELAMP  1.0 0.0 1.0 0.0 1.0 0.0' ),
             Decay(0.0003     , [particles['Mypsi(2S)'], particles["K-"      ], particles["K+" ]                  ], 'PHSP'                                ),
             Decay(0.0003     , [particles['Mypsi(2S)'], particles["anti-K0" ], particles["K0" ]                  ], 'PHSP'                                ),
             Decay(0.0003     , [particles['Mypsi(2S)'], particles["K0"      ], particles["K-" ], particles["pi+"]], 'PHSP'                                ),
@@ -386,17 +387,15 @@ if __name__ == '__main__':
             Decay(0.0002     , [particles['Mypsi(2S)'], particles["eta"     ], particles["pi0"], particles["pi0"]], 'PHSP'                                ),
             Decay(0.0004     , [particles['Mypsi(2S)'], particles["eta'"    ], particles["pi+"], particles["pi-"]], 'PHSP'                                ),
             Decay(0.0004     , [particles['Mypsi(2S)'], particles["eta'"    ], particles["pi0"], particles["pi0"]], 'PHSP'                                ),
-            Decay(0.0002     , [particles['Mypsi(2S)'], particles["pi+"     ], particles["pi-"]                  ], 'PHSP'                                ),
+            Decay(0.000071   , [particles['Mypsi(2S)'], particles["pi+"     ], particles["pi-"]                  ], 'PHSP'                                ),
             Decay(0.0002     , [particles['Mypsi(2S)'], particles["pi0"     ], particles["pi0"]                  ], 'PHSP'                                ),
-            Decay(0.0000245  , [particles['Mypsi(2S)'], particles["K0"      ]                                    ], 'SVS'                                 ),#from https://gitlab.cern.ch/lhcb-datapkg/Gen/DecFiles/-/blob/master/dkfiles/incl_b=2xJpsi.dec using 160 as factor
-            Decay(0.0000241  , [particles['Mypsi(2S)'], particles["K*0"     ]                                    ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'),
-            Decay(0.0000690  , [particles['Mypsi(2S)'], particles["f_0"     ]                                    ], 'SVS'                                 ),
-            Decay(0.0000169  , [particles['Mypsi(2S)'], particles["f'_0"    ]                                    ], 'SVS'                                 ),
-            Decay(0.0000005  , [particles['Mypsi(2S)'], particles["f_2"     ]                                    ], 'PHSP'                                ),
-            Decay(0.00008818 , [particles['Mypsi(2S)'], particles["f'_2"    ]                                    ], 'PHSP'                                ),
-            Decay(0.00000268 , [particles['Mypsi(2S)'], particles["anti-K0" ], particles["K+"], particles["pi-"] ], 'PHSP'                                ),
-
-            
+            Decay(0.0000245  , [particles['Mypsi(2S)'], particles["K0"      ]                                    ], 'SVS'                                 ),#from link
+            Decay(0.0000241  , [particles['Mypsi(2S)'], particles["K*0"     ]                                    ], 'SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus'),#from link
+            Decay(0.0000690  , [particles['Mypsi(2S)'], particles["f_0"     ]                                    ], 'SVS'                                 ),#from link
+            Decay(0.0000169  , [particles['Mypsi(2S)'], particles["f'_0"    ]                                    ], 'SVS'                                 ),#from link
+            Decay(0.0000005  , [particles['Mypsi(2S)'], particles["f_2"     ]                                    ], 'PHSP'                                ),#from link
+            Decay(0.00008818 , [particles['Mypsi(2S)'], particles["f'_2"    ]                                    ], 'PHSP'                                ),#from link
+            Decay(0.00000268 , [particles['Mypsi(2S)'], particles["anti-K0" ], particles["K+"], particles["pi-"] ], 'PHSP'                                ),#from link
             Decay(0.00010    , [particles['Mychi_c0' ], particles["eta'"    ]                                    ], 'PHSP'                                ),
             Decay(0.00005    , [particles['Mychi_c0' ], particles["eta"     ]                                    ], 'PHSP'                                ),
             Decay(0.00020    , [particles['phi'      ], particles["Mychi_c0"]                                    ], 'SVS'                                 ),
@@ -407,7 +406,7 @@ if __name__ == '__main__':
             Decay(0.00003    , [particles['Mychi_c0' ], particles["K-"      ], particles["K+" ], particles["pi0"]], 'PHSP'                                ),
             Decay(0.0007     , [particles['Mychi_c1' ], particles["eta'"	]                                    ], 'SVS'                                 ),
             Decay(0.0003     , [particles['Mychi_c1' ], particles["eta"     ]                                    ], 'SVS'                                 ),
-            Decay(0.0014     , [particles['Mychi_c1' ], particles["phi"     ]                                    ], 'SVV_HELAMP  1.0 0.0 1.0 0.0 1.0 0.0' ),
+            Decay(0.000204   , [particles['Mychi_c1' ], particles["phi"     ]                                    ], 'SVV_HELAMP  1.0 0.0 1.0 0.0 1.0 0.0' ),
             Decay(0.00026    , [particles['Mychi_c1' ], particles["K-"      ], particles["K+" ]                  ], 'PHSP'                                ),
             Decay(0.00026    , [particles['Mychi_c1' ], particles["anti-K0" ], particles["K0" ]                  ], 'PHSP'                                ),
             Decay(0.00026    , [particles['Mychi_c1' ], particles["K0"      ], particles["K-" ], particles["pi+"]], 'PHSP'                                ),
@@ -537,7 +536,7 @@ if __name__ == '__main__':
         [
             Decay(0.00047, [particles["Xi-"], particles["MyJ/psi"  ]], 'PHSP'),
             Decay(0.00038, [particles["Xi-"], particles["Mypsi(2S)"]], 'PHSP'),
-            Decay(0.00038, [particles["n0"],particles["K-"], particles["MyJ/psi"]], 'PHSP'), # from https://gitlab.cern.ch/lhcb-datapkg/Gen/DecFiles/-/blob/master/dkfiles/incl_b=2xJpsi.dec
+            Decay(0.00038, [particles["n0"],particles["K-"], particles["MyJ/psi"]], 'PHSP'), # from link
         ],
         charge_conjugate = 'Myanti-Xi_b+'
     )
@@ -546,8 +545,8 @@ if __name__ == '__main__':
         'MyXi_b0',
         [
             Decay(0.00047, [particles["Xi0"], particles["MyJ/psi"  ]], 'PHSP'),
-            Decay(0.000235, [particles["Xi0"], particles["Mypsi(2S)"  ]], 'PHSP'), #https://gitlab.cern.ch/lhcb-datapkg/Gen/DecFiles/-/blob/master/dkfiles/incl_b=2xJpsi.dec
-            Decay(0.000235, [particles["p+"], particles["K-"], particles["MyJ/psi"  ]], 'PHSP'),
+            Decay(0.000235, [particles["Xi0"], particles["Mypsi(2S)"  ]], 'PHSP'), # from link
+            Decay(0.000235, [particles["p+"], particles["K-"], particles["MyJ/psi"  ]], 'PHSP'),# from link
         ],
         charge_conjugate = 'Myanti-Xi_b0'
     )
