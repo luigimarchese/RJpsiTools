@@ -1,8 +1,0 @@
-root://cms-xrd-global.cern.ch//store/user/garamire/NanoPU_2021Jan22/BcToJpsiTauNu/CRAB_UserFiles/BcToJpsiTauNu/210122_215940/0000/tree_1.root
-root://cms-xrd-global.cern.ch//store/user/garamire/NanoPU_2021Jan22/BcToJpsiTauNu/CRAB_UserFiles/BcToJpsiTauNu/210122_215940/0000/tree_2.root
-root://cms-xrd-global.cern.ch//store/user/garamire/NanoPU_2021Jan22/BcToJpsiTauNu/CRAB_UserFiles/BcToJpsiTauNu/210122_215940/0000/tree_3.root
-root://cms-xrd-global.cern.ch//store/user/garamire/NanoPU_2021Jan22/BcToJpsiTauNu/CRAB_UserFiles/BcToJpsiTauNu/210122_215940/0000/tree_4.root
-root://cms-xrd-global.cern.ch//store/user/garamire/NanoPU_2021Jan22/BcToJpsiTauNu/CRAB_UserFiles/BcToJpsiTauNu/210122_215940/0000/tree_5.root
-root://cms-xrd-global.cern.ch//store/user/garamire/NanoPU_2021Jan22/BcToJpsiTauNu/CRAB_UserFiles/BcToJpsiTauNu/210122_215940/0000/tree_6.root
-root://cms-xrd-global.cern.ch//store/user/garamire/NanoPU_2021Jan22/BcToJpsiTauNu/CRAB_UserFiles/BcToJpsiTauNu/210122_215940/0000/tree_7.root
-root://cms-xrd-global.cern.ch//store/user/garamire/NanoPU_2021Jan22/BcToJpsiTauNu/CRAB_UserFiles/BcToJpsiTauNu/210122_215940/0000/tree_8.root
