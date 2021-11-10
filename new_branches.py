@@ -8,7 +8,7 @@ to_define = [
     ('ip3d_e_corr'               , '1.15*ip3d_e*(run==1) + ip3d_e*(run>1)'                        ),
     ('ip3d_sig'                  , 'ip3d/ip3d_e'                                                  ),
     ('ip3d_sig_corr'             , 'ip3d/ip3d_e_corr'                                             ),
-    ('decay_time_ps'             , 'decay_time*1e12'                                              ),
+    #('decay_time_ps'             , 'decay_time*1e12'                                              ),
     ('abs_mu1_dxy'               , 'abs(mu1_dxy)'                                                 ),
     ('abs_mu2_dxy'               , 'abs(mu2_dxy)'                                                 ),
     ('mu1_dxy_sig'               , 'abs(mu1_dxy)/mu1_dxyErr'                                      ),
@@ -43,6 +43,9 @@ to_define = [
     ('mu3_p4'                    , 'ROOT::Math::PtEtaPhiMVector(kpt, keta, kphi, kmass)'          ),
     ('kaon_p4'                   , 'ROOT::Math::PtEtaPhiMVector(kpt, keta, kphi, 0.493677)'       ), # this is at the correct kaon mass
     ('mmm_p4'                    , 'mu1_p4+mu2_p4+mu3_p4'                                         ),
+    ('m12'                       , '(mu1_p4+mu2_p4).mass()'                                          ),
+    ('m23'                       , '(mu2_p4+mu3_p4).mass()'                                          ),
+    ('m13'                       , '(mu1_p4+mu3_p4).mass()'                                          ),
     ('bct'                       , 'bvtx_lxy*6.275/Bpt_reco'                                      ),
     ('jpsiK_p4'                  , 'mu1_p4+mu2_p4+kaon_p4'                                        ),
     ('jpsiK_mass'                , 'jpsiK_p4.mass()'                                              ),
@@ -79,4 +82,13 @@ to_define = [
     ('mmm_p4_par'                , 'mmm_p4.Vect().Dot(Bdirection)'                                ),
     ('mmm_p4_perp'               , 'sqrt(mmm_p4.Vect().Mag2()-mmm_p4_par*mmm_p4_par)'             ),
     ('mcorr'                     , 'sqrt(mmm_p4.mass()*mmm_p4.mass() + mmm_p4_perp*mmm_p4_perp) + mmm_p4_perp'), # Eq. 3 https://cds.cern.ch/record/2697350/files/1910.13404.pdf
+    # kinematical variables with lhcb definition of B direction
+    ('B_p4_pv_sv'                , 'ROOT::Math::PtEtaPhiMVector(Bpt, Bdir_eta, Bdir_phi, 6.276)'       ),
+    ('Bpt_reco_b'                , 'B_p4_pv_sv.pt()'),
+    ('Q_sq_b'                    , '(B_p4_pv_sv - jpsi_p4).M2()'),
+    ('pt_miss_b'                 , '(B_p4_pv_sv - jpsi_p4 - mu3_p4).pt()'),
+    ('pt_var_b'                  , 'jpsi_p4.pt() - mu3_p4.pt()'),
+    #('mu_beta_lab'               , 'ROOT::Math::XYZVector(B_p4_pv_sv.x()/B_p4_pv_sv.t(),B_p4_pv_sv.y()/B_p4_pv_sv.t(),B_p4_pv_sv.z()/B_p4_pv_sv.t())'),
+    #('E_mu_star_b'               , 'mu3_p4.boost(mu_beta_lab).e()') # doesn't have the method boost
+
 ]
