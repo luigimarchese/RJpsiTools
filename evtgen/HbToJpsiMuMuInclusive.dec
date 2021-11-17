@@ -13,6 +13,12 @@ Alias      Myanti-Bs        anti-B_s0
 Alias      MyBs             B_s0
 Alias      MyBc+            B_c+
 Alias      MyBc-            B_c-
+Alias      MyB*+            B*+
+Alias      MyB*-            B*-
+Alias      MyB*0            B*0
+Alias      Myanti-B*0       anti-B*0
+Alias      MyBs*            B_s*0
+Alias      Myanti-Bs*       anti-B_s*0
 Alias      MyLambda_b0      Lambda_b0
 Alias      MyXi_b-          Xi_b-
 Alias      Myanti-Xi_b+     anti-Xi_b+
@@ -24,6 +30,9 @@ ChargeConj MyB-             MyB+
 ChargeConj Myanti-B0        MyB0
 ChargeConj Myanti-Bs        MyBs
 ChargeConj MyBc-            MyBc+
+ChargeConj MyB*-            MyB*+
+ChargeConj MyB*0            Myanti-B*0
+ChargeConj MyBs*            Myanti-Bs*
 ChargeConj MyXi_b-          Myanti-Xi_b+
 ChargeConj MyXi_b0          Myanti-Xi_b0
 ChargeConj MyOmega_b-       Myanti-Omega_b+
@@ -366,64 +375,82 @@ Enddecay
 CDecay Myanti-Bs
 
 
+Decay MyB*+  # original total forced BR = 1.00000000
+1.00000000 MyB+ gamma VSP_PWAVE;
+Enddecay
+CDecay MyB*-
+
+
+Decay MyB*0  # original total forced BR = 1.00000000
+1.00000000 MyB0 gamma VSP_PWAVE;
+Enddecay
+CDecay Myanti-B*0
+
+
+Decay MyBs*  # original total forced BR = 1.00000000
+1.00000000 MyBs gamma VSP_PWAVE;
+Enddecay
+CDecay Myanti-Bs*
+
+
 Decay MyBc+  # original total forced BR = 0.91150320
-0.00233238 MyJ/psi mu+ nu_mu PHOTOS BC_VMN 1;
-0.00007128 Mypsi(2S) mu+ nu_mu PHOTOS BC_VMN 1;
-0.00000354 Mychi_c0 mu+ nu_mu PHOTOS BC_SMN 3;
-0.00008689 Mychi_c1 mu+ nu_mu PHOTOS BC_VMN 3;
-0.00004926 Mychi_c2 mu+ nu_mu PHOTOS BC_TMN 3;
-0.00000359 Myh_c mu+ nu_mu PHOTOS PHSP;
-0.00006587 MyBs mu+ nu_mu PHOTOS PHSP;
-0.10421990 B_s*0 mu+ nu_mu PHOTOS PHSP;
-0.00700292 MyB0 mu+ nu_mu PHOTOS PHSP;
-0.01194615 B*0 mu+ nu_mu PHOTOS PHSP;
-0.00233238 MyJ/psi e+ nu_e PHOTOS BC_VMN 1;
-0.00007128 Mypsi(2S) e+ nu_e PHOTOS BC_VMN 1;
-0.00000354 Mychi_c0 e+ nu_e PHOTOS BC_SMN 3;
-0.00008689 Mychi_c1 e+ nu_e PHOTOS BC_VMN 3;
-0.00004926 Mychi_c2 e+ nu_e PHOTOS BC_TMN 3;
-0.00000359 Myh_c e+ nu_e PHOTOS PHSP;
-0.00006587 MyBs e+ nu_e PHOTOS PHSP;
-0.10421990 B_s*0 e+ nu_e PHOTOS PHSP;
-0.00700292 MyB0 e+ nu_e PHOTOS PHSP;
-0.01194615 B*0 e+ nu_e PHOTOS PHSP;
-0.00058923 MyJ/psi tau+ nu_tau PHOTOS BC_VMN 1;
-0.00000607 Mypsi(2S) tau+ nu_tau PHOTOS BC_VMN 1;
-0.00000030 Mychi_c0 tau+ nu_tau PHOTOS BC_SMN 3;
-0.00000739 Mychi_c1 tau+ nu_tau PHOTOS BC_VMN 3;
-0.00000419 Mychi_c2 tau+ nu_tau PHOTOS BC_TMN 3;
-0.00015958 MyJ/psi pi+ SVS;
-0.00049103 MyJ/psi rho+ SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
-0.00001350 MyJ/psi K+ SVS;
-0.00002701 MyJ/psi K*+ SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
-0.00020869 MyJ/psi D_s+ SVS;
-0.00082247 MyJ/psi D_s*+ SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
-0.00001105 MyJ/psi D+ SVS;
-0.00003437 MyJ/psi D*+ SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
-0.00026804 MyBs pi+ PHSP;
-0.00011768 rho+ MyBs SVS;
-0.00001732 MyBs K+ PHSP;
+0.01415519 MyJ/psi mu+ nu_mu PHOTOS BC_VMN 1;
+0.00043257 Mypsi(2S) mu+ nu_mu PHOTOS BC_VMN 1;
+0.00002146 Mychi_c0 mu+ nu_mu PHOTOS BC_SMN 3;
+0.00052735 Mychi_c1 mu+ nu_mu PHOTOS BC_VMN 3;
+0.00029894 Mychi_c2 mu+ nu_mu PHOTOS BC_TMN 3;
+0.00002180 Myh_c mu+ nu_mu PHOTOS PHSP;
+0.00039974 MyBs mu+ nu_mu PHOTOS PHSP;
+0.00050190 MyBs* mu+ nu_mu PHOTOS PHSP;
+0.04250056 MyB0 mu+ nu_mu PHOTOS PHSP;
+0.07250095 MyB*0  mu+ nu_mu PHOTOS PHSP;
+0.01415519 MyJ/psi e+ nu_e PHOTOS BC_VMN 1;
+0.00043257 Mypsi(2S) e+ nu_e PHOTOS BC_VMN 1;
+0.00002146 Mychi_c0 e+ nu_e PHOTOS BC_SMN 3;
+0.00052735 Mychi_c1 e+ nu_e PHOTOS BC_VMN 3;
+0.00029894 Mychi_c2 e+ nu_e PHOTOS BC_TMN 3;
+0.00002180 Myh_c e+ nu_e PHOTOS PHSP;
+0.00039974 MyBs e+ nu_e PHOTOS PHSP;
+0.00050190 MyBs* e+ nu_e PHOTOS PHSP;
+0.04250056 MyB0 e+ nu_e PHOTOS PHSP;
+0.07250095 MyB*0  e+ nu_e PHOTOS PHSP;
+0.00357605 MyJ/psi tau+ nu_tau PHOTOS BC_VMN 1;
+0.00003681 Mypsi(2S) tau+ nu_tau PHOTOS BC_VMN 1;
+0.00000183 Mychi_c0 tau+ nu_tau PHOTOS BC_SMN 3;
+0.00004485 Mychi_c1 tau+ nu_tau PHOTOS BC_VMN 3;
+0.00002542 Mychi_c2 tau+ nu_tau PHOTOS BC_TMN 3;
+0.00096851 MyJ/psi pi+ SVS;
+0.00298004 MyJ/psi rho+ SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.00008195 MyJ/psi K+ SVS;
+0.00016390 MyJ/psi K*+ SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.00126652 MyJ/psi D_s+ SVS;
+0.00499157 MyJ/psi D_s*+ SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.00006705 MyJ/psi D+ SVS;
+0.00020860 MyJ/psi D*+ SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.00162672 MyBs pi+ PHSP;
+0.00071417 rho+ MyBs SVS;
+0.00010514 MyBs K+ PHSP;
 0.00000000 K*+ MyBs SVS;
-0.13387932 B_s*0 pi+ SVS;
-0.41605574 B_s*0 rho+ SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
-0.00762082 B_s*0 K+ SVS;
-0.00000000 B_s*0 K*+ SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
-0.02183263 MyB0 pi+ PHSP;
-0.01977295 rho+ MyB0 SVS;
-0.00144178 MyB0 K+ PHSP;
-0.00030895 K*+ MyB0 SVS;
-0.01956698 B*0 pi+ SVS;
-0.05293382 B*0 rho+ SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
-0.00113283 B*0 K+ SVS;
-0.00119462 B*0 K*+ SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
-0.00000049 MyB+ pi0 PHSP;
-0.00000045 rho0 MyB+ SVS;
-0.00002641 MyB+ anti-K0 PHSP;
-0.00000574 K*0 MyB+ SVS;
-0.00067970 B*+ pi0 SVS;
-0.00185371 B*+ rho0 SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
-0.03295491 B*+ anti-K0 SVS;
-0.03439669 B*+ K*0 SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.00064474 MyBs* pi+ SVS;
+0.00200364 MyBs* rho+ SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.00003670 MyBs* K+ SVS;
+0.00000000 MyBs* K*+ SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.13250174 MyB0 pi+ PHSP;
+0.12000157 rho+ MyB0 SVS;
+0.00875011 MyB0 K+ PHSP;
+0.00187502 K*+ MyB0 SVS;
+0.11875156 MyB*0  pi+ SVS;
+0.32125421 MyB*0  rho+ SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.00687509 MyB*0  K+ SVS;
+0.00725010 MyB*0  K*+ SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.00000300 MyB+ pi0 PHSP;
+0.00000275 rho0 MyB+ SVS;
+0.00016027 MyB+ anti-K0 PHSP;
+0.00003481 K*0 MyB+ SVS;
+0.00000267 MyB*+ pi0 SVS;
+0.00000729 MyB*+ rho0 SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
+0.00012951 MyB*+ anti-K0 SVS;
+0.00013518 MyB*+ K*0 SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
 Enddecay
 CDecay MyBc-
 
