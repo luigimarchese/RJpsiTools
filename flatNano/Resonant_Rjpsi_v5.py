@@ -18,6 +18,7 @@ from uproot_methods import TLorentzVector
 from uproot_methods import TVector3
 from scipy.constants import c as speed_of_light
 import uproot
+import math
 
 #hammer
 from bgl_variations import variations
@@ -32,11 +33,11 @@ nMaxFiles = 1
 skipFiles = 0
 
 #Compute hammer
-flag_hammer_mu = False
-flag_hammer_tau = False
+flag_hammer_mu  = True
+flag_hammer_tau = True
 
 #Add also pu weight
-flag_pu_weight = False
+flag_pu_weight = True
 
 ## lifetime weights ##
 def weight_to_new_ctau(old_ctau, new_ctau, ct):
@@ -167,18 +168,70 @@ def jpsi_branches(pf):
     return pf
     
 def decaytime(pf):
+    beamspot_pos = TVector3Array(pf.beamspot_x, pf.beamspot_y, pf.beamspot_z)
     PV_pos = TVector3Array(pf.pv_x,pf.pv_y,pf.pv_z)
     jpsiVertex_pos = TVector3Array(pf.jpsivtx_vtx_x,pf.jpsivtx_vtx_y,pf.jpsivtx_vtx_z)
-    dist1 = (PV_pos - jpsiVertex_pos).mag
+    bcVertex_pos = TVector3Array(pf.bvtx_vtx_x,pf.bvtx_vtx_y,pf.bvtx_vtx_z)
+
+    dist_pv_jpsi = (PV_pos - jpsiVertex_pos).mag
+    dist_pv_bc = (PV_pos - bcVertex_pos).mag
+    dist_beamspot_jpsi = (beamspot_pos - jpsiVertex_pos).mag
+    dist_beamspot_bc = (beamspot_pos - bcVertex_pos).mag
 
     if(len(PV_pos)): 
-        decay_time1 = dist1 * 6.276 / (pf.Bpt_reco * 2.998e+10)
-        pf['decay_time'] = decay_time1
+        decay_time_pv_jpsi = dist_pv_jpsi * 6.276 / (pf.Bpt_reco * 2.998e+10)
+        pf['decay_time_pv_jpsi'] = decay_time_pv_jpsi
+        decay_time_pv_bc = dist_pv_bc * 6.276 / (pf.Bpt_reco * 2.998e+10)
+        pf['decay_time_pv_bc'] = decay_time_pv_bc
+        decay_time_beamspot_jpsi = dist_beamspot_jpsi * 6.276 / (pf.Bpt_reco * 2.998e+10)
+        pf['decay_time_beamspot_jpsi'] = decay_time_beamspot_jpsi
+        decay_time_beamspot_bc = dist_beamspot_bc * 6.276 / (pf.Bpt_reco * 2.998e+10)
+        pf['decay_time_beamspot_bc'] = decay_time_beamspot_bc
 
     # when there are 0 events, just to save the branch (empty)
     else:
-        pf['decay_time'] = pf.pv_x #it's NaN anyway
+        pf['decay_time_pv_jpsi'] = pf.pv_x #it's NaN anyway
+        pf['decay_time_pv_bc'] = pf.pv_x #it's NaN anyway
+        pf['decay_time_beamspot_jpsi'] = pf.pv_x #it's NaN anyway
+        pf['decay_time_beamspot_bc'] = pf.pv_x #it's NaN anyway
     return pf
+
+def bp4_lhcb(pf):
+    PV_pos = TVector3Array(pf.pv_x,pf.pv_y,pf.pv_z)
+    SV_pos = TVector3Array(pf.jpsivtx_vtx_x,pf.jpsivtx_vtx_y,pf.jpsivtx_vtx_z)
+
+    phi_pv_sv = (PV_pos - SV_pos).phi
+    theta_pv_sv = (PV_pos - SV_pos).theta
+    eta_pv_sv = -np.log( np.tan (abs(theta_pv_sv)/2) ) * np.sign(theta_pv_sv)
+    real_mass = [6.276 for i in phi_pv_sv]
+    Bpt = [item for item in pf.Bpt]
+
+    mu1_p4 = TLorentzVectorArray.from_ptetaphim(pf.mu1pt,pf.mu1eta,pf.mu1phi,pf.mu1mass)
+    mu2_p4 = TLorentzVectorArray.from_ptetaphim(pf.mu2pt,pf.mu2eta,pf.mu2phi,pf.mu2mass)
+    jpsi_p4= mu1_p4 + mu2_p4 
+    mu_p4 = TLorentzVectorArray.from_ptetaphim(pf.kpt,pf.keta,pf.kphi,pf.kmass)
+    b_p4 = TLorentzVectorArray.from_ptetaphim(Bpt, eta_pv_sv,phi_pv_sv, real_mass)
+
+    if(len(PV_pos)): 
+        
+        pf['Bpt_reco_b'] = b_p4.pt
+        pf['Q_sq_b'] = (b_p4 - jpsi_p4)*(b_p4 - jpsi_p4)
+        pf['pt_miss_b'] = (b_p4 - jpsi_p4 - mu_p4).pt
+        pf['pt_var_b'] = jpsi_p4.pt - mu_p4.pt
+        mu_beta_lab = TVector3Array(b_p4.x/b_p4.t,b_p4.y/b_p4.t,b_p4.z/b_p4.t)
+        mu_p4.boost(-mu_beta_lab)
+        pf['E_mu_star_b'] = mu_p4.energy
+
+    # when there are 0 events, just to save the branch (empty)
+    else:
+        pf['Bpt_reco_b'] = pf.pv_x #it's NaN anyway
+        pf['Q_sq_b'] = pf.pv_x #it's NaN anyway
+        pf['pt_miss_b'] = pf.pv_x #it's NaN anyway
+        pf['pt_var_b'] = pf.pv_x #it's NaN anyway
+        pf['E_mu_star_b'] = pf.pv_x #it's NaN anyway
+
+    return pf
+
 
 #for the rho corrected iso branch
 def getAreaEff( eta, drcone ):
@@ -244,9 +297,7 @@ def rho_corr_iso(df):
     return df
 
 # Compute the form factor weights for the mu sample
-def hammer_weights_mu(df):
-    ham = Hammer()
-    fbBuffer = IOBuffer
+def hammer_weights_mu(df,ham):
     ham.include_decay("BcJpsiMuNu")
     ff_input_scheme = dict()
     ff_input_scheme["BcJpsi"] = "Kiselev"
@@ -270,9 +321,9 @@ def hammer_weights_mu(df):
         weights[k] = []
     for i in range(len(df)): #loop on the events
         ham.init_event()
-        thebc_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.mu1_grandmother_pt[i],df.mu1_grandmother_eta[i] , df.mu1_grandmother_phi[i], 6.274)
-        themu_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.k_gen_pt[i] , df.k_gen_eta[i],df.k_gen_phi[i] , 0.1056583755)
-        thejpsi_p4 = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.mu1_mother_pt[i] , df.mu1_mother_eta[i],df.mu1_mother_phi[i] , 3.0969)
+        thebc_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.bc_gen_pt[i],df.bc_gen_eta[i] , df.bc_gen_phi[i], df.bc_gen_mass[i])
+        themu_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.mu3_gen_pt[i] , df.mu3_gen_eta[i],df.mu3_gen_phi[i] , df.mu3_gen_mass[i])
+        thejpsi_p4 = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.jpsi_gen_pt[i] , df.jpsi_gen_eta[i],df.jpsi_gen_phi[i] , df.jpsi_gen_mass[i])
         thenu_p4   = thebc_p4 - themu_p4 - thejpsi_p4
                         
         thebc   = Particle(FourMomentum(thebc_p4.e()  , thebc_p4.px()  , thebc_p4.py()  , thebc_p4.pz()  ), 541)
@@ -301,9 +352,7 @@ def hammer_weights_mu(df):
     return df
 
 # Compute the form factor weights for the tau sample
-def hammer_weights_tau(df):
-    ham = Hammer()
-    fbBuffer = IOBuffer
+def hammer_weights_tau(df,ham):
     ham.include_decay(["BcJpsiTauNu"])
     ff_input_scheme = dict()
     ff_input_scheme["BcJpsi"] = "Kiselev"
@@ -327,11 +376,13 @@ def hammer_weights_tau(df):
         weights[k] = []
     for i in range(len(df)): #loop on the events
         ham.init_event()
-        thebc_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.mu1_grandmother_pt[i],df.mu1_grandmother_eta[i] , df.mu1_grandmother_phi[i], 6.274)
-        thetau_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.k_mother_pt[i] , df.k_mother_eta[i],df.k_mother_phi[i] , 1.77686)
-        thejpsi_p4 = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.mu1_mother_pt[i] , df.mu1_mother_eta[i],df.mu1_mother_phi[i] , 3.0969)
+
+        thebc_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.bc_gen_pt[i],df.bc_gen_eta[i] , df.bc_gen_phi[i],  df.bc_gen_mass[i])
+        thetau_p4 = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.tau_gen_pt[i] , df.tau_gen_eta[i],df.tau_gen_phi[i] , df.tau_gen_mass[i])
+        thejpsi_p4 = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.jpsi_gen_pt[i] , df.jpsi_gen_eta[i],df.jpsi_gen_phi[i] , df.jpsi_gen_mass[i])
+
         thenutau_p4   = thebc_p4 - thetau_p4 - thejpsi_p4
-                        
+
         thebc   = Particle(FourMomentum(thebc_p4.e()  , thebc_p4.px()  , thebc_p4.py()  , thebc_p4.pz()  ), 541)
         thetau   = Particle(FourMomentum(thetau_p4.e()  , thetau_p4.px()  , thetau_p4.py()  , thetau_p4.pz()  ), -15          )
         thejpsi = Particle(FourMomentum(thejpsi_p4.e(), thejpsi_p4.px(), thejpsi_p4.py(), thejpsi_p4.pz()), 443          )
@@ -347,11 +398,11 @@ def hammer_weights_tau(df):
         pid = ham.add_process(Bc2JpsiLNu)
         pids.append(pid)
         ham.process_event()
+        
         for k in ff_schemes.keys():
             weights[k].append(ham.get_weight(k))
+
     for k in ff_schemes.keys():
-        print("k",k)
-        print("hammer_"+k)
         #save the nan as 1
         weights_clean = [ham if (not np.isnan(ham)) else 1. for ham in weights[k]]
         df["hammer_"+k] = weights_clean
@@ -485,9 +536,10 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
             bcands['event'] = nf['event']
             bcands['run'] = nf['run']
             bcands['luminosityBlock'] = nf['luminosityBlock']    
-            if(len(nf[channel]) == 0):
-                print("Empty channel!")
-                continue
+            #WHAT about this?
+            #if(len(nf[channel]) == 0):
+            #    print("Empty channel!")
+            #    continue
             bcands['l_xy_sig'] = bcands.bodies3_l_xy / np.sqrt(bcands.bodies3_l_xy_unc)
             bcands['fixedGridRhoFastjetAll'] = nf['fixedGridRhoFastjetAll']
             bcands['fixedGridRhoFastjetCentral'] = nf['fixedGridRhoFastjetCentral']
@@ -508,6 +560,28 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                 bcands['is_hc_mu'] = nf['DecayFlag_is_hc_mu']
                 bcands['is_jpsi_3pi'] = nf['DecayFlag_is_jpsi_3pi']
                 bcands['is_jpsi_hc'] = nf['DecayFlag_is_jpsi_hc']
+
+                #bc gen info
+                bcands['BcGenInfo_bc_gen_pt'] = nf['BcGenInfo_bc_gen_pt']
+                bcands['BcGenInfo_bc_gen_eta'] = nf['BcGenInfo_bc_gen_eta']
+                bcands['BcGenInfo_bc_gen_phi'] = nf['BcGenInfo_bc_gen_phi']
+                bcands['BcGenInfo_bc_gen_mass'] = nf['BcGenInfo_bc_gen_mass']
+                
+                bcands['BcGenInfo_jpsi_gen_pt'] = nf['BcGenInfo_jpsi_gen_pt']
+                bcands['BcGenInfo_jpsi_gen_eta'] = nf['BcGenInfo_jpsi_gen_eta']
+                bcands['BcGenInfo_jpsi_gen_phi'] = nf['BcGenInfo_jpsi_gen_phi']
+                bcands['BcGenInfo_jpsi_gen_mass'] = nf['BcGenInfo_jpsi_gen_mass']
+                
+
+                bcands['BcGenInfo_tau_gen_pt'] = nf['BcGenInfo_tau_gen_pt']
+                bcands['BcGenInfo_tau_gen_eta'] = nf['BcGenInfo_tau_gen_eta']
+                bcands['BcGenInfo_tau_gen_phi'] = nf['BcGenInfo_tau_gen_phi']
+                bcands['BcGenInfo_tau_gen_mass'] = nf['BcGenInfo_tau_gen_mass']
+                
+                bcands['BcGenInfo_mu3_gen_pt'] = nf['BcGenInfo_mu3_gen_pt']
+                bcands['BcGenInfo_mu3_gen_eta'] = nf['BcGenInfo_mu3_gen_eta']
+                bcands['BcGenInfo_mu3_gen_phi'] = nf['BcGenInfo_mu3_gen_phi']
+                bcands['BcGenInfo_mu3_gen_mass'] = nf['BcGenInfo_mu3_gen_mass']
 
             ###########################################
             ###### GEN weights for HbToJpsiMu MC ######
@@ -542,6 +616,7 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                 }
                 weights_jpsim_tmp = 0.
                 check_jpsimoth = 0.
+                print(weights_jpsimother)
                 for b_had in weights_jpsimother:
                     weights_jpsim_tmp = weights_jpsim_tmp+ bcands['jpsimother_'+b_had] * weights_jpsimother[b_had]
                     check_jpsimoth = check_jpsimoth + bcands['jpsimother_'+b_had]
@@ -634,7 +709,7 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
             # very loose selection here
             b_selection = ((bcands.p4.mass < 10 ) & (bcands.bodies3_svprob > 1e-7))
             x_selection= (bcands.p4.pt > -99)
-        
+
             #Delete the signal from the JpsiX MC
             if (dataset==args.mc_onia or dataset==args.mc_hb):
                 if(channel == 'BTo2Mu3P'):
@@ -642,6 +717,9 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
 
                 else:
                     x_selection= ~ ((bcands.k.genPartIdx>=0) & ( bcands.mu1.genPartIdx>=0) & (bcands.mu2.genPartIdx>=0) & (abs(bcands.mu1.mother.pdgId) == 443) & (abs(bcands.mu2.mother.pdgId) == 443) & (abs(bcands.mu1.grandmother.pdgId) == 541) & (abs(bcands.mu2.grandmother.pdgId) == 541) & ( (abs(bcands.k.mother.pdgId)==541) | ( (abs(bcands.k.mother.pdgId)==15) & (abs(bcands.k.grandmother.pdgId)== 541))))
+
+            if channel == 'BTo2MuP':
+                x_selection = x_selection & ((bcands.mu2.p4.pt>1) & (bcands.mu1.p4.pt>1) & (bcands.k.p4.pt>1) & (bcands.p4.mass<10) & (bcands.mu2.p4.eta<2.5) & (bcands.mu1.p4.eta<2.5) & (bcands.k.p4.eta<2.5))
 
             #######################################
             ###### MC Bc types ###################
@@ -678,9 +756,13 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                 for chan, tab, sel in [
                         (channel, bcands_flag, b_selection & x_selection & selection), 
                 ]:
+                    print(chan,tab,sel)
                     dfs[name] = pd.DataFrame()
                     df = dfs[name]
                     df['event'] = tab['event']
+                    print(len(df['event']))
+                    if len(df['event']) == 0:
+                        continue
                     df['run'] = tab['run']
                     df['luminosityBlock'] = tab['luminosityBlock']
 
@@ -1128,9 +1210,12 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
 
                     #is PF ?
                     df['mu1_isPF'] = tab.mu1.isPFcand
+                    df['mu1_isPF'] = df['mu1_isPF'].astype(int)
                     df['mu2_isPF'] = tab.mu2.isPFcand
+                    df['mu2_isPF'] = df['mu2_isPF'].astype(int)
                     if(chan == 'BTo3Mu'):
                         df['k_isPF'] = tab.k.isPFcand
+                        df['k_isPF'] = df['k_isPF'].astype(int)
                         
                     df['nB'] = sel.sum()[sel.sum() != 0]
 
@@ -1220,6 +1305,27 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                             df['puWeight'] = tab.puWeight
                             df['puWeightUp'] = tab.puWeightUp
                             df['puWeightDown'] = tab.puWeightDown
+                            
+                        # branches of the Bc GEN info (for hammer)
+                        df['bc_gen_pt'] = tab.BcGenInfo_bc_gen_pt
+                        df['bc_gen_eta'] = tab.BcGenInfo_bc_gen_eta
+                        df['bc_gen_phi'] = tab.BcGenInfo_bc_gen_phi
+                        df['bc_gen_mass'] = tab.BcGenInfo_bc_gen_mass
+
+                        df['jpsi_gen_pt'] = tab.BcGenInfo_jpsi_gen_pt
+                        df['jpsi_gen_eta'] = tab.BcGenInfo_jpsi_gen_eta
+                        df['jpsi_gen_phi'] = tab.BcGenInfo_jpsi_gen_phi
+                        df['jpsi_gen_mass'] = tab.BcGenInfo_jpsi_gen_mass
+
+                        df['tau_gen_pt'] = tab.BcGenInfo_tau_gen_pt
+                        df['tau_gen_eta'] = tab.BcGenInfo_tau_gen_eta
+                        df['tau_gen_phi'] = tab.BcGenInfo_tau_gen_phi
+                        df['tau_gen_mass'] = tab.BcGenInfo_tau_gen_mass
+
+                        df['mu3_gen_pt'] = tab.BcGenInfo_mu3_gen_pt
+                        df['mu3_gen_eta'] = tab.BcGenInfo_mu3_gen_eta
+                        df['mu3_gen_phi'] = tab.BcGenInfo_mu3_gen_phi
+                        df['mu3_gen_mass'] = tab.BcGenInfo_mu3_gen_mass
 
                         #gen Part Flavour e gen Part Idx  -> if I need to access the gen info, this values tell me is it is a valid info or not
                         df['mu1_genPartFlav'] = tab.mu1.genPartFlav
@@ -1484,11 +1590,26 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                         if channel == 'BTo3Mu':
                             df = rho_corr_iso(df)
                     df = decaytime(df)
-                    if((dataset == args.mc_mu or (dataset == args.mc_bc and name == 'is_jpsi_mu')) and flag_hammer_mu and channel =='BTo3Mu'):
-                        df = hammer_weights_mu(df)
-                    if((dataset == args.mc_tau or (dataset == args.mc_bc and name == 'is_jpsi_tau')) and flag_hammer_tau and channel =='BTo3Mu'):
-                        df = hammer_weights_tau(df)
+                    if channel == 'BTo3Mu':
+                        df = bp4_lhcb(df)
 
+                    flag_init_hammer = 0
+                    print("dataset:",dataset," channel:", channel)
+                    if((dataset == args.mc_mu or (dataset == args.mc_bc and name == 'is_jpsi_mu')) and flag_hammer_mu and channel =='BTo3Mu'):
+                        if not flag_init_hammer:
+                            ham = Hammer()
+                            fbBuffer = IOBuffer
+                            flag_init_hammer =1
+                        df = hammer_weights_mu(df,ham)
+                        print("After the hammer mu :",len(df))
+
+                    if((dataset == args.mc_tau or (dataset == args.mc_bc and name == 'is_jpsi_tau')) and flag_hammer_tau and channel =='BTo3Mu'):
+                        if not flag_init_hammer:
+                            ham = Hammer()
+                            fbBuffer = IOBuffer
+                            flag_init_hammer =1
+                        df = hammer_weights_tau(df,ham)
+                        print("After the hammer tau :",len(df))
                     ##########################################################
                     ##### Concatenate the dataframe to the total one #########
                     ##########################################################
@@ -1509,7 +1630,7 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
     dataset=dataset.strip('.txt')
     name=dataset.split('/')
     d=name[len(name)-1].split('_')
-    adj='_prova_'
+    adj='_v5_'
   
     for flag in flag_names:
         for channel in channels:

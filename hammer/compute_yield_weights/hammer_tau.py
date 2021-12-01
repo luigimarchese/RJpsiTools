@@ -29,7 +29,7 @@ ham.add_ff_scheme('BGL', ff_scheme)
 ham.set_units("GeV")
 ham.init_run()
 
-fname = 'hammer_output_tau_v1.root'
+fname = 'inspector_output_tau_v1.root'
 
 fin = ROOT.TFile.Open(fname)
 tree = fin.Get('tree')
