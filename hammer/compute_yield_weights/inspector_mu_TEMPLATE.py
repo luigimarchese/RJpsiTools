@@ -2,6 +2,7 @@
 Script that takes a ntuple that is from GEN up to miniAOD (in the last case add option --miniaod 1)
 and gives as an output a flat ntupla that contains all the gen infos.
 It looks for events of the kind Bc-> jpsi mu (saved the info of the mu3 and not of tau)
+Difference with non template version: this version is used to submit on batch, then some features are parametrizable
 '''
 
 from __future__ import print_function
@@ -34,6 +35,11 @@ verbose       = args.verbose
 destination   = args.destination
 maxevents     = args.maxevents
 is_miniaod    = args.is_miniaod
+
+files = glob('/pnfs/psi.ch/cms/trivcat/store/user/friti/HOOK_INPUT/*.root')
+files.sort()
+files = files[(jobid)*files_per_job:(jobid+1)*files_per_job]
+print("files: ",files)
 
 diquarks = [
     1103,
@@ -215,7 +221,7 @@ branches = [
 
 ]
 
-fout = ROOT.TFile('%s/inspector_output_mu_v1.root' %(destination), 'recreate')
+fout = ROOT.TFile('HOOK_FILE_OUT', 'recreate')
 ntuple = ROOT.TNtuple('tree', 'tree', ':'.join(branches))
 tofill = OrderedDict(zip(branches, [np.nan]*len(branches)))
 
@@ -482,4 +488,5 @@ for i, event in enumerate(events):
 fout.cd()
 ntuple.Write()
 fout.Close()
-    
+print("Success!")        
+print("File HOOK_FILE_OUT saved!" )    
