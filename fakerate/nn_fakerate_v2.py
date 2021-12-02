@@ -1,7 +1,6 @@
 '''
 Script that computes the NN to find dependencies of fr to other variables
 Also performs the closure test
-
 '''
 from root_pandas import read_root, to_root
 from datetime import datetime
@@ -29,8 +28,9 @@ from sklearn.metrics import roc_curve, roc_auc_score
 from sklearn.preprocessing import RobustScaler
 from itertools import product
 from new_branches_pandas import to_define
-from selections import preselection, pass_id, fail_id
+from selections import prepreselection, pass_id, fail_id
 from histos_nordf import histos #histos file NO root dataframes
+from samples import sample_names
 
 #no pop-up windows
 ROOT.gROOT.SetBatch()
@@ -190,8 +190,10 @@ def closure_test(passing_mc_ct,failing_mc_ct):
 if __name__ == "__main__":
         
     #Hb to jpsi X MC sample
-    mc_path = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15/HbToJPsiMuMu_trigger_bcclean.root'
-    #mc_path = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15/HbToJPsiMuMu_tr_bc_newb.root'
+
+    mc_path = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_Oct2021/HbToJPsiMuMu_trigger_bcclean.root'
+    #mc_path = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15/HbToJPsiMuMu_trigger_bcclean.root'
+
     #output path
     nn_path = '/work/friti/rjpsi_tools/CMSSW_10_6_14/src/RJpsiTools/fakerate/nn/'
     
@@ -223,7 +225,7 @@ if __name__ == "__main__":
     os.system('mkdir -p '+ final_nn_path + '/closure_test/norm/')
     
     #preselection and not-true muon request
-    mc = read_root(mc_path, 'BTo3Mu', where=preselection + '& !(abs(k_genpdgId)==13)')
+    mc = read_root(mc_path, 'BTo3Mu', where=prepreselection + '& !(abs(k_genpdgId)==13)')
     mc = to_define(mc)
     
     passing_mc_tmp   = mc.query(pass_id).copy()
@@ -258,7 +260,7 @@ if __name__ == "__main__":
     
     # define the net
     input  = Input((len(features),))
-    layer  = Dense(16, activation=activation   , name='dense1', kernel_constraint=unit_norm())(input)
+    layer  = Dense(32, activation=activation   , name='dense1', kernel_constraint=unit_norm())(input)
     
     '''layer  = Dense(256, activation=activation   , name='dense1', kernel_constraint=unit_norm())(input)
     #         layer  = Dropout(0., name='dropout1')(layer)
@@ -428,12 +430,20 @@ if __name__ == "__main__":
 
     tree_name = 'BTo3Mu'
     #Different paths depending on the sample
-    tree_dir_data = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar15' #data
-    tree_dir_bc = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Apr14' #Bc
-    tree_hbmu = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Mar16' #Hb mu filter
+    tree_dir_dec2021 = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_Dec2021/' # same samples as Oct21, but new NN for fakerate
+    #    tree_dir_oct2021 = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_Oct2021/' #data; mu; Hb3Mu; Hb
+    #tree_dir_bc = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Oct22' #Bc
+    #tree_hbmu = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021Oct25' #Hb mu filter
 
-    samples['jpsi_tau'] = read_root(tree_dir_bc + '/BcToJPsiMuMu_is_jpsi_tau_merged.root', tree_name) #, where=preselection)
-    samples['jpsi_mu'] = read_root(tree_dir_bc + '/BcToJPsiMuMu_is_jpsi_mu_merged.root', tree_name) #, where=preselection)
+    for sname in sample_names:
+        if sname == 'data':
+            samples[sname] = read_root(tree_dir_dec2021 + sname + '_trigger.root',tree_name)
+        elif sname == 'jpsi_x_mu':
+            samples[sname] = read_root(tree_dir_dec2021 +  '/HbToJPsiMuMu_3MuFilter_trigger_bcclean.root',tree_name)
+        else:
+            samples[sname] = read_root(tree_dir_dec2021 + 'BcToJPsiMuMu_is_'+sname + 'trigger.root',tree_name)
+    '''samples['jpsi_tau'] = read_root(tree_dir_bc + '/BcToJPsiMuMu_is_jpsi_tau_merged.root', tree_name) #, where=preselection)
+    samples['jpsi_mu'] = read_root(tree_dir_oct2021 + '/BcToJPsiMuMu_is_jpsi_mu_trigger.root', tree_name) #, where=preselection)
     samples['chic0_mu'] = read_root(tree_dir_bc + '/BcToJPsiMuMu_is_chic0_mu_merged.root', tree_name) #, where=preselection)
     samples['chic1_mu'] = read_root(tree_dir_bc + '/BcToJPsiMuMu_is_chic1_mu_merged.root', tree_name) #, where=preselection)
     samples['chic2_mu'] = read_root(tree_dir_bc + '/BcToJPsiMuMu_is_chic2_mu_merged.root', tree_name) #, where=preselection)
@@ -441,8 +451,10 @@ if __name__ == "__main__":
     samples['jpsi_hc'] = read_root(tree_dir_bc + '/BcToJPsiMuMu_is_jpsi_hc_merged.root', tree_name) #, where=preselection)
     samples['psi2s_mu'] = read_root(tree_dir_bc + '/BcToJPsiMuMu_is_psi2s_mu_merged.root', tree_name) #, where=preselection)
     samples['psi2s_tau'] = read_root(tree_dir_bc + '/BcToJPsiMuMu_is_psi2s_tau_merged.root', tree_name)
-    samples['jpsi_x_mu'] = read_root(tree_hbmu + '/HbToJPsiMuMu3MuFilter_trigger_bcclean.root', tree_name) #, where=preselection)
-    samples['data'] = read_root(tree_dir_data + '/data_flagtriggersel.root', tree_name)#,where = preselection)
+    samples['jpsi_x_mu'] = read_root(tree_dir_oct2021 + '/HbToJPsiMuMu_3MuFilter_trigger_bcclean.root', tree_name) #, where=preselection)
+    samples['data'] = read_root(tree_dir_oct2021 + '/data_flagtriggersel.root', tree_name)#,where = preselection)
+    samples['jpsi_x'] =read_root(tree_dir_oct2021 + '/HbToJPsiMuMu_trigger_bcclean.root', tree_name)#,where = preselection)
+    '''
     # preprocess
 
     # add NN branch
@@ -459,4 +471,5 @@ if __name__ == "__main__":
         samples[k].loc[:,'fakerate_weight'] = tmp
     # save them
     for sample in samples:
-        samples[sample].to_root('/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021May31_nn/'+sample+'_fakerate.root', key='BTo3Mu')
+        #samples[sample].to_root('/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021May31_nn/'+sample+'_fakerate.root', key='BTo3Mu')
+        samples[sample].to_root('/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_Dec2021/'+sample+'_fakerate.root', key='BTo3Mu')
