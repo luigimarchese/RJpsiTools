@@ -42,15 +42,21 @@ sample_names_explicit_jpsiXmu = [
     #     'jpsi_pi'  ,
 ]
 
+# Overall weight to use to renormalize the Bc->jpsi mu and Bc-> jpsi tau samples due to FF reweighting
+# Computed in tools/hammer/compute_yield_weights
+ff_weights = dict()
+ff_weights['jpsi_tau' ] = 1./0.554
+ff_weights['jpsi_mu'  ] = 1./0.603
+
 
 weights = dict()
 
-bc_weight = 0.15
+bc_weight = 0.10  
+#bc_weight = 0.15  #for prev ff_weights
 #bc_weight = 1.53 #for prev oct21
 fr = 0.19
 #hbmu_norm = 8.5 *1.5 #without weights
 hbmu_norm = 8.5 *0.5 *0.65 #0.65 from fit, so it will make the fit converge better
-
 
 
 weights['jpsi_tau' ] = bc_weight

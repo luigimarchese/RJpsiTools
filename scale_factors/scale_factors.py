@@ -1,5 +1,7 @@
 '''
-Script to compute the scale factors id and reco for the muons
+Script to compute the scale factors id and reco for the muons from json tables
+- It saves scale factor branches in the flat nanos, both central values and errors
+- It also saves the value of the global error
 '''
 from root_pandas import read_root
 from root_pandas import to_root
@@ -11,13 +13,14 @@ import sys
 import numpy as np
 
 # This variable is False because all the shape euncertainties are actually normalisations only, so we apply a unique normalisation uncertainty (the max one) to the fit (see plots in `15Jul2021_13h18m04s`)
-# Normalisation nuisances :
-#- reco 1.0043494353691738; id: 1.003517006834348 -> pass
-#- reco:1.0038005262613297; id: 1.0030679007371266 ->fail
 
 compute_error = False
+compute_error_global = True
 
-path = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021May31_nn'
+# Path for final root files 
+path = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_Dec2021'
+
+#Open json files with scale factors info depending on eta and pt
 with open('reco_muon.json') as f:
   reco_json = json.load(f)
 with open('id_muon.json') as f:
@@ -55,12 +58,14 @@ def find_sf(df, i, which_mu, json, initial_folder):
 
   return value, error, cell
 
+
 for sname in sample_names+['jpsi_x']:
-#for sname in ['jpsi_x']:
     if sname == 'data':
         continue
     print("Computing sample ",sname)
     df = read_root(path+'/'+sname+'_fakerate.root','BTo3Mu',warn_missing_tree=True)
+    #df = read_root(path+'/'+sname+'_fakerate_mva.root','BTo3Mu',warn_missing_tree=True)
+    #df = read_root(path+'/'+sname+'_sf.root','BTo3Mu',warn_missing_tree=True)
     
     #reorder the indices 
     df.index= [i for i in range(len(df))]
@@ -96,18 +101,20 @@ for sname in sample_names+['jpsi_x']:
     
     if compute_error:
       # build weights for the shape/ normalisation uncertainties (one for each cell)
+      # number of cells in the json files
       for ireco in range(0, 16*4):      
         # transfor the cell number in bool (yes or not)
+        # The weights will be equal to 1 if the cell number (2nd element in the array) is the one we want ot work on
         weight_mu1_reco = list(map(lambda item: item == ireco, mu1_reco_features[2])) #cell number
         weight_mu2_reco = list(map(lambda item: item == ireco, mu2_reco_features[2]))
         weight_k_reco = list(map(lambda item: item == ireco, k_reco_features[2]))
-
 
         # value + error * true/false
         df['sf_reco_'+str(ireco)+'_up'] = ((mu1_reco_features[0]+mu1_reco_features[1]*weight_mu1_reco)*(mu2_reco_features[0]+mu2_reco_features[1]*weight_mu2_reco)*(k_reco_features[0]+k_reco_features[1]*weight_k_reco)).astype(float)
         df['sf_reco_'+str(ireco)+'_down'] = ((mu1_reco_features[0]-mu1_reco_features[1]*weight_mu1_reco)*(mu2_reco_features[0]-mu2_reco_features[1]*weight_mu2_reco)*(k_reco_features[0]-k_reco_features[1]*weight_k_reco)).astype(float)
       
-        for iid in range(0, 16*4):
+      
+      for iid in range(0, 16*4):
           # transfor the cell number in bool (yes or not)
           weight_mu1_id = list(map(lambda item: item == iid, mu1_id_features[2])) #cell number
           weight_mu2_id = list(map(lambda item: item == iid, mu2_id_features[2]))
@@ -119,5 +126,15 @@ for sname in sample_names+['jpsi_x']:
           df['sf_id_'+str(iid)+'_jpsi_down'] = ((mu1_id_features[0]-mu1_id_features[1]*weight_mu1_id)*(mu2_id_features[0]-mu2_id_features[1]*weight_mu2_id)).astype(float)
           df['sf_id_'+str(iid)+'_k_up'] = ((k_id_features[0]+k_id_features[1]*weight_k_id)).astype(float)
           df['sf_id_'+str(iid)+'_k_down'] = ((k_id_features[0]-k_id_features[1]*weight_k_id)).astype(float)
+
+    if compute_error_global:
+      # worst case when I apply only the normalisation nuisance to the fit
+      df['sf_reco_all_up'] = ((mu1_reco_features[0]+mu1_reco_features[1])*(mu2_reco_features[0]+mu2_reco_features[1])*(k_reco_features[0]+k_reco_features[1])).astype(float)
+      df['sf_reco_all_down'] = ((mu1_reco_features[0]-mu1_reco_features[1])*(mu2_reco_features[0]-mu2_reco_features[1])*(k_reco_features[0]-k_reco_features[1])).astype(float)
+      # worst case when I compute only the normalisation nuisance to the fit
+      df['sf_id_all_jpsi_up'] = ((mu1_id_features[0]+mu1_id_features[1])*(mu2_id_features[0]+mu2_id_features[1])).astype(float)
+      df['sf_id_all_jpsi_down'] = ((mu1_id_features[0]-mu1_id_features[1])*(mu2_id_features[0]-mu2_id_features[1])).astype(float)
+      df['sf_id_all_k_up'] = ((k_id_features[0]+k_id_features[1])).astype(float)
+      df['sf_id_all_k_down'] = ((k_id_features[0]-k_id_features[1])).astype(float)
           
-    df.to_root(path+'/'+sname+'_sf.root', key='BTo3Mu')
+    df.to_root(path+'/'+sname+'_sf_werrors.root', key='BTo3Mu')
