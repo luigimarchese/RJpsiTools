@@ -344,8 +344,6 @@ def hammer_weights_mu(df,ham):
         for k in ff_schemes.keys():
             weights[k].append(ham.get_weight(k))
     for k in ff_schemes.keys():
-        print("k",k)
-        print("hammer_"+k)
         #save the nan as 1
         weights_clean = [ham if (not np.isnan(ham)) else 1. for ham in weights[k]]
         df["hammer_"+k] = weights_clean
@@ -616,7 +614,6 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                 }
                 weights_jpsim_tmp = 0.
                 check_jpsimoth = 0.
-                print(weights_jpsimother)
                 for b_had in weights_jpsimother:
                     weights_jpsim_tmp = weights_jpsim_tmp+ bcands['jpsimother_'+b_had] * weights_jpsimother[b_had]
                     check_jpsimoth = check_jpsimoth + bcands['jpsimother_'+b_had]
@@ -756,11 +753,9 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                 for chan, tab, sel in [
                         (channel, bcands_flag, b_selection & x_selection & selection), 
                 ]:
-                    print(chan,tab,sel)
                     dfs[name] = pd.DataFrame()
                     df = dfs[name]
                     df['event'] = tab['event']
-                    print(len(df['event']))
                     if len(df['event']) == 0:
                         continue
                     df['run'] = tab['run']
@@ -1305,27 +1300,27 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                             df['puWeight'] = tab.puWeight
                             df['puWeightUp'] = tab.puWeightUp
                             df['puWeightDown'] = tab.puWeightDown
+                        if(dataset == args.mc_bc):    
+                            # branches of the Bc GEN info (for hammer)
+                            df['bc_gen_pt'] = tab.BcGenInfo_bc_gen_pt
+                            df['bc_gen_eta'] = tab.BcGenInfo_bc_gen_eta
+                            df['bc_gen_phi'] = tab.BcGenInfo_bc_gen_phi
+                            df['bc_gen_mass'] = tab.BcGenInfo_bc_gen_mass
                             
-                        # branches of the Bc GEN info (for hammer)
-                        df['bc_gen_pt'] = tab.BcGenInfo_bc_gen_pt
-                        df['bc_gen_eta'] = tab.BcGenInfo_bc_gen_eta
-                        df['bc_gen_phi'] = tab.BcGenInfo_bc_gen_phi
-                        df['bc_gen_mass'] = tab.BcGenInfo_bc_gen_mass
-
-                        df['jpsi_gen_pt'] = tab.BcGenInfo_jpsi_gen_pt
-                        df['jpsi_gen_eta'] = tab.BcGenInfo_jpsi_gen_eta
-                        df['jpsi_gen_phi'] = tab.BcGenInfo_jpsi_gen_phi
-                        df['jpsi_gen_mass'] = tab.BcGenInfo_jpsi_gen_mass
-
-                        df['tau_gen_pt'] = tab.BcGenInfo_tau_gen_pt
-                        df['tau_gen_eta'] = tab.BcGenInfo_tau_gen_eta
-                        df['tau_gen_phi'] = tab.BcGenInfo_tau_gen_phi
-                        df['tau_gen_mass'] = tab.BcGenInfo_tau_gen_mass
-
-                        df['mu3_gen_pt'] = tab.BcGenInfo_mu3_gen_pt
-                        df['mu3_gen_eta'] = tab.BcGenInfo_mu3_gen_eta
-                        df['mu3_gen_phi'] = tab.BcGenInfo_mu3_gen_phi
-                        df['mu3_gen_mass'] = tab.BcGenInfo_mu3_gen_mass
+                            df['jpsi_gen_pt'] = tab.BcGenInfo_jpsi_gen_pt
+                            df['jpsi_gen_eta'] = tab.BcGenInfo_jpsi_gen_eta
+                            df['jpsi_gen_phi'] = tab.BcGenInfo_jpsi_gen_phi
+                            df['jpsi_gen_mass'] = tab.BcGenInfo_jpsi_gen_mass
+                            
+                            df['tau_gen_pt'] = tab.BcGenInfo_tau_gen_pt
+                            df['tau_gen_eta'] = tab.BcGenInfo_tau_gen_eta
+                            df['tau_gen_phi'] = tab.BcGenInfo_tau_gen_phi
+                            df['tau_gen_mass'] = tab.BcGenInfo_tau_gen_mass
+                            
+                            df['mu3_gen_pt'] = tab.BcGenInfo_mu3_gen_pt
+                            df['mu3_gen_eta'] = tab.BcGenInfo_mu3_gen_eta
+                            df['mu3_gen_phi'] = tab.BcGenInfo_mu3_gen_phi
+                            df['mu3_gen_mass'] = tab.BcGenInfo_mu3_gen_mass
 
                         #gen Part Flavour e gen Part Idx  -> if I need to access the gen info, this values tell me is it is a valid info or not
                         df['mu1_genPartFlav'] = tab.mu1.genPartFlav
@@ -1594,14 +1589,13 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                         df = bp4_lhcb(df)
 
                     flag_init_hammer = 0
-                    print("dataset:",dataset," channel:", channel)
+                    #print("dataset:",dataset," channel:", channel)
                     if((dataset == args.mc_mu or (dataset == args.mc_bc and name == 'is_jpsi_mu')) and flag_hammer_mu and channel =='BTo3Mu'):
                         if not flag_init_hammer:
                             ham = Hammer()
                             fbBuffer = IOBuffer
                             flag_init_hammer =1
                         df = hammer_weights_mu(df,ham)
-                        print("After the hammer mu :",len(df))
 
                     if((dataset == args.mc_tau or (dataset == args.mc_bc and name == 'is_jpsi_tau')) and flag_hammer_tau and channel =='BTo3Mu'):
                         if not flag_init_hammer:
@@ -1609,7 +1603,6 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                             fbBuffer = IOBuffer
                             flag_init_hammer =1
                         df = hammer_weights_tau(df,ham)
-                        print("After the hammer tau :",len(df))
                     ##########################################################
                     ##### Concatenate the dataframe to the total one #########
                     ##########################################################

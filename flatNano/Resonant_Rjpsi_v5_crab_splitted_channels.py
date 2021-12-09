@@ -1,4 +1,4 @@
-#from nanoAOD root files, to 1D hd5 files
+#from nanoAOD root files, to flat ntuples
 from mybatch import *
 from coffea.analysis_objects import JaggedCandidateArray
 import awkward as awk
@@ -18,6 +18,8 @@ from uproot_methods import TLorentzVector
 from uproot_methods import TVector3
 from scipy.constants import c as speed_of_light
 import uproot
+import math
+
 #hammer
 from bgl_variations import variations
 from itertools import product
@@ -30,8 +32,13 @@ checkDoubles = True
 nMaxFiles = REPLACE_MAX_FILES
 skipFiles = REPLACE_SKIP_FILES
 
-flag_hammer_mu = True
+#Compute hammer
+flag_hammer_mu  = True
 flag_hammer_tau = True
+
+#Add also pu weight
+flag_pu_weight = True
+
 ## lifetime weights ##
 def weight_to_new_ctau(old_ctau, new_ctau, ct):
     '''
@@ -126,61 +133,105 @@ def DR_jpsimu(pf):
     #print("Adding DR between jpsi and mu branch...")
     mu1_p4 = TLorentzVectorArray.from_ptetaphim(pf.mu1pt,pf.mu1eta,pf.mu1phi,pf.mu1mass)
     mu2_p4 = TLorentzVectorArray.from_ptetaphim(pf.mu2pt,pf.mu2eta,pf.mu2phi,pf.mu2mass)
-
     jpsi_p4= mu1_p4 + mu2_p4 
-    #    jpsi_p4 = TLorentzVectorArray.from_ptetaphim((pf.mu1pt+pf.mu2pt),(pf.mu1eta,+pf.mu2eta),(pf.mu1phi+pf.mu2phi),(pf.mu1mass+pf.mu2mass))
     mu_p4 = TLorentzVectorArray.from_ptetaphim(pf.kpt,pf.keta,pf.kphi,pf.kmass)
-    #    print(jpsi_p4.delta_r(mu_p4))
-    #    pf.copy()
     pf['DR_jpsimu'] = jpsi_p4.delta_r(mu_p4)
     return pf
 
 def dr13(pf):
     mu1_p4 = TLorentzVectorArray.from_ptetaphim(pf.mu1pt,pf.mu1eta,pf.mu1phi,pf.mu1mass)
     mu_p4 = TLorentzVectorArray.from_ptetaphim(pf.kpt,pf.keta,pf.kphi,pf.kmass)
-    #pf.copy()
     pf['dr13'] = mu_p4.delta_r(mu1_p4)
     return pf
+
 def dr23(pf):
     mu2_p4 = TLorentzVectorArray.from_ptetaphim(pf.mu2pt,pf.mu2eta,pf.mu2phi,pf.mu2mass)
     mu_p4 = TLorentzVectorArray.from_ptetaphim(pf.kpt,pf.keta,pf.kphi,pf.kmass)
-    #pf.copy()
     pf['dr23'] = mu_p4.delta_r(mu2_p4)
     return pf
+
 def dr12(pf):
     mu1_p4 = TLorentzVectorArray.from_ptetaphim(pf.mu1pt,pf.mu1eta,pf.mu1phi,pf.mu1mass)
     mu2_p4 = TLorentzVectorArray.from_ptetaphim(pf.mu2pt,pf.mu2eta,pf.mu2phi,pf.mu2mass)
-    #pf.copy()
     pf['dr12'] = mu2_p4.delta_r(mu1_p4)
     return pf
 
 def jpsi_branches(pf):
-    #print("Adding jpsi four momentum branches...")
     mu1_p4 = TLorentzVectorArray.from_ptetaphim(pf.mu1pt,pf.mu1eta,pf.mu1phi,pf.mu1mass)
     mu2_p4 = TLorentzVectorArray.from_ptetaphim(pf.mu2pt,pf.mu2eta,pf.mu2phi,pf.mu2mass)
     jpsi_p4= mu1_p4 + mu2_p4
     
-    #pf = pf.copy()
-
     pf['jpsi_pt'] = jpsi_p4.pt
     pf['jpsi_eta'] = jpsi_p4.eta
     pf['jpsi_phi'] = jpsi_p4.phi
     pf['jpsi_mass'] = jpsi_p4.mass
     return pf
     
-# two decay time branches... which one to choose?
 def decaytime(pf):
-    #print("Adding decay time branch...")
+    beamspot_pos = TVector3Array(pf.beamspot_x, pf.beamspot_y, pf.beamspot_z)
     PV_pos = TVector3Array(pf.pv_x,pf.pv_y,pf.pv_z)
     jpsiVertex_pos = TVector3Array(pf.jpsivtx_vtx_x,pf.jpsivtx_vtx_y,pf.jpsivtx_vtx_z)
-    dist1 = (PV_pos - jpsiVertex_pos).mag
-    if(len(PV_pos)):
-        decay_time1 = dist1 * 6.276 / (pf.Bpt_reco * 2.998e+10)
-        pf['decay_time'] = decay_time1
-    #pf.copy()
+    bcVertex_pos = TVector3Array(pf.bvtx_vtx_x,pf.bvtx_vtx_y,pf.bvtx_vtx_z)
+
+    dist_pv_jpsi = (PV_pos - jpsiVertex_pos).mag
+    dist_pv_bc = (PV_pos - bcVertex_pos).mag
+    dist_beamspot_jpsi = (beamspot_pos - jpsiVertex_pos).mag
+    dist_beamspot_bc = (beamspot_pos - bcVertex_pos).mag
+
+    if(len(PV_pos)): 
+        decay_time_pv_jpsi = dist_pv_jpsi * 6.276 / (pf.Bpt_reco * 2.998e+10)
+        pf['decay_time_pv_jpsi'] = decay_time_pv_jpsi
+        decay_time_pv_bc = dist_pv_bc * 6.276 / (pf.Bpt_reco * 2.998e+10)
+        pf['decay_time_pv_bc'] = decay_time_pv_bc
+        decay_time_beamspot_jpsi = dist_beamspot_jpsi * 6.276 / (pf.Bpt_reco * 2.998e+10)
+        pf['decay_time_beamspot_jpsi'] = decay_time_beamspot_jpsi
+        decay_time_beamspot_bc = dist_beamspot_bc * 6.276 / (pf.Bpt_reco * 2.998e+10)
+        pf['decay_time_beamspot_bc'] = decay_time_beamspot_bc
+
+    # when there are 0 events, just to save the branch (empty)
     else:
-        pf['decay_time'] = pf.pv_x #it's NaN anyway
+        pf['decay_time_pv_jpsi'] = pf.pv_x #it's NaN anyway
+        pf['decay_time_pv_bc'] = pf.pv_x #it's NaN anyway
+        pf['decay_time_beamspot_jpsi'] = pf.pv_x #it's NaN anyway
+        pf['decay_time_beamspot_bc'] = pf.pv_x #it's NaN anyway
     return pf
+
+def bp4_lhcb(pf):
+    PV_pos = TVector3Array(pf.pv_x,pf.pv_y,pf.pv_z)
+    SV_pos = TVector3Array(pf.jpsivtx_vtx_x,pf.jpsivtx_vtx_y,pf.jpsivtx_vtx_z)
+
+    phi_pv_sv = (PV_pos - SV_pos).phi
+    theta_pv_sv = (PV_pos - SV_pos).theta
+    eta_pv_sv = -np.log( np.tan (abs(theta_pv_sv)/2) ) * np.sign(theta_pv_sv)
+    real_mass = [6.276 for i in phi_pv_sv]
+    Bpt = [item for item in pf.Bpt]
+
+    mu1_p4 = TLorentzVectorArray.from_ptetaphim(pf.mu1pt,pf.mu1eta,pf.mu1phi,pf.mu1mass)
+    mu2_p4 = TLorentzVectorArray.from_ptetaphim(pf.mu2pt,pf.mu2eta,pf.mu2phi,pf.mu2mass)
+    jpsi_p4= mu1_p4 + mu2_p4 
+    mu_p4 = TLorentzVectorArray.from_ptetaphim(pf.kpt,pf.keta,pf.kphi,pf.kmass)
+    b_p4 = TLorentzVectorArray.from_ptetaphim(Bpt, eta_pv_sv,phi_pv_sv, real_mass)
+
+    if(len(PV_pos)): 
+        
+        pf['Bpt_reco_b'] = b_p4.pt
+        pf['Q_sq_b'] = (b_p4 - jpsi_p4)*(b_p4 - jpsi_p4)
+        pf['pt_miss_b'] = (b_p4 - jpsi_p4 - mu_p4).pt
+        pf['pt_var_b'] = jpsi_p4.pt - mu_p4.pt
+        mu_beta_lab = TVector3Array(b_p4.x/b_p4.t,b_p4.y/b_p4.t,b_p4.z/b_p4.t)
+        mu_p4.boost(-mu_beta_lab)
+        pf['E_mu_star_b'] = mu_p4.energy
+
+    # when there are 0 events, just to save the branch (empty)
+    else:
+        pf['Bpt_reco_b'] = pf.pv_x #it's NaN anyway
+        pf['Q_sq_b'] = pf.pv_x #it's NaN anyway
+        pf['pt_miss_b'] = pf.pv_x #it's NaN anyway
+        pf['pt_var_b'] = pf.pv_x #it's NaN anyway
+        pf['E_mu_star_b'] = pf.pv_x #it's NaN anyway
+
+    return pf
+
 
 #for the rho corrected iso branch
 def getAreaEff( eta, drcone ):
@@ -201,7 +252,6 @@ def getAreaEff( eta, drcone ):
               (2.400, 0.194),
               (2.500, 0.261) ],
     }
-    #    aeff = [ for ieta in eta for eta_loop in aeff_dic[drcone] if ieta>eta_loop[0]]
     aeff = []
     for ieta in eta:
         for i,eta_loop in enumerate(aeff_dic[drcone]):
@@ -214,7 +264,6 @@ def getAreaEff( eta, drcone ):
     return aeff
 
 def rho_corr_iso(df):
-    #print("adding rho-corrected isolation branches")
     #unpaired muon
     aEff = getAreaEff(df.keta,'03')
     zeros = pd.Series({'zero':[0 for i in range(len(aEff))]})
@@ -247,9 +296,8 @@ def rho_corr_iso(df):
 
     return df
 
-def hammer_weights_mu(df):
-    ham = Hammer()
-    fbBuffer = IOBuffer
+# Compute the form factor weights for the mu sample
+def hammer_weights_mu(df,ham):
     ham.include_decay("BcJpsiMuNu")
     ff_input_scheme = dict()
     ff_input_scheme["BcJpsi"] = "Kiselev"
@@ -273,9 +321,9 @@ def hammer_weights_mu(df):
         weights[k] = []
     for i in range(len(df)): #loop on the events
         ham.init_event()
-        thebc_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.mu1_grandmother_pt[i],df.mu1_grandmother_eta[i] , df.mu1_grandmother_phi[i], 6.274)
-        themu_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.k_gen_pt[i] , df.k_gen_eta[i],df.k_gen_phi[i] , 0.1056583755)
-        thejpsi_p4 = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.mu1_mother_pt[i] , df.mu1_mother_eta[i],df.mu1_mother_phi[i] , 3.0969)
+        thebc_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.bc_gen_pt[i],df.bc_gen_eta[i] , df.bc_gen_phi[i], df.bc_gen_mass[i])
+        themu_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.mu3_gen_pt[i] , df.mu3_gen_eta[i],df.mu3_gen_phi[i] , df.mu3_gen_mass[i])
+        thejpsi_p4 = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.jpsi_gen_pt[i] , df.jpsi_gen_eta[i],df.jpsi_gen_phi[i] , df.jpsi_gen_mass[i])
         thenu_p4   = thebc_p4 - themu_p4 - thejpsi_p4
                         
         thebc   = Particle(FourMomentum(thebc_p4.e()  , thebc_p4.px()  , thebc_p4.py()  , thebc_p4.pz()  ), 541)
@@ -296,16 +344,13 @@ def hammer_weights_mu(df):
         for k in ff_schemes.keys():
             weights[k].append(ham.get_weight(k))
     for k in ff_schemes.keys():
-        print("k",k)
-        print("hammer_"+k)
         #save the nan as 1
         weights_clean = [ham if (not np.isnan(ham)) else 1. for ham in weights[k]]
         df["hammer_"+k] = weights_clean
     return df
 
-def hammer_weights_tau(df):
-    ham = Hammer()
-    fbBuffer = IOBuffer
+# Compute the form factor weights for the tau sample
+def hammer_weights_tau(df,ham):
     ham.include_decay(["BcJpsiTauNu"])
     ff_input_scheme = dict()
     ff_input_scheme["BcJpsi"] = "Kiselev"
@@ -329,15 +374,17 @@ def hammer_weights_tau(df):
         weights[k] = []
     for i in range(len(df)): #loop on the events
         ham.init_event()
-        thebc_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.mu1_grandmother_pt[i],df.mu1_grandmother_eta[i] , df.mu1_grandmother_phi[i], 6.274)
-        thetau_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.k_mother_pt[i] , df.k_mother_eta[i],df.k_mother_phi[i] , 1.77686)
-        thejpsi_p4 = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.mu1_mother_pt[i] , df.mu1_mother_eta[i],df.mu1_mother_phi[i] , 3.0969)
+
+        thebc_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.bc_gen_pt[i],df.bc_gen_eta[i] , df.bc_gen_phi[i],  df.bc_gen_mass[i])
+        thetau_p4 = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.tau_gen_pt[i] , df.tau_gen_eta[i],df.tau_gen_phi[i] , df.tau_gen_mass[i])
+        thejpsi_p4 = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(df.jpsi_gen_pt[i] , df.jpsi_gen_eta[i],df.jpsi_gen_phi[i] , df.jpsi_gen_mass[i])
+
         thenutau_p4   = thebc_p4 - thetau_p4 - thejpsi_p4
-                        
+
         thebc   = Particle(FourMomentum(thebc_p4.e()  , thebc_p4.px()  , thebc_p4.py()  , thebc_p4.pz()  ), 541)
         thetau   = Particle(FourMomentum(thetau_p4.e()  , thetau_p4.px()  , thetau_p4.py()  , thetau_p4.pz()  ), -15          )
         thejpsi = Particle(FourMomentum(thejpsi_p4.e(), thejpsi_p4.px(), thejpsi_p4.py(), thejpsi_p4.pz()), 443          )
-        thenutau   = Particle(FourMomentum(thenutau_p4.e()  , thenutau_p4.px()  , thenutau_p4.py()  , thenutau_p4.pz())  , 16           )
+        thenutau   = Particle(FourMomentum(thenutau_p4.e()  , thenutau_p4.px()  , thenutau_p4.py()  , thenutau_p4.pz())  , 16)
         
         Bc2JpsiLNu = Process()
         
@@ -349,31 +396,37 @@ def hammer_weights_tau(df):
         pid = ham.add_process(Bc2JpsiLNu)
         pids.append(pid)
         ham.process_event()
+        
         for k in ff_schemes.keys():
             weights[k].append(ham.get_weight(k))
+
     for k in ff_schemes.keys():
-        print("k",k)
-        print("hammer_"+k)
         #save the nan as 1
         weights_clean = [ham if (not np.isnan(ham)) else 1. for ham in weights[k]]
         df["hammer_"+k] = weights_clean
     return df
 
+
+#######################################################################################
+######  STARTING THE SCRIPT ##########################################################
+#######################################################################################
+
 nprocessedAll = 0
-#loop on datasets
+channels = REPLACE_CHANNELS
+
+#loop on input datasets
 for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_onia,args.mc_gen]: 
-    if(dataset==''):
+    if(dataset==''): 
         continue
     print(" ")
     
-    channels = ['BTo3Mu','BTo2MuP','BTo2MuK','BTo2Mu3P']
     print("Opening file", dataset)
     f=open(dataset,"r")
     paths = f.readlines()
 
-    #################################################################################
+    ###################
     # MC BcToXToJpsi #
-    #################################################################################
+    ###################
     if(dataset == args.mc_bc):
 
         final_dfs_mmm = {
@@ -432,6 +485,8 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
             'is_jpsi_hc' : pd.DataFrame(),
         }
         
+
+    # For the rest of the samples
     else:
         final_dfs_mmm = {
             'ptmax' : pd.DataFrame(),
@@ -454,9 +509,8 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
     nFiles = 0
     for i,fname in enumerate(paths):
         fname= fname.strip('\n')
-        if(i%1==0):
-            print("Processing file ", fname)
-        
+        #if(i%1==0):
+        #    print("Processing file ", fname)
         
         if(i < skipFiles): # if I want to skip 1 file, I want to skip i=0 -> i+1
             print("Skipping the file...")
@@ -465,10 +519,12 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
         if(nFiles >= nMaxFiles and nMaxFiles != -1):
             print("No! Max number of files reached!")
             break
+
+        print("Processing file ", fname)
         nFiles +=1
        
-
-        nf = NanoFrame(fname, )#branches = branches)
+        # Create nf before the loop on the channels (because it reopens the file)
+        nf = NanoFrame(fname, )
         for channel in channels:
             print("In channel "+channel)
             # Load the needed collections, NanoFrame is just an empty shell until we call the collections
@@ -480,9 +536,10 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
             bcands['event'] = nf['event']
             bcands['run'] = nf['run']
             bcands['luminosityBlock'] = nf['luminosityBlock']    
-            if(len(nf[channel]) == 0):
-                print("Empty channel!")
-                continue
+            #WHAT about this?
+            #if(len(nf[channel]) == 0):
+            #    print("Empty channel!")
+            #    continue
             bcands['l_xy_sig'] = bcands.bodies3_l_xy / np.sqrt(bcands.bodies3_l_xy_unc)
             bcands['fixedGridRhoFastjetAll'] = nf['fixedGridRhoFastjetAll']
             bcands['fixedGridRhoFastjetCentral'] = nf['fixedGridRhoFastjetCentral']
@@ -490,8 +547,7 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
             bcands['fixedGridRhoFastjetCentralChargedPileUp'] = nf['fixedGridRhoFastjetCentralChargedPileUp']
             bcands['fixedGridRhoFastjetCentralNeutral'] = nf['fixedGridRhoFastjetCentralNeutral']
             
-            #bcands['pv'] = nf['PV']
-            # NEED to ADD THIS
+            # Bc MC sample type flag
             if(dataset == args.mc_bc):
                 bcands['is_jpsi_tau'] = nf['DecayFlag_is_jpsi_tau']
                 bcands['is_jpsi_mu'] = nf['DecayFlag_is_jpsi_mu']
@@ -505,7 +561,71 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                 bcands['is_jpsi_3pi'] = nf['DecayFlag_is_jpsi_3pi']
                 bcands['is_jpsi_hc'] = nf['DecayFlag_is_jpsi_hc']
 
+                #bc gen info
+                bcands['BcGenInfo_bc_gen_pt'] = nf['BcGenInfo_bc_gen_pt']
+                bcands['BcGenInfo_bc_gen_eta'] = nf['BcGenInfo_bc_gen_eta']
+                bcands['BcGenInfo_bc_gen_phi'] = nf['BcGenInfo_bc_gen_phi']
+                bcands['BcGenInfo_bc_gen_mass'] = nf['BcGenInfo_bc_gen_mass']
+                
+                bcands['BcGenInfo_jpsi_gen_pt'] = nf['BcGenInfo_jpsi_gen_pt']
+                bcands['BcGenInfo_jpsi_gen_eta'] = nf['BcGenInfo_jpsi_gen_eta']
+                bcands['BcGenInfo_jpsi_gen_phi'] = nf['BcGenInfo_jpsi_gen_phi']
+                bcands['BcGenInfo_jpsi_gen_mass'] = nf['BcGenInfo_jpsi_gen_mass']
+                
 
+                bcands['BcGenInfo_tau_gen_pt'] = nf['BcGenInfo_tau_gen_pt']
+                bcands['BcGenInfo_tau_gen_eta'] = nf['BcGenInfo_tau_gen_eta']
+                bcands['BcGenInfo_tau_gen_phi'] = nf['BcGenInfo_tau_gen_phi']
+                bcands['BcGenInfo_tau_gen_mass'] = nf['BcGenInfo_tau_gen_mass']
+                
+                bcands['BcGenInfo_mu3_gen_pt'] = nf['BcGenInfo_mu3_gen_pt']
+                bcands['BcGenInfo_mu3_gen_eta'] = nf['BcGenInfo_mu3_gen_eta']
+                bcands['BcGenInfo_mu3_gen_phi'] = nf['BcGenInfo_mu3_gen_phi']
+                bcands['BcGenInfo_mu3_gen_mass'] = nf['BcGenInfo_mu3_gen_mass']
+
+            ###########################################
+            ###### GEN weights for HbToJpsiMu MC ######
+            ###########################################
+
+            if(dataset == args.mc_hb):
+                bcands['jpsimother_bzero'] = nf['JpsiMotherFlag_bzero']
+                bcands['jpsimother_bplus'] = nf['JpsiMotherFlag_bplus']
+                bcands['jpsimother_bplus_c'] = nf['JpsiMotherFlag_bplus_c']
+                bcands['jpsimother_bzero_s'] = nf['JpsiMotherFlag_bzero_s']
+                bcands['jpsimother_sigmaminus_b'] = nf['JpsiMotherFlag_sigmaminus_b']
+                bcands['jpsimother_lambdazero_b'] = nf['JpsiMotherFlag_lambdazero_b']
+                bcands['jpsimother_ximinus_b'] = nf['JpsiMotherFlag_ximinus_b']
+                bcands['jpsimother_sigmazero_b'] = nf['JpsiMotherFlag_sigmazero_b']
+                bcands['jpsimother_xizero_b'] = nf['JpsiMotherFlag_xizero_b']
+                bcands['jpsimother_other'] = nf['JpsiMotherFlag_other']
+            
+                #import weights from file
+                f = ROOT.TFile.Open('decay_weight.root','r')
+                histo = f.Get('weight')
+                weights_jpsimother = {
+                    'other': histo.GetBinContent(1),
+                    'bzero': histo.GetBinContent(2),
+                    'bplus': histo.GetBinContent(3),
+                    'bzero_s': histo.GetBinContent(4),
+                    'bplus_c': histo.GetBinContent(5),
+                    'sigmaminus_b': histo.GetBinContent(6),
+                    'lambdazero_b': histo.GetBinContent(7),
+                    'ximinus_b': histo.GetBinContent(8),
+                    'sigmazero_b': histo.GetBinContent(9),
+                    'xizero_b': histo.GetBinContent(10),
+                }
+                weights_jpsim_tmp = 0.
+                check_jpsimoth = 0.
+                for b_had in weights_jpsimother:
+                    weights_jpsim_tmp = weights_jpsim_tmp+ bcands['jpsimother_'+b_had] * weights_jpsimother[b_had]
+                    check_jpsimoth = check_jpsimoth + bcands['jpsimother_'+b_had]
+
+                # Check if there is more than 1 mother associated with the same jpsi (it shouldn't be)
+                if any(check_jpsimoth.any())>=2.:
+                    print('EROOR: more than one mother associated with jpsi')
+                bcands['jpsimother_weight'] = weights_jpsim_tmp
+                
+                
             #number of events processed
             nprocessedDataset += hlt.shape[0]
             nprocessedAll+=hlt.shape[0]
@@ -515,7 +635,6 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
             mu2 = JaggedCandidateArray.zip({n: muons[bcands['mu2Idx']][n] for n in muons[bcands['mu2Idx']].columns})
             if channel == 'BTo3Mu':
                 k = JaggedCandidateArray.zip({n: muons[bcands['kIdx']][n] for n in muons[bcands['kIdx']].columns})
-     
             else:
                 tracks = nf['ProbeTracks']
                 if channel == 'BTo2Mu3P':
@@ -526,7 +645,7 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                     k = JaggedCandidateArray.zip({n: tracks[bcands['kIdx']][n] for n in tracks[bcands['kIdx']].columns})
                 
 
-            # the MC ONia needs a specific treatment for gen, because there are cases in which thegen collection is zero! And in these cases we can not directly add the gen branch to the muons branch. So, consdiering that to use the MC Onia we need an additional requirement: that the third muon iha pdgId==+-13, we can mask the events in which k.genPrtIdx==-1
+            # MC Onia sometimes has genc ollection empty, so we need to create a mask
             if(dataset==args.mc_onia and channel!='BTo2Mu3P'):
                 mask = (k.genPartIdx != -1)
                 mu1_new = mu1[mask]
@@ -536,36 +655,22 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                 mu2 = JaggedCandidateArray.zip({n: mu2_new[n] for n in mu2_new.columns})
                 k = JaggedCandidateArray.zip({n: k_new[n] for n in k_new.columns})
                 bcands = JaggedCandidateArray.zip({n: bcands[mask][n] for n in bcands[mask].columns})
-
             
             # add gen info as a column of the muon
             if (dataset!=args.data):
-                #pile up weights only for mc
-                
-                bcands['puWeight'] = nf['puWeight']
-                bcands['puWeightUp'] = nf['puWeight_up']
-                bcands['puWeightDown'] = nf['puWeight_down']
+                #pile up weights only for mc and if flag ==True
+                if flag_pu_weight:
+                    bcands['puWeight'] = nf['puWeight']
+                    bcands['puWeightUp'] = nf['puWeight_up']
+                    bcands['puWeightDown'] = nf['puWeight_down']
 
-                '''
-                for it in gen:
-                    if(len(it)!=0):
-                        print(it)
-                '''
-                '''
-                if(dataset == args.mc_hb):
-                    for i, igen in enumerate(gen):
-                    
-                        if(not(len(igen)==0 and mu1.genPartIdx[i]==-1)):
-                            mu1_gen = igen[mu1.genPartIdx[i]]
-                '''            #print(mu1_gen)
                 mu1['gen'] = gen[mu1.genPartIdx]
                 mu2['gen'] = gen[mu2.genPartIdx]
-                
                 mu1['mother'] = gen[gen[mu1.genPartIdx].genPartIdxMother]
                 mu2['mother'] = gen[gen[mu2.genPartIdx].genPartIdxMother]
-               
                 mu1['grandmother'] = gen[gen[gen[mu1.genPartIdx].genPartIdxMother].genPartIdxMother]
                 mu2['grandmother'] = gen[gen[gen[mu2.genPartIdx].genPartIdxMother].genPartIdxMother]
+
                 if(channel == 'BTo2Mu3P'):
                     pi1['gen'] = gen[pi1.genPartIdx]
                     pi2['gen'] = gen[pi2.genPartIdx]
@@ -585,13 +690,12 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                     mu1['grandgrandmother'] =gen[gen[gen[gen[mu1.genPartIdx].genPartIdxMother].genPartIdxMother].genPartIdxMother]
                     mu2['grandgrandmother'] =gen[gen[gen[gen[mu2.genPartIdx].genPartIdxMother].genPartIdxMother].genPartIdxMother]
                     if(channel == 'BTo2Mu3P'):
-                        pi1['grandgrandmother'] =gen[gen[gen[gen[pi1.genPartIdx].genPartIdxMother].genPartIdxMother].genPartIdxMother]                
-                        pi2['grandgrandmother'] =gen[gen[gen[gen[pi2.genPartIdx].genPartIdxMother].genPartIdxMother].genPartIdxMother]                
-                        pi3['grandgrandmother'] =gen[gen[gen[gen[pi3.genPartIdx].genPartIdxMother].genPartIdxMother].genPartIdxMother]                
+                        pi1['grandgrandmother'] =gen[gen[gen[gen[pi1.genPartIdx].genPartIdxMother].genPartIdxMother].genPartIdxMother]          
+                        pi2['grandgrandmother'] =gen[gen[gen[gen[pi2.genPartIdx].genPartIdxMother].genPartIdxMother].genPartIdxMother]         
+                        pi3['grandgrandmother'] =gen[gen[gen[gen[pi3.genPartIdx].genPartIdxMother].genPartIdxMother].genPartIdxMother]   
                     else:
                         k['grandgrandmother'] =gen[gen[gen[gen[k.genPartIdx].genPartIdxMother].genPartIdxMother].genPartIdxMother]                
                         
-
             bcands['mu1']= mu1
             bcands['mu2'] = mu2
             if(channel == 'BTo2Mu3P'):
@@ -600,11 +704,11 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                 bcands['pi3'] = pi3
             else:
                 bcands['k'] = k
-            
+        
+            # very loose selection here
             b_selection = ((bcands.p4.mass < 10 ) & (bcands.bodies3_svprob > 1e-7))
             x_selection= (bcands.p4.pt > -99)
-        
-        
+
             #Delete the signal from the JpsiX MC
             if (dataset==args.mc_onia or dataset==args.mc_hb):
                 if(channel == 'BTo2Mu3P'):
@@ -613,8 +717,13 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                 else:
                     x_selection= ~ ((bcands.k.genPartIdx>=0) & ( bcands.mu1.genPartIdx>=0) & (bcands.mu2.genPartIdx>=0) & (abs(bcands.mu1.mother.pdgId) == 443) & (abs(bcands.mu2.mother.pdgId) == 443) & (abs(bcands.mu1.grandmother.pdgId) == 541) & (abs(bcands.mu2.grandmother.pdgId) == 541) & ( (abs(bcands.k.mother.pdgId)==541) | ( (abs(bcands.k.mother.pdgId)==15) & (abs(bcands.k.grandmother.pdgId)== 541))))
 
+            if channel == 'BTo2MuP':
+                x_selection = x_selection & ((bcands.mu2.p4.pt>1) & (bcands.mu1.p4.pt>1) & (bcands.k.p4.pt>1) & (bcands.p4.mass<10) & (bcands.mu2.p4.eta<2.5) & (bcands.mu1.p4.eta<2.5) & (bcands.k.p4.eta<2.5))
+
+            #######################################
+            ###### MC Bc types ###################
+            #######################################
             if(dataset == args.mc_bc):
-            
                 jpsi_tau_sel = (bcands.is_jpsi_tau == 1)
                 jpsi_mu_sel = (bcands.is_jpsi_mu == 1)
                 jpsi_pi_sel = (bcands.is_jpsi_pi == 1)
@@ -631,77 +740,29 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
             else:
                 flag_selection = [(bcands.p4.pt>-99)]
                 flag_names = ['ptmax']
+
             for selection,name in zip(flag_selection, flag_names):
                 if(dataset == args.mc_bc):
                     print("Processing ",name)
-                best_pf_cand_pt = bcands[b_selection & x_selection & selection ].p4.pt.argmax() #B con pt massimo
+                best_pf_cand_pt = bcands[b_selection & x_selection & selection ].p4.pt.argmax() #B with higher pt
                 bcands_flag = (bcands[b_selection & x_selection & selection][best_pf_cand_pt]).flatten()
 
 
-                #hammer
-                '''
-                if((dataset == args.mc_mu or (dataset == args.mc_bc and name == 'is_jpsi_mu')) and flag_hammer):
-                    ham = Hammer()
-                    fbBuffer = IOBuffer
-                    ham.include_decay("BcJpsiMuNu")
-                    ff_input_scheme = dict()
-                    ff_input_scheme["BcJpsi"] = "Kiselev"
-                    ham.set_ff_input_scheme(ff_input_scheme)
-                    ff_schemes  = dict()
-                    ff_schemes['bglvar' ] = {'BcJpsi':'BGLVar' }
-                    for i, j in product(range(11), ['up', 'down']):
-                        unc = 'e%d%s'%(i,j)
-                        ff_schemes['bglvar_%s'%unc] = {'BcJpsi':'BGLVar_%s'%unc  }
-                        
-                    for k, v in ff_schemes.items():
-                            ham.add_ff_scheme(k, v)
-                    ham.set_units("GeV")
-                    ham.init_run()
-                    for i, j in product(range(11), ['up', 'down']):
-                        unc = 'e%d%s'%(i,j)
-                        ham.set_ff_eigenvectors('BctoJpsi', 'BGLVar_%s'%unc, variations['e%d'%i][j])
-                    pids=[]
-                    weights = dict()
-                    for k in ff_schemes.keys():
-                        weights[k] = []
-                    for i in range(len(bcands_flag)): #loop on the events
-                        #                        print("event",i)
-                        ham.init_event()
-                        thebc_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(bcands_flag.mu1.grandmother.p4.pt[i],bcands_flag.mu1.grandmother.p4.eta[i] , bcands_flag.mu1.grandmother.p4.phi[i], 6.274)
-                        themu_p4   = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(bcands_flag.k.gen.p4.pt[i] , bcands_flag.k.gen.p4.eta[i],bcands_flag.k.gen.p4.phi[i] , 0.1056583755)
-                        thejpsi_p4 = ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')(bcands_flag.mu1.mother.p4.pt[i] , bcands_flag.mu1.mother.p4.eta[i],bcands_flag.mu1.mother.p4.phi[i] , 3.0969)
-                        thenu_p4   = thebc_p4 - themu_p4 - thejpsi_p4
-                        
-                        thebc   = Particle(FourMomentum(thebc_p4.e()  , thebc_p4.px()  , thebc_p4.py()  , thebc_p4.pz()  ), 541)
-                        themu   = Particle(FourMomentum(themu_p4.e()  , themu_p4.px()  , themu_p4.py()  , themu_p4.pz()  ), -13          )
-                        thejpsi = Particle(FourMomentum(thejpsi_p4.e(), thejpsi_p4.px(), thejpsi_p4.py(), thejpsi_p4.pz()), 443          )
-                        thenu   = Particle(FourMomentum(thenu_p4.e()  , thenu_p4.px()  , thenu_p4.py()  , thenu_p4.pz())  , 14           )
-
-                        Bc2JpsiLNu = Process()
-
-                        thebc_idx   = Bc2JpsiLNu.add_particle(thebc  )
-                        themu_idx   = Bc2JpsiLNu.add_particle(themu  )
-                        thejpsi_idx = Bc2JpsiLNu.add_particle(thejpsi)
-                        thenu_idx   = Bc2JpsiLNu.add_particle(thenu  )
-                        Bc2JpsiLNu.add_vertex(thebc_idx, [thejpsi_idx, themu_idx, thenu_idx])
-                        pid = ham.add_process(Bc2JpsiLNu)
-                        pids.append(pid)
-                        ham.process_event()
-                        for k in ff_schemes.keys():
-                            weights[k].append(ham.get_weight(k))
-                '''
-
-                dfs = {}
-
-            
+                ###########################################################################
+                ##########  Saving all the useful branches for the flat ntuples ###########
+                ###########################################################################
+                dfs = {}            
                 for chan, tab, sel in [
                         (channel, bcands_flag, b_selection & x_selection & selection), 
                 ]:
                     dfs[name] = pd.DataFrame()
                     df = dfs[name]
                     df['event'] = tab['event']
+                    if len(df['event']) == 0:
+                        continue
                     df['run'] = tab['run']
                     df['luminosityBlock'] = tab['luminosityBlock']
+
                     #Bc Vertex properties
                     df['bvtx_chi2'] = tab.bodies3_chi2
                     df['bvtx_svprob'] = tab.bodies3_svprob
@@ -716,12 +777,6 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                     df['bvtx_vtx_ez'] = tab.bodies3_vtx_ez
                     df['bvtx_cos2D'] = tab.bodies3_cos2D
 
-                    ''' #hammer
-                    if((dataset == args.mc_mu or (dataset == args.mc_bc and name == 'is_jpsi_mu')) and flag_hammer):
-                        for k in ff_schemes.keys():
-                            print()
-                            df['hammer_'+k] = weights[k]
-                    '''
                     #jpsi vertex properties
                     df['jpsivtx_chi2'] = tab.jpsivtx_chi2
                     df['jpsivtx_svprob'] = tab.jpsivtx_svprob
@@ -736,6 +791,7 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                     df['jpsivtx_vtx_ez'] = tab.jpsivtx_vtx_ez
                     df['jpsivtx_cos2D'] = tab.jpsivtx_cos2D
                     
+
                     #postfit 3 partc vertex
                     df['bvtx_fit_mass'] = tab.bodies3_fit_mass
                     df['bvtx_fit_massErr'] = tab.bodies3_fit_massErr
@@ -823,7 +879,7 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                     df['mu2_raw_trk_iso05'] = tab.mu2.raw_trk_iso05
                     df['mu2_raw_trk_iso05_rel'] = tab.mu2.raw_trk_iso05_rel
 
-                    #other iso branches (only for BTo3Mu channel)
+                    #other iso for k
                     if(channel == 'BTo3Mu'):
                         df['k_raw_db_corr_iso03'] = tab.k.db_corr_iso03
                         df['k_raw_db_corr_iso03_rel'] = tab.k.db_corr_iso03_rel
@@ -879,8 +935,6 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                         df['k_isFromTrkPsiPT'] = tab.k.isJpsiTrk_PsiPrimeTrg
                         df['k_isFromTrkNResT'] = tab.k.isJpsiTrk_NonResonantTrg
 
-
-
                     #rho
                     df['fixedGridRhoFastjetAll'] = tab.fixedGridRhoFastjetAll
                     df['fixedGridRhoFastjetCentral'] = tab.fixedGridRhoFastjetCentral
@@ -910,11 +964,15 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                     df['mu2phi'] = tab.mu2.p4.phi
                     df['mu1eta'] = tab.mu1.p4.eta
                     df['mu2eta'] = tab.mu2.p4.eta
+                    df['mu1charge'] = tab.mu1.charge
+                    df['mu2charge'] = tab.mu2.charge
                     
+
                     df['Bpt'] = tab.p4.pt
                     df['Bmass'] = tab.p4.mass
                     df['Beta'] = tab.p4.eta
                     df['Bphi'] = tab.p4.phi
+                    df['Bcharge'] = tab.charge
                     df['Bpt_reco'] = (tab.p4.pt * 6.275 / tab.p4.mass)
 
                     df['mu1_dxy'] = tab.mu1_dxy
@@ -928,25 +986,11 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                     df['mu2_dzErr'] = tab.mu2_dzErr             
                     df['nPV'] = tab.nPrimaryVertices
                 
-                    #not very useful, now we have jpsi vertex coordinates
-                    '''
-                    df['mu1_vx'] = tab.mu1.vx
-                    df['mu2_vx'] = tab.mu2.vx
-                                        
-                    df['mu1_vy'] = tab.mu1.vy
-                    df['mu2_vy'] = tab.mu2.vy
-
-                    df['mu1_vz'] = tab.mu1.vz
-                    df['mu2_vz'] = tab.mu2.vz
-                    '''
                     #PV position
                     df['pv_x'] = tab.pv_x
                     df['pv_y'] = tab.pv_y
                     df['pv_z'] = tab.pv_z
                     
-                    #df['npv_good'] = tab.PV_npvsGood
-                    #tab.mu1.mediumId = tab.mu1.mediumId.astype('bool')
-                                        
                     df['mu1_mediumID']= tab.mu1.mediumId
                     df['mu1_mediumID']= df['mu1_mediumID'].astype(int)
                     df['mu2_mediumID']= tab.mu2.mediumId
@@ -968,16 +1012,208 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                         df['k_softID']=tab.k.softId
                         df['k_softID']= df['k_softID'].astype(int)
                     
+                    #other muon Ids for mu1
+                    df['mu1_looseId'] = tab.mu1.looseId
+                    df['mu1_looseId'] = df['mu1_looseId'].astype(int)
+                    df['mu1_mediumpromptId'] = tab.mu1.mediumpromptId
+                    df['mu1_mediumpromptId'] = df['mu1_mediumpromptId'].astype(int)
+                    df['mu1_globalHighPtId'] = tab.mu1.globalHighPtId
+                    df['mu1_globalHighPtId'] = df['mu1_globalHighPtId'].astype(int)
+                    df['mu1_trkHighPtId'] = tab.mu1.trkHighPtId
+                    df['mu1_trkHighPtId'] = df['mu1_trkHighPtId'].astype(int)
+                    df['mu1_pfIsoVeryLooseId'] = tab.mu1.pfIsoVeryLooseId
+                    df['mu1_pfIsoVeryLooseId'] = df['mu1_pfIsoVeryLooseId'].astype(int)
+                    df['mu1_pfIsoLooseId'] = tab.mu1.pfIsoLooseId
+                    df['mu1_pfIsoLooseId'] = df['mu1_pfIsoLooseId'].astype(int)
+                    df['mu1_pfIsoMediumId'] = tab.mu1.pfIsoMediumId
+                    df['mu1_pfIsoMediumId'] = df['mu1_pfIsoMediumId'].astype(int)
+                    df['mu1_pfIsoTightId'] = tab.mu1.pfIsoTightId
+                    df['mu1_pfIsoTightId'] = df['mu1_pfIsoTightId'].astype(int)
+                    df['mu1_pfIsoVeryTightId'] = tab.mu1.pfIsoVeryTightId
+                    df['mu1_pfIsoVeryTightId'] = df['mu1_pfIsoVeryTightId'].astype(int)
+                    df['mu1_pfIsoVeryVeryTightId'] = tab.mu1.pfIsoVeryVeryTightId
+                    df['mu1_pfIsoVeryVeryTightId'] = df['mu1_pfIsoVeryVeryTightId'].astype(int)
+                    df['mu1_tkIsoLooseId'] = tab.mu1.tkIsoLooseId
+                    df['mu1_tkIsoLooseId'] = df['mu1_tkIsoLooseId'].astype(int)
+                    df['mu1_tkIsoTightId'] = tab.mu1.tkIsoTightId
+                    df['mu1_tkIsoTightId'] = df['mu1_tkIsoTightId'].astype(int)
+                    df['mu1_softMvaId'] = tab.mu1.softMvaId
+                    df['mu1_softMvaId'] = df['mu1_softMvaId'].astype(int)
+                    df['mu1_mvaLooseId'] = tab.mu1.mvaLooseId
+                    df['mu1_mvaLooseId'] = df['mu1_mvaLooseId'].astype(int)
+                    df['mu1_mvaTightId'] = tab.mu1.mvaTightId
+                    df['mu1_mvaTightId'] = df['mu1_mvaTightId'].astype(int)
+                    df['mu1_mvaMediumId'] = tab.mu1.mvaMediumId
+                    df['mu1_mvaMediumId'] = df['mu1_mvaMediumId'].astype(int)
+                    df['mu1_miniIsoLooseId'] = tab.mu1.miniIsoLooseId
+                    df['mu1_miniIsoLooseId'] = df['mu1_miniIsoLooseId'].astype(int)
+                    df['mu1_miniIsoMediumId'] = tab.mu1.miniIsoMediumId
+                    df['mu1_miniIsoMediumId'] = df['mu1_miniIsoMediumId'].astype(int)
+                    df['mu1_miniIsoTightId'] = tab.mu1.miniIsoTightId
+                    df['mu1_miniIsoTightId'] = df['mu1_miniIsoTightId'].astype(int)
+                    df['mu1_miniIsoVeryTightId'] = tab.mu1.miniIsoVeryTightId
+                    df['mu1_miniIsoVeryTightId'] = df['mu1_miniIsoVeryTightId'].astype(int)
+                    df['mu1_triggerLooseId'] = tab.mu1.triggerLooseId
+                    df['mu1_triggerLooseId'] = df['mu1_triggerLooseId'].astype(int)
+                    df['mu1_inTimeMuonId'] = tab.mu1.inTimeMuonId
+                    df['mu1_inTimeMuonId'] = df['mu1_inTimeMuonId'].astype(int)
+                    df['mu1_multiIsoLooseId'] = tab.mu1.multiIsoLooseId
+                    df['mu1_multiIsoLooseId'] = df['mu1_multiIsoLooseId'].astype(int)
+                    df['mu1_multiIsoMediumId'] = tab.mu1.multiIsoMediumId
+                    df['mu1_multiIsoMediumId'] = df['mu1_multiIsoMediumId'].astype(int)
+                    df['mu1_puppiIsoLooseId'] = tab.mu1.puppiIsoLooseId
+                    df['mu1_puppiIsoLooseId'] = df['mu1_puppiIsoLooseId'].astype(int)
+                    df['mu1_puppiIsoMediumId'] = tab.mu1.puppiIsoMediumId
+                    df['mu1_puppiIsoMediumId'] = df['mu1_puppiIsoMediumId'].astype(int)
+                    df['mu1_puppiIsoTightId'] = tab.mu1.puppiIsoTightId
+                    df['mu1_puppiIsoTightId'] = df['mu1_puppiIsoTightId'].astype(int)
+                    df['mu1_mvaVTightId'] = tab.mu1.mvaVTightId
+                    df['mu1_mvaVTightId'] = df['mu1_mvaVTightId'].astype(int)
+                    df['mu1_mvaVVTightId'] = tab.mu1.mvaVVTightId
+                    df['mu1_mvaVVTightId'] = df['mu1_mvaVVTightId'].astype(int)
+                    df['mu1_lowPtMvaLooseId'] = tab.mu1.lowPtMvaLooseId
+                    df['mu1_lowPtMvaLooseId'] = df['mu1_lowPtMvaLooseId'].astype(int)
+                    df['mu1_lowPtMvaMediumId'] = tab.mu1.lowPtMvaMediumId
+                    df['mu1_lowPtMvaMediumId'] = df['mu1_lowPtMvaMediumId'].astype(int)
+
+                    #other muon Ids for mu2
+                    df['mu2_looseId'] = tab.mu2.looseId
+                    df['mu2_looseId'] = df['mu2_looseId'].astype(int)
+                    df['mu2_mediumpromptId'] = tab.mu2.mediumpromptId
+                    df['mu2_mediumpromptId'] = df['mu2_mediumpromptId'].astype(int)
+                    df['mu2_globalHighPtId'] = tab.mu2.globalHighPtId
+                    df['mu2_globalHighPtId'] = df['mu2_globalHighPtId'].astype(int)
+                    df['mu2_trkHighPtId'] = tab.mu2.trkHighPtId
+                    df['mu2_trkHighPtId'] = df['mu2_trkHighPtId'].astype(int)
+                    df['mu2_pfIsoVeryLooseId'] = tab.mu2.pfIsoVeryLooseId
+                    df['mu2_pfIsoVeryLooseId'] = df['mu2_pfIsoVeryLooseId'].astype(int)
+                    df['mu2_pfIsoLooseId'] = tab.mu2.pfIsoLooseId
+                    df['mu2_pfIsoLooseId'] = df['mu2_pfIsoLooseId'].astype(int)
+                    df['mu2_pfIsoMediumId'] = tab.mu2.pfIsoMediumId
+                    df['mu2_pfIsoMediumId'] = df['mu2_pfIsoMediumId'].astype(int)
+                    df['mu2_pfIsoTightId'] = tab.mu2.pfIsoTightId
+                    df['mu2_pfIsoTightId'] = df['mu2_pfIsoTightId'].astype(int)
+                    df['mu2_pfIsoVeryTightId'] = tab.mu2.pfIsoVeryTightId
+                    df['mu2_pfIsoVeryTightId'] = df['mu2_pfIsoVeryTightId'].astype(int)
+                    df['mu2_pfIsoVeryVeryTightId'] = tab.mu2.pfIsoVeryVeryTightId
+                    df['mu2_pfIsoVeryVeryTightId'] = df['mu2_pfIsoVeryVeryTightId'].astype(int)
+                    df['mu2_tkIsoLooseId'] = tab.mu2.tkIsoLooseId
+                    df['mu2_tkIsoLooseId'] = df['mu2_tkIsoLooseId'].astype(int)
+                    df['mu2_tkIsoTightId'] = tab.mu2.tkIsoTightId
+                    df['mu2_tkIsoTightId'] = df['mu2_tkIsoTightId'].astype(int)
+                    df['mu2_softMvaId'] = tab.mu2.softMvaId
+                    df['mu2_softMvaId'] = df['mu2_softMvaId'].astype(int)
+                    df['mu2_mvaLooseId'] = tab.mu2.mvaLooseId
+                    df['mu2_mvaLooseId'] = df['mu2_mvaLooseId'].astype(int)
+                    df['mu2_mvaTightId'] = tab.mu2.mvaTightId
+                    df['mu2_mvaTightId'] = df['mu2_mvaTightId'].astype(int)
+                    df['mu2_mvaMediumId'] = tab.mu2.mvaMediumId
+                    df['mu2_mvaMediumId'] = df['mu2_mvaMediumId'].astype(int)
+                    df['mu2_miniIsoLooseId'] = tab.mu2.miniIsoLooseId
+                    df['mu2_miniIsoLooseId'] = df['mu2_miniIsoLooseId'].astype(int)
+                    df['mu2_miniIsoMediumId'] = tab.mu2.miniIsoMediumId
+                    df['mu2_miniIsoMediumId'] = df['mu2_miniIsoMediumId'].astype(int)
+                    df['mu2_miniIsoTightId'] = tab.mu2.miniIsoTightId
+                    df['mu2_miniIsoTightId'] = df['mu2_miniIsoTightId'].astype(int)
+                    df['mu2_miniIsoVeryTightId'] = tab.mu2.miniIsoVeryTightId
+                    df['mu2_miniIsoVeryTightId'] = df['mu2_miniIsoVeryTightId'].astype(int)
+                    df['mu2_triggerLooseId'] = tab.mu2.triggerLooseId
+                    df['mu2_triggerLooseId'] = df['mu2_triggerLooseId'].astype(int)
+                    df['mu2_inTimeMuonId'] = tab.mu2.inTimeMuonId
+                    df['mu2_inTimeMuonId'] = df['mu2_inTimeMuonId'].astype(int)
+                    df['mu2_multiIsoLooseId'] = tab.mu2.multiIsoLooseId
+                    df['mu2_multiIsoLooseId'] = df['mu2_multiIsoLooseId'].astype(int)
+                    df['mu2_multiIsoMediumId'] = tab.mu2.multiIsoMediumId
+                    df['mu2_multiIsoMediumId'] = df['mu2_multiIsoMediumId'].astype(int)
+                    df['mu2_puppiIsoLooseId'] = tab.mu2.puppiIsoLooseId
+                    df['mu2_puppiIsoLooseId'] = df['mu2_puppiIsoLooseId'].astype(int)
+                    df['mu2_puppiIsoMediumId'] = tab.mu2.puppiIsoMediumId
+                    df['mu2_puppiIsoMediumId'] = df['mu2_puppiIsoMediumId'].astype(int)
+                    df['mu2_puppiIsoTightId'] = tab.mu2.puppiIsoTightId
+                    df['mu2_puppiIsoTightId'] = df['mu2_puppiIsoTightId'].astype(int)
+                    df['mu2_mvaVTightId'] = tab.mu2.mvaVTightId
+                    df['mu2_mvaVTightId'] = df['mu2_mvaVTightId'].astype(int)
+                    df['mu2_mvaVVTightId'] = tab.mu2.mvaVVTightId
+                    df['mu2_mvaVVTightId'] = df['mu2_mvaVVTightId'].astype(int)
+                    df['mu2_lowPtMvaLooseId'] = tab.mu2.lowPtMvaLooseId
+                    df['mu2_lowPtMvaLooseId'] = df['mu2_lowPtMvaLooseId'].astype(int)
+                    df['mu2_lowPtMvaMediumId'] = tab.mu2.lowPtMvaMediumId
+                    df['mu2_lowPtMvaMediumId'] = df['mu2_lowPtMvaMediumId'].astype(int)
+
+                    #other muon Ids for k
+                    if(chan == 'BTo3Mu'):
+                        df['k_looseId'] = tab.k.looseId
+                        df['k_looseId'] = df['k_looseId'].astype(int)
+                        df['k_mediumpromptId'] = tab.k.mediumpromptId
+                        df['k_mediumpromptId'] = df['k_mediumpromptId'].astype(int)
+                        df['k_globalHighPtId'] = tab.k.globalHighPtId
+                        df['k_globalHighPtId'] = df['k_globalHighPtId'].astype(int)
+                        df['k_trkHighPtId'] = tab.k.trkHighPtId
+                        df['k_trkHighPtId'] = df['k_trkHighPtId'].astype(int)
+                        df['k_pfIsoVeryLooseId'] = tab.k.pfIsoVeryLooseId
+                        df['k_pfIsoVeryLooseId'] = df['k_pfIsoVeryLooseId'].astype(int)
+                        df['k_pfIsoLooseId'] = tab.k.pfIsoLooseId
+                        df['k_pfIsoLooseId'] = df['k_pfIsoLooseId'].astype(int)
+                        df['k_pfIsoMediumId'] = tab.k.pfIsoMediumId
+                        df['k_pfIsoMediumId'] = df['k_pfIsoMediumId'].astype(int)
+                        df['k_pfIsoTightId'] = tab.k.pfIsoTightId
+                        df['k_pfIsoTightId'] = df['k_pfIsoTightId'].astype(int)
+                        df['k_pfIsoVeryTightId'] = tab.k.pfIsoVeryTightId
+                        df['k_pfIsoVeryTightId'] = df['k_pfIsoVeryTightId'].astype(int)
+                        df['k_pfIsoVeryVeryTightId'] = tab.k.pfIsoVeryVeryTightId
+                        df['k_pfIsoVeryVeryTightId'] = df['k_pfIsoVeryVeryTightId'].astype(int)
+                        df['k_tkIsoLooseId'] = tab.k.tkIsoLooseId
+                        df['k_tkIsoLooseId'] = df['k_tkIsoLooseId'].astype(int)
+                        df['k_tkIsoTightId'] = tab.k.tkIsoTightId
+                        df['k_tkIsoTightId'] = df['k_tkIsoTightId'].astype(int)
+                        df['k_softMvaId'] = tab.k.softMvaId
+                        df['k_softMvaId'] = df['k_softMvaId'].astype(int)
+                        df['k_mvaLooseId'] = tab.k.mvaLooseId
+                        df['k_mvaLooseId'] = df['k_mvaLooseId'].astype(int)
+                        df['k_mvaTightId'] = tab.k.mvaTightId
+                        df['k_mvaTightId'] = df['k_mvaTightId'].astype(int)
+                        df['k_mvaMediumId'] = tab.k.mvaMediumId
+                        df['k_mvaMediumId'] = df['k_mvaMediumId'].astype(int)
+                        df['k_miniIsoLooseId'] = tab.k.miniIsoLooseId
+                        df['k_miniIsoLooseId'] = df['k_miniIsoLooseId'].astype(int)
+                        df['k_miniIsoMediumId'] = tab.k.miniIsoMediumId
+                        df['k_miniIsoMediumId'] = df['k_miniIsoMediumId'].astype(int)
+                        df['k_miniIsoTightId'] = tab.k.miniIsoTightId
+                        df['k_miniIsoTightId'] = df['k_miniIsoTightId'].astype(int)
+                        df['k_miniIsoVeryTightId'] = tab.k.miniIsoVeryTightId
+                        df['k_miniIsoVeryTightId'] = df['k_miniIsoVeryTightId'].astype(int)
+                        df['k_triggerLooseId'] = tab.k.triggerLooseId
+                        df['k_triggerLooseId'] = df['k_triggerLooseId'].astype(int)
+                        df['k_inTimeMuonId'] = tab.k.inTimeMuonId
+                        df['k_inTimeMuonId'] = df['k_inTimeMuonId'].astype(int)
+                        df['k_multiIsoLooseId'] = tab.k.multiIsoLooseId
+                        df['k_multiIsoLooseId'] = df['k_multiIsoLooseId'].astype(int)
+                        df['k_multiIsoMediumId'] = tab.k.multiIsoMediumId
+                        df['k_multiIsoMediumId'] = df['k_multiIsoMediumId'].astype(int)
+                        df['k_puppiIsoLooseId'] = tab.k.puppiIsoLooseId
+                        df['k_puppiIsoLooseId'] = df['k_puppiIsoLooseId'].astype(int)
+                        df['k_puppiIsoMediumId'] = tab.k.puppiIsoMediumId
+                        df['k_puppiIsoMediumId'] = df['k_puppiIsoMediumId'].astype(int)
+                        df['k_puppiIsoTightId'] = tab.k.puppiIsoTightId
+                        df['k_puppiIsoTightId'] = df['k_puppiIsoTightId'].astype(int)
+                        df['k_mvaVTightId'] = tab.k.mvaVTightId
+                        df['k_mvaVTightId'] = df['k_mvaVTightId'].astype(int)
+                        df['k_mvaVVTightId'] = tab.k.mvaVVTightId
+                        df['k_mvaVVTightId'] = df['k_mvaVVTightId'].astype(int)
+                        df['k_lowPtMvaLooseId'] = tab.k.lowPtMvaLooseId
+                        df['k_lowPtMvaLooseId'] = df['k_lowPtMvaLooseId'].astype(int)
+                        df['k_lowPtMvaMediumId'] = tab.k.lowPtMvaMediumId
+                        df['k_lowPtMvaMediumId'] = df['k_lowPtMvaMediumId'].astype(int)
+
                     #is PF ?
                     df['mu1_isPF'] = tab.mu1.isPFcand
+                    df['mu1_isPF'] = df['mu1_isPF'].astype(int)
                     df['mu2_isPF'] = tab.mu2.isPFcand
+                    df['mu2_isPF'] = df['mu2_isPF'].astype(int)
                     if(chan == 'BTo3Mu'):
                         df['k_isPF'] = tab.k.isPFcand
+                        df['k_isPF'] = df['k_isPF'].astype(int)
                         
-                    #others
-                    df['Bcharge'] = tab.charge
-                    #df['mll_raw'] = tab.m_jpsi
-                    
                     df['nB'] = sel.sum()[sel.sum() != 0]
 
                     if(channel != 'BTo2Mu3P'):
@@ -992,7 +1228,6 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                         df['bvtx_fit_k_phi'] = tab.bodies3_fit_k_phi
                         df['bvtx_fit_k_eta'] = tab.bodies3_fit_k_eta
                         
-
                         df['k_dxyErr'] = tab.k_dxyErr
                         df['k_dzErr'] = tab.k_dzErr
                         
@@ -1002,11 +1237,8 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                         df['keta'] = tab.k.p4.eta
                         df['k_dxy'] = tab.k_dxy
                         df['k_dz'] = tab.k_dz
+                        df['kcharge'] = tab.charge
                 
-                        '''
-                        df['k_vx'] = tab.k_vx
-                        df['k_vz'] = tab.k_vz
-                        '''
                     else:
                         df['pi1_iso03'] = tab.pi1_iso03
                         df['pi2_iso03'] = tab.pi2_iso03
@@ -1050,6 +1282,9 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                         df['pi3mass'] = tab.pi3.p4.mass
                         df['pi3phi'] = tab.pi3.p4.phi
                         df['pi3eta'] = tab.pi3.p4.eta
+                        df['pi1charge'] = tab.pi1.charge
+                        df['pi2charge'] = tab.pi2.charge
+                        df['pi3charge'] = tab.pi3.charge
 
                         df['pi1_vy'] = tab.pi1.vy
                         df['pi1_vx'] = tab.pi1.vx
@@ -1062,12 +1297,32 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                         df['pi3_vz'] = tab.pi3.vz
 
                     if(dataset!=args.data):
-                        
                         #PU weight
-
-                        df['puWeight'] = tab.puWeight
-                        df['puWeightUp'] = tab.puWeightUp
-                        df['puWeightDown'] = tab.puWeightDown
+                        if flag_pu_weight:
+                            df['puWeight'] = tab.puWeight
+                            df['puWeightUp'] = tab.puWeightUp
+                            df['puWeightDown'] = tab.puWeightDown
+                        if(dataset == args.mc_bc):    
+                            # branches of the Bc GEN info (for hammer)
+                            df['bc_gen_pt'] = tab.BcGenInfo_bc_gen_pt
+                            df['bc_gen_eta'] = tab.BcGenInfo_bc_gen_eta
+                            df['bc_gen_phi'] = tab.BcGenInfo_bc_gen_phi
+                            df['bc_gen_mass'] = tab.BcGenInfo_bc_gen_mass
+                            
+                            df['jpsi_gen_pt'] = tab.BcGenInfo_jpsi_gen_pt
+                            df['jpsi_gen_eta'] = tab.BcGenInfo_jpsi_gen_eta
+                            df['jpsi_gen_phi'] = tab.BcGenInfo_jpsi_gen_phi
+                            df['jpsi_gen_mass'] = tab.BcGenInfo_jpsi_gen_mass
+                            
+                            df['tau_gen_pt'] = tab.BcGenInfo_tau_gen_pt
+                            df['tau_gen_eta'] = tab.BcGenInfo_tau_gen_eta
+                            df['tau_gen_phi'] = tab.BcGenInfo_tau_gen_phi
+                            df['tau_gen_mass'] = tab.BcGenInfo_tau_gen_mass
+                            
+                            df['mu3_gen_pt'] = tab.BcGenInfo_mu3_gen_pt
+                            df['mu3_gen_eta'] = tab.BcGenInfo_mu3_gen_eta
+                            df['mu3_gen_phi'] = tab.BcGenInfo_mu3_gen_phi
+                            df['mu3_gen_mass'] = tab.BcGenInfo_mu3_gen_mass
 
                         #gen Part Flavour e gen Part Idx  -> if I need to access the gen info, this values tell me is it is a valid info or not
                         df['mu1_genPartFlav'] = tab.mu1.genPartFlav
@@ -1138,12 +1393,10 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                         df['mu1_grandmother_phi'] = tab.mu1.grandmother.p4.phi
                         df['mu2_grandmother_phi'] = tab.mu2.grandmother.p4.phi
 
-                        
                         df['mu1_grandmother_vx'] = tab.mu1.grandmother.vx
                         df['mu2_grandmother_vx'] = tab.mu2.grandmother.vx
                         df['mu1_grandmother_vy'] = tab.mu1.grandmother.vy
                         df['mu2_grandmother_vy'] = tab.mu2.grandmother.vy
-
                         df['mu1_grandmother_vz'] = tab.mu1.grandmother.vz
                         df['mu2_grandmother_vz'] = tab.mu2.grandmother.vz
 
@@ -1248,6 +1501,19 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                             df['pi3_grandmother_vz'] = tab.pi3.grandmother.vz
 
                         
+                        if (dataset == args.mc_hb):
+                            df['jpsimother_bzero'] = tab.jpsimother_bzero
+                            df['jpsimother_bplus'] = tab.jpsimother_bplus
+                            df['jpsimother_bplus_c'] = tab.jpsimother_bplus_c
+                            df['jpsimother_bzero_s'] = tab.jpsimother_bzero_s
+                            df['jpsimother_sigmaminus_b'] = tab.jpsimother_sigmaminus_b
+                            df['jpsimother_lambdazero_b'] = tab.jpsimother_lambdazero_b
+                            df['jpsimother_ximinus_b'] = tab.jpsimother_ximinus_b
+                            df['jpsimother_sigmazero_b'] = tab.jpsimother_sigmazero_b
+                            df['jpsimother_xizero_b'] = tab.jpsimother_xizero_b
+                            df['jpsimother_other'] = tab.jpsimother_other
+                            df['jpsimother_weight'] = tab.jpsimother_weight
+
                         if (dataset!=args.mc_mu):
                             #grand grand mother info
                             df['mu1_grandgrandmother_pdgId'] = tab.mu1.grandgrandmother.pdgId
@@ -1306,27 +1572,42 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                                 df['pi3_grandgrandmother_vy'] = tab.pi3.grandgrandmother.vy
                                 df['pi3_grandgrandmother_vz'] = tab.pi3.grandgrandmother.vz
 
-                    #if the dataframe is empty, we don't want to fill these branches because it fills them with NaN
+                    # if the dataframe is empty, it will fill the branches with NaN
                     if(dataset == args.mc_mu or dataset == args.mc_tau or dataset == args.mc_bc):
-                            df = lifetime_weight(df, fake = False)
+                        df = lifetime_weight(df, fake = False)
                     else:
-                            df = lifetime_weight(df)
+                        df = lifetime_weight(df)
                     df = jpsi_branches(df)
                     if channel != 'BTo2Mu3P':
-                            df = DR_jpsimu(df)
-                            df = mcor(df)
-                            df = dr12(df)
-                            df = dr23(df)
-                            df = dr13(df)
-                            if channel == 'BTo3Mu':
-                                df = rho_corr_iso(df)
+                        df = DR_jpsimu(df)
+                        df = mcor(df)
+                        df = dr12(df)
+                        df = dr23(df)
+                        df = dr13(df)
+                        if channel == 'BTo3Mu':
+                            df = rho_corr_iso(df)
                     df = decaytime(df)
+                    if channel == 'BTo3Mu':
+                        df = bp4_lhcb(df)
+
+                    flag_init_hammer = 0
+                    #print("dataset:",dataset," channel:", channel)
                     if((dataset == args.mc_mu or (dataset == args.mc_bc and name == 'is_jpsi_mu')) and flag_hammer_mu and channel =='BTo3Mu'):
-                            df = hammer_weights_mu(df)
+                        if not flag_init_hammer:
+                            ham = Hammer()
+                            fbBuffer = IOBuffer
+                            flag_init_hammer =1
+                        df = hammer_weights_mu(df,ham)
+
                     if((dataset == args.mc_tau or (dataset == args.mc_bc and name == 'is_jpsi_tau')) and flag_hammer_tau and channel =='BTo3Mu'):
-                            df = hammer_weights_tau(df)
-
-
+                        if not flag_init_hammer:
+                            ham = Hammer()
+                            fbBuffer = IOBuffer
+                            flag_init_hammer =1
+                        df = hammer_weights_tau(df,ham)
+                    ##########################################################
+                    ##### Concatenate the dataframe to the total one #########
+                    ##########################################################
                     if(channel=='BTo3Mu'):
                         final_dfs_mmm[name] = pd.concat((final_dfs_mmm[name], dfs[name])) 
                     elif(channel == 'BTo2MuP'):
@@ -1338,13 +1619,14 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                     if(nprocessedDataset > maxEvents and maxEvents != -1):
                         break
     
+    ######################################
+    ####### Save  ########################
+    ######################################
     dataset=dataset.strip('.txt')
     name=dataset.split('/')
     d=name[len(name)-1].split('_')
-    adj=''
-    if(dataset != args.mc_onia):
-        adj = '_UL_flags'
-    
+    adj='_v5_'
+  
     for flag in flag_names:
         for channel in channels:
             if channel == 'BTo3Mu':
@@ -1356,6 +1638,5 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
             elif (channel == 'BTo2Mu3P'):
                 final_dfs_2m3p[flag].to_root('REPLACE_FILE_OUT'+'_'+flag+'.root', key=channel, mode = 'a')
         print("Saved file "+ 'REPLACE_FILE_OUT'+'_'+flag+'.root')
-
 
 print('DONE! Processed events: ', nprocessedAll)
