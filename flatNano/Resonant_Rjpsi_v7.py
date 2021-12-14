@@ -1,3 +1,7 @@
+'''
+Difference from v6:
+- addition of division High mass and low mass
+'''
 #from nanoAOD root files, to flat ntuples
 from mybatch import *
 from coffea.analysis_objects import JaggedCandidateArray
@@ -37,7 +41,7 @@ flag_hammer_mu  = True
 flag_hammer_tau = True
 
 #Add also pu weight
-flag_pu_weight = True
+flag_pu_weight = False
 
 ## lifetime weights ##
 def weight_to_new_ctau(old_ctau, new_ctau, ct):
@@ -405,8 +409,57 @@ def hammer_weights_tau(df,ham):
         weights_clean = [ham if (not np.isnan(ham)) else 1. for ham in weights[k]]
         df["hammer_"+k] = weights_clean
     return df
+    
+# To DO : optimize this!
+def HighMassLowMassDivision(df):
+    hmlm = nf['HighMassLowMassFlags']
+    hmlm['index'] = [[i for subitem in item] for i,item in enumerate(hmlm['mu1_idx'])]
 
+    ancestors_flag = []
+    for ind2 in range(len(df['index'])): #index of dataframe
+        for ind1 in range(len(hmlm['index'])): #index of hmmlm
+            if hmlm['index'][ind1][0][0] == df['index'][ind2][0]: # if we are checking the same event
+                flag = 0
+                for jnd1 in range(len(hmlm['index'][ind1])): #loop over the different possibilities in hmlm for that event
+                    # If i find the perfect match, I can say something about the ancestors
+                    if ( (hmlm['mu1_idx'][ind1][jnd1] == df['mu1_genPartIdx'][ind2] or hmlm['mu1_idx'][ind1][jnd1] == df['mu2_genPartIdx'][ind2]) and (hmlm['mu2_idx'][ind1][jnd1] == df['mu1_genPartIdx'][ind2] or hmlm['mu2_idx'][ind1][jnd1] == df['mu2_genPartIdx'][ind2]) and hmlm['mu3_idx'][ind1][jnd1] == df['k_genPartIdx'][ind2]):
+                        flag = 1
+                        if(hmlm['jpsi_ancestor_idx'][ind1][jnd1] == hmlm['mu3_ancestor_idx'][ind1][jnd1]):
+                            ancestors_flag.append(1) #bool
+                        else:
+                            ancestors_flag.append(0)
+                        break #once found one, it's enough
+                    # when the third muon from the candidate is not a real muon (not really a problem, in the analysis I don't use these events)
+                    elif (abs(df['k_genpdgId'][ind2]) != 13):
+                        flag = 1
+                        ancestors_flag.append(-1) 
+                        break #once found one, it's enough
 
+                    # when one of the muons of the jpsi is not a real muon (I still compute the value from one of the cases)
+                    elif ( abs(df['mu1_genpdgId'][ind2]) != 13 or abs(df['mu2_genpdgId'][ind2]) != 13):
+                        flag = 1
+                        if(hmlm['jpsi_ancestor_idx'][ind1][jnd1] == hmlm['mu3_ancestor_idx'][ind1][jnd1]):
+                            ancestors_flag.append(1) #bool
+                        else:
+                            ancestors_flag.append(0)
+                        break #once found one, it's enough
+
+                    #when one muon from the jpsi is actually the third muon
+                    # but one muon from the jpsi is right (either mu1==mu1 or mu1==mu2 or viceversa)
+                    elif ( (hmlm['mu1_idx'][ind1][jnd1] == df['k_genPartIdx'][ind2] and (hmlm['mu2_idx'][ind1][jnd1] == df['mu2_genPartIdx'][ind2] or hmlm['mu2_idx'][ind1][jnd1] == df['mu1_genPartIdx'][ind2]) or (hmlm['mu2_idx'][ind1][jnd1] == df['k_genPartIdx'][ind2] and (hmlm['mu1_idx'][ind1][jnd1] == df['mu1_genPartIdx'][ind2] or hmlm['mu1_idx'][ind1][jnd1] == df['mu2_genPartIdx'][ind2])))):
+                        flag = 1
+                        if(hmlm['jpsi_ancestor_idx'][ind1][jnd1] == hmlm['mu3_ancestor_idx'][ind1][jnd1]):
+                            ancestors_flag.append(1) #bool
+                        else:
+                            ancestors_flag.append(0)
+                        break
+                if flag ==0:
+                    print(ind2,hmlm['mu1_idx'][ind1][jnd1],df['mu1_genPartIdx'][ind2],df['mu1_genpdgId'][ind2],hmlm['mu2_idx'][ind1][jnd1],df['mu2_genPartIdx'][ind2],df['mu2_genpdgId'][ind2],hmlm['mu3_idx'][ind1][jnd1],df['k_genPartIdx'][ind2],df['k_genpdgId'][ind2])
+                    raise ValueError("Error in the Division of the Hb MC into High Mass and Low Mass contributions")
+    if len(ancestors_flag)!=len(df['index']):
+        raise ValueError("Error in the Division of the Hb MC into High Mass and Low Mass contributions")
+    df['hmlm_flag'] = ancestors_flag
+    return df
 #######################################################################################
 ######  STARTING THE SCRIPT ##########################################################
 #######################################################################################
@@ -534,6 +587,8 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
             bcands['event'] = nf['event']
             bcands['run'] = nf['run']
             bcands['luminosityBlock'] = nf['luminosityBlock']    
+            
+
             #WHAT about this?
             #if(len(nf[channel]) == 0):
             #    print("Empty channel!")
@@ -586,6 +641,9 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
             ###########################################
 
             if(dataset == args.mc_hb):
+                #useful for splitting Hb into highmass and lowmass
+                bcands['index'] = [[i for subitem in item] for i,item in enumerate(bcands['event'])]
+                #jpsi mother division
                 bcands['jpsimother_bzero'] = nf['JpsiMotherFlag_bzero']
                 bcands['jpsimother_bplus'] = nf['JpsiMotherFlag_bplus']
                 bcands['jpsimother_bplus_c'] = nf['JpsiMotherFlag_bplus_c']
@@ -653,7 +711,7 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                 mu2 = JaggedCandidateArray.zip({n: mu2_new[n] for n in mu2_new.columns})
                 k = JaggedCandidateArray.zip({n: k_new[n] for n in k_new.columns})
                 bcands = JaggedCandidateArray.zip({n: bcands[mask][n] for n in bcands[mask].columns})
-            
+
             # add gen info as a column of the muon
             if (dataset!=args.data):
                 #pile up weights only for mc and if flag ==True
@@ -745,7 +803,7 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                 best_pf_cand_pt = bcands[b_selection & x_selection & selection ].p4.pt.argmax() #B with higher pt
                 bcands_flag = (bcands[b_selection & x_selection & selection][best_pf_cand_pt]).flatten()
 
-
+                
                 ###########################################################################
                 ##########  Saving all the useful branches for the flat ntuples ###########
                 ###########################################################################
@@ -760,7 +818,8 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                         continue
                     df['run'] = tab['run']
                     df['luminosityBlock'] = tab['luminosityBlock']
-
+                    if dataset == args.mc_hb:
+                        df['index'] = tab['index']
                     #Bc Vertex properties
                     df['bvtx_chi2'] = tab.bodies3_chi2
                     df['bvtx_svprob'] = tab.bodies3_svprob
@@ -1587,7 +1646,9 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
                     df = decaytime(df)
                     if channel == 'BTo3Mu':
                         df = bp4_lhcb(df)
-
+                        if (dataset == args.mc_hb):
+                            df = HighMassLowMassDivision(df)
+                                        
                     flag_init_hammer = 0
                     #print("dataset:",dataset," channel:", channel)
                     if((dataset == args.mc_mu or (dataset == args.mc_bc and name == 'is_jpsi_mu')) and flag_hammer_mu and channel =='BTo3Mu'):
@@ -1623,7 +1684,7 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
     dataset=dataset.strip('.txt')
     name=dataset.split('/')
     d=name[len(name)-1].split('_')
-    adj='_v5_'
+    adj='_v7_'
   
     for flag in flag_names:
         for channel in channels:
