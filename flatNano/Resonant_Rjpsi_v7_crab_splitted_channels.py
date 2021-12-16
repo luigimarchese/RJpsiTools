@@ -33,8 +33,8 @@ from hammer import hepmc, pdg
 maxEvents = -1
 checkDoubles = True
 
-nMaxFiles = 2
-skipFiles = 101
+nMaxFiles = REPLACE_MAX_FILES
+skipFiles = REPLACE_SKIP_FILES
 
 #Compute hammer
 flag_hammer_mu  = True
@@ -483,7 +483,7 @@ def HighMassLowMassDivision(df):
 #######################################################################################
 
 nprocessedAll = 0
-channels = ['BTo3Mu','BTo2MuP','BTo2MuK','BTo2Mu3P']
+channels = REPLACE_CHANNELS
 
 #loop on input datasets
 for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_onia,args.mc_gen]: 
@@ -1706,13 +1706,13 @@ for dataset in [args.data,args.mc_mu,args.mc_tau,args.mc_bc,args.mc_hb,args.mc_o
     for flag in flag_names:
         for channel in channels:
             if channel == 'BTo3Mu':
-                final_dfs_mmm[flag].to_root('dataframes_local/'+d[0]+'_'+flag+adj+'.root', key=channel)
+                final_dfs_mmm[flag].to_root('REPLACE_FILE_OUT'+'_'+flag+'.root', key=channel)
             elif (channel == 'BTo2MuP'):
-                final_dfs_pmm[flag].to_root('dataframes_local/'+d[0]+'_'+flag+adj+'.root', key=channel, mode = 'a')
+                final_dfs_pmm[flag].to_root('REPLACE_FILE_OUT'+'_'+flag+'.root', key=channel, mode = 'a')
             elif (channel == 'BTo2MuK'):
-                final_dfs_kmm[flag].to_root('dataframes_local/'+d[0]+'_'+flag+adj+'.root', key=channel, mode = 'a')
+                final_dfs_kmm[flag].to_root('REPLACE_FILE_OUT'+'_'+flag+'.root', key=channel, mode = 'a')
             elif (channel == 'BTo2Mu3P'):
-                final_dfs_2m3p[flag].to_root('dataframes_local/'+d[0]+'_'+flag+adj+'.root', key=channel, mode = 'a')
-        print("Saved file dataframes_local/"+ d[0]+'_'+flag+adj+'.root')
+                final_dfs_2m3p[flag].to_root('REPLACE_FILE_OUT'+'_'+flag+'.root', key=channel, mode = 'a')
+        print("Saved file "+ 'REPLACE_FILE_OUT'+'_'+flag+'.root')
 
 print('DONE! Processed events: ', nprocessedAll)
