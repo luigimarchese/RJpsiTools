@@ -4,8 +4,8 @@ import ROOT as rt
 #   Initiated by: Gautier Hamel de Monchenault (Saclay)
 #   Translated in Python by: Joshua Hardenbrook (Princeton)
 
-def CMS_lumi(pad, iPeriod, iPosX, cmsText = "CMS", extraText = 'Preliminary', 
-             lumi_13TeV = "2018, L = 59.7 fb^{-1}", lumi_8TeV  = "19.7 fb^{-1}", lumi_7TeV  = "5.1 fb^{-1}"):
+def CMS_lumi(pad, iPeriod, iPosX, cmsText = "CMS", extraText = 'Work in Progress', 
+             lumi_13TeV = "2018, L = 59.7 fb^{-1}", lumi_8TeV  = "19.7 fb^{-1}", lumi_7TeV  = "5.1 fb^{-1}", verbose = False):
 
     cmsText = cmsText
     cmsTextFont = 61  
@@ -15,10 +15,12 @@ def CMS_lumi(pad, iPeriod, iPosX, cmsText = "CMS", extraText = 'Preliminary',
     
     extraTextFont = 52 
 
-    lumiTextSize   = 0.6
+    lumiTextSize   = 0.4
+    #lumiTextSize   = 0.6
     lumiTextOffset = 0.2
 
-    cmsTextSize   = 0.9
+    cmsTextSize   = 0.7
+    #cmsTextSize   = 0.9
     cmsTextOffset = 0.2
 
     relPosX    = 0.150
@@ -26,7 +28,8 @@ def CMS_lumi(pad, iPeriod, iPosX, cmsText = "CMS", extraText = 'Preliminary',
     relPosY    = 0.05
     relExtraDY = 1.4
 
-    extraOverCmsTextSize = 0.8
+    extraOverCmsTextSize = 0.6
+    #extraOverCmsTextSize = 0.8
 
     lumi_13TeV = lumi_13TeV
     lumi_13TeV = lumi_13TeV
@@ -72,8 +75,8 @@ def CMS_lumi(pad, iPeriod, iPosX, cmsText = "CMS", extraText = 'Preliminary',
         lumiText += " (7 TeV)"
     elif ( iPeriod==4 ):
         lumiText += lumi_13TeV
-#         lumiText += " (13 TeV)"
-        lumiText += " 13 TeV"
+        #         lumiText += " (13 TeV)"
+        lumiText += " (13 TeV)"
     elif ( iPeriod==7 ):
         if( outOfFrame ):lumiText += "#scale[0.85]{"
         lumiText += lumi_13TeV 
@@ -87,8 +90,9 @@ def CMS_lumi(pad, iPeriod, iPosX, cmsText = "CMS", extraText = 'Preliminary',
         if( outOfFrame): lumiText += "}"
     elif ( iPeriod==12 ):
         lumiText += "8 TeV"
-            
-    print(lumiText)
+       
+    if verbose:
+        print(lumiText)
 
     latex = rt.TLatex()
     latex.SetNDC()
