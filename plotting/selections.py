@@ -35,7 +35,7 @@ prepreselection = ' & '.join([
     'abs(mu2_dxy)<0.05',
     #'bvtx_cos2D>0.995',
     #'m_miss_sq>0.5',
-    'abs(jpsi_mass-3.0969)<0.1',
+    'abs(jpsivtx_fit_mass-3.0969)<0.1',
     #'mmm_p4_par>10',
     #'k_raw_db_corr_iso04_rel<0.3',
     #'jpsivtx_cos2D>0.99',
@@ -54,6 +54,8 @@ preselection_hm_mc = ' & '.join([preselection_hm, 'abs(k_genpdgId)==13'])
 
 
 pass_id = 'k_mediumID>0.5 & k_raw_db_corr_iso03_rel<0.2'
+#pass_id = 'k_mediumID>0.5'
+#pass_id = 'k_softMvaId>0.5 & k_raw_db_corr_iso03_rel<0.2'
 fail_id = '(!(%s))' % pass_id
 
 
