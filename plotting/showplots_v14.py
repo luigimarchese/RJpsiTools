@@ -48,7 +48,7 @@ from officialStyle import officialStyle
 # personal libs
 from histos import histos as histos_lm
 from new_branches import to_define
-from samples import weights, titles, colours
+from samples import weights, titles, colours, ff_weights
 from selections import preselection, preselection_mc, pass_id, fail_id
 from create_datacard_v3 import create_datacard_ch1, create_datacard_ch2, create_datacard_ch3, create_datacard_ch4, create_datacard_ch1_onlypass, create_datacard_ch3_onlypass
 from plot_shape_nuisances_v4 import plot_shape_nuisances
@@ -66,7 +66,7 @@ compute_sf_onlynorm = False # compute only the sf normalisation (best case)
 blind_analysis = True
 rjpsi = 1
 
-asimov = False
+asimov = True
 only_pass = False
 
 if asimov:
@@ -277,6 +277,7 @@ def make_binbybin(hist, sample, channel, label, name):
         histo_up.Write()
         histo_down.Write()
     fout.Close()
+    
 
 def define_shape_nuisances(sname, shapes, samples, nuisance_name, central_value, up_value, down_value, central_weights_string):
     shapes[sname + '_' + nuisance_name + 'Up'] = samples[sname]
@@ -328,7 +329,8 @@ ratio_pad.SetBottomMargin(0.45)
 if __name__ == '__main__':
     
     #datacards = ['mu1pt', 'Q_sq', 'm_miss_sq', 'E_mu_star', 'E_mu_canc', 'bdt_tau', 'Bmass', 'mcorr', 'decay_time_ps','k_raw_db_corr_iso04_rel']
-    datacards = ['Q_sq','jpsiK_mass','Bmass','bdt_tau']
+    #datacards = ['Q_sq','jpsiK_mass','Bmass','bdt_tau']
+    datacards = ['Q_sq']
 
     # timestamp
     label = datetime.now().strftime('%d%b%Y_%Hh%Mm%Ss')
@@ -412,6 +414,7 @@ if __name__ == '__main__':
                     samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr', 'tmp_weight*fakerate_bcmu') 
             else:
                 samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr', 'tmp_weight*fakerate_data_2')
+                #samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr', 'tmp_weight')
 
     # the scale factor on the id on the third muon only for the PASS region
     for sample in samples_orig:
@@ -621,9 +624,9 @@ if __name__ == '__main__':
                         new_name = new_name.replace('down','Down')
             
                     shapes['jpsi_mu_'+new_name] = samples['jpsi_mu']
-                    shapes['jpsi_mu_'+new_name] = shapes['jpsi_mu_'+new_name].Define('shape_weight_tmp', central_weights_string+'*'+ham)
+                    shapes['jpsi_mu_'+new_name] = shapes['jpsi_mu_'+new_name].Define('shape_weight_tmp', central_weights_string+'*'+ham+'*%f'%(ff_weights['jpsi_mu_'+new_name]/ff_weights['jpsi_mu']))
                     shapes['jpsi_tau_'+new_name] = samples['jpsi_tau']
-                    shapes['jpsi_tau_'+new_name] = shapes['jpsi_tau_'+new_name].Define('shape_weight_tmp', central_weights_string+'*'+ham+'*%f*%f' %(blind,rjpsi))
+                    shapes['jpsi_tau_'+new_name] = shapes['jpsi_tau_'+new_name].Define('shape_weight_tmp', central_weights_string+'*'+ham+'*%f'%(ff_weights['jpsi_tau_'+new_name]/ff_weights['jpsi_tau'])+'*%f*%f' %(blind,rjpsi))
                     
 
             if flat_fakerate == False:
@@ -642,6 +645,7 @@ if __name__ == '__main__':
                                     break
                     else:
                         shapes[name] = shapes[name].Define('shape_weight_wfr','shape_weight_tmp*fakerate_data_2')
+                        #shapes[name] = shapes[name].Define('shape_weight_wfr','shape_weight_tmp')
 
             # it has to be defined before I multiply the pass region weight for sf_id_k
             # it's the pass region because shape_Weight is used for the pass region onyl
@@ -726,6 +730,7 @@ if __name__ == '__main__':
             for k, v in histos.items():    
                 # Compute them only for the variables that we want to fit
                 if (k not in datacards and iteration == 0) or (k!='Bmass' and iteration):
+                #if (k!='Bmass' and iteration):
                     continue
                 unc_hists     [k] = {}
                 unc_hists_fake[k] = {}
@@ -794,6 +799,7 @@ if __name__ == '__main__':
                             ihist.SetBinContent(i,0.0001)
 
             if shape_nuisances and ((k in datacards and  iteration==0) or (k == 'Bmass' and iteration)):
+            #if shape_nuisances and ((iteration==0) or (k == 'Bmass' and iteration)):
                 
                 for i, kv in enumerate(unc_hists[k].items()):
                     key = kv[0]
@@ -1043,6 +1049,7 @@ if __name__ == '__main__':
             c1.SaveAs('plots_ul/%s/%s/png/log/%s.png' %(label, channels[0], k))
         
             if shape_nuisances and ((k in datacards and  iteration==0) or (k == 'Bmass' and iteration)):
+            #if shape_nuisances and ((iteration==0) or (k == 'Bmass' and iteration)):
                 create_datacard_prep(temp_hists[k], unc_hists[k], shapes, [name for name,v in samples.items()], channels[0], k, label, which_sample_bbb_unc)
                 plot_shape_nuisances(label, k, channels[0], [name for name,v in samples.items()], which_sample_bbb_unc, compute_sf = compute_sf, compute_sf_onlynorm = compute_sf_onlynorm)
 
@@ -1148,7 +1155,11 @@ if __name__ == '__main__':
                 
                 if not flat_fakerate:
                     if shape_nuisances and ((k in datacards and  iteration==0) or (k == 'Bmass' and iteration)):
-                        create_datacard_prep(temp_hists_fake_nn[k], unc_hists_fake[k], shapes, [name for name,v in samples.items()], channels[1], k, label, which_sample_bbb_unc_fake)
+                    #if shape_nuisances and ((iteration==0) or (k == 'Bmass' and iteration)):
+                        if not flat_fakerate:
+                            create_datacard_prep(temp_hists_fake_nn[k], unc_hists_fake_nn[k], shapes, [name for name,v in samples.items()], channels[1], k, label, which_sample_bbb_unc_fake)
+                        else:
+                            create_datacard_prep(temp_hists_fake_nn[k], unc_hists_fake[k], shapes, [name for name,v in samples.items()], channels[1], k, label, which_sample_bbb_unc_fake)
                         #create_datacard_prep(temp_hists_fake[k],unc_hists_fake[k],shapes,'fail',k,label)
                         if not only_pass:
                             plot_shape_nuisances(label, k, channels[1], [name for name,v in samples.items()], which_sample_bbb_unc_fake, compute_sf = compute_sf, compute_sf_onlynorm = compute_sf_onlynorm)
@@ -1253,7 +1264,12 @@ if __name__ == '__main__':
 
             if flat_fakerate:
                 if shape_nuisances and ((k in datacards and  iteration==0) or (k == 'Bmass' and iteration)):
-                    create_datacard_prep(temp_hists_fake[k], unc_hists_fake[k], shapes, [name for name,v in samples.items()], channels[1], k, label, which_sample_bbb_unc_fake)
+                #if shape_nuisances and ((iteration==0) or (k == 'Bmass' and iteration)):
+                    if not flat_fakerate:
+                        create_datacard_prep(temp_hists_fake[k], unc_hists_fake_nn[k], shapes, [name for name,v in samples.items()], channels[1], k, label, which_sample_bbb_unc_fake)
+                    else:
+                        create_datacard_prep(temp_hists_fake[k], unc_hists_fake[k], shapes, [name for name,v in samples.items()], channels[1], k, label, which_sample_bbb_unc_fake)
+                        
                     #create_datacard_prep(temp_hists_fake[k],unc_hists_fake[k],shapes,'fail',k,label)
                     if not only_pass:
                         plot_shape_nuisances(label, k, channels[1], [name for name,v in samples.items()], which_sample_bbb_unc_fake, compute_sf = compute_sf, compute_sf_onlynorm = compute_sf_onlynorm)

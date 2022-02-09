@@ -39,7 +39,8 @@ def norm_nuisances(f, channel, histos, jpsi_split):
     # Define strings for nuisances
     ctau_string = 'ctau shape '
     pu_string   = 'puWeight shape '
-    fakes_string = 'fake_rate lnN '
+    fakes_lm_string = 'fake_rate_lm lnN '
+    fakes_hm_string = 'fake_rate_hm lnN '
     trigger_string = 'trigger lnN '
     for i,histo in enumerate(histos):
         if histo == 'data':
@@ -47,25 +48,30 @@ def norm_nuisances(f, channel, histos, jpsi_split):
         elif histo == 'fakes':
             ctau_string    += ' - '
             pu_string      += ' - '
-            fakes_string   += ' 1.5 '
+            fakes_lm_string   += ' 1.5 '
+            fakes_hm_string   += ' 1.5 '
             trigger_string += ' - '
         elif histo == 'jpsi_x_mu' and jpsi_split:
             continue
         elif'jpsi_x_mu' in histo:
             ctau_string    += ' - '
             pu_string      += ' 1 '
-            fakes_string   += ' - '
+            fakes_lm_string   += ' - '
+            fakes_hm_string   += ' - '
             trigger_string += ' 1.05 '
         else:
             ctau_string    += ' 1 '
             pu_string      += ' 1 '
-            fakes_string   += ' - '
+            fakes_lm_string   += ' - '
+            fakes_hm_string   += ' - '
             trigger_string += ' 1.05 '
 
     f.write(" %s \n"%ctau_string)
     f.write(" %s  \n"%pu_string)
     if channel == 'ch1' or channel == 'ch3':
-        f.write(" %s  \n"%fakes_string)
+        f.write(" %s  \n"%fakes_lm_string)
+    #elif  channel == 'ch3':
+    #    f.write(" %s  \n"%fakes_hm_string)
     f.write(" %s  \n"%trigger_string)
 
 def ff_nuisances(f, channel, histos, jpsi_split):
@@ -93,9 +99,9 @@ def br_nuisances(f, channel, histos, jpsi_split):
         'chic1_mu': 1.10,
         'chic2_mu': 1.22,
         'hc_mu':    1.15,
-        'jpsi_hc':  1.44,
+        'jpsi_hc':  1.38,
         'psi2s_mu': 1.13,
-        'psi2s_tau':1.13}
+        'psi2s_tau':1.15}
 
     # br nuisances
     br_nuisances_strings = []
@@ -359,16 +365,16 @@ def create_datacard_ch2(label, var_name,  histos, hmlm_split, jpsi_x_mu_samples,
 
     # anticorrelated to the ones in ch1
     sfIdk_nuisances = {
-        'jpsi_mu' :1. - 39*0.013,
-        'jpsi_tau':1. - 39*0.013,
-        'chic0_mu':1. - 39*0.012,
-        'chic1_mu':1. - 39*0.013,
-        'chic2_mu':1. - 39*0.014,
-        'hc_mu'   :1. - 39*0.013,
-        'jpsi_hc' :1. - 39*0.013,
-        'psi2s_mu':1. - 39*0.013,
-        'psi2s_tau':1. - 39*0.011,
-        'jpsi_x_mu':1. - 39*0.016}
+        'jpsi_mu' :1.013,
+        'jpsi_tau':1.013,
+        'chic0_mu':1.012,
+        'chic1_mu':1.013,
+        'chic2_mu':1.013,
+        'hc_mu'   :1.013,
+        'jpsi_hc' :1.013,
+        'psi2s_mu':1.013,
+        'psi2s_tau':1.011,
+        'jpsi_x_mu':1.015,}
 
     sf_nuisances(f, 'ch2', histos, sfReco_nuisances, sfIdjpsi_nuisances,sfIdk_nuisances, jpsi_split)
 
@@ -464,7 +470,7 @@ def create_datacard_ch4(label, var_name,  histos, hmlm_split, jpsi_x_mu_samples,
         'jpsi_x_mu':1.027}
 
     sfIdk_nuisances = {
-        'jpsi_x_mu':1. - 39*0.015}
+        'jpsi_x_mu':1.016,}
 
 
     sf_nuisances(f, 'ch4', histos, sfReco_nuisances, sfIdjpsi_nuisances, sfIdk_nuisances, jpsi_split)

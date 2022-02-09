@@ -6,7 +6,7 @@ Difference with v1:
 
 import ROOT
 from officialStyle import officialStyle
-from samples import sample_names, sample_names_explicit_all
+from samples import sample_names, sample_names_explicit_all, sample_names_explicit_jpsimother_compressed
 from cmsstyle import CMS_lumi
 import os
 from histos import histos
@@ -63,6 +63,7 @@ def plot_shape_nuisances(histos_folder, variable, channel, sample_names=sample_n
     bbb_syst = ['bbb'+str(i)+channel for i in range(1,nbins+1)]
 
     total_syst = hammer_syst + ctau_syst + pu_syst + bbb_syst 
+    #total_syst = pu_syst 
 
     # Don't compute these because they are approximable to a normalisation nuisance
     # Keep the code in case we need to compute average and max again
@@ -125,9 +126,10 @@ def plot_shape_nuisances(histos_folder, variable, channel, sample_names=sample_n
                 if syst in ctau_syst:
                     if sname == 'jpsi_x' or 'jpsi_x_mu' in sname:
                         continue
-                if compute_sf_onlynorm and syst in sf_idk_syst:
-                    if channel!= 'ch1' and channel != 'ch3':
-                        continue
+                #No fail
+                #if compute_sf_onlynorm and syst in sf_idk_syst:
+                #    if channel!= 'ch1' and channel != 'ch3':
+                #        continue
                 if syst in bbb_syst:
                     if 'jpsi_x_mu' not in sname:
                         continue
@@ -237,7 +239,8 @@ def plot_shape_nuisances(histos_folder, variable, channel, sample_names=sample_n
 
 if __name__ == "__main__":
 
-    histos_folder = '22Dec2021_10h19m17s'
+    histos_folder = '07Feb2022_13h40m17s'
     variable = 'Q_sq'
-    plot_shape_nuisances(histos_folder, variable,'ch1',sample_names_explicit_all ,verbose = False, compute_sf_onlynorm = False)
+    plot_shape_nuisances(histos_folder, variable,'ch2',sample_names_explicit_jpsimother_compressed )
     
+#def plot_shape_nuisances(histos_folder, variable, channel, sample_names=sample_names, which_sample_single_bbb =[], plot3d = False, fakes = True, path = '/work/friti/rjpsi_tools/CMSSW_10_6_14/src/RJpsiTools/plotting/plots_ul/', compute_sf = False, verbose = False, compute_sf_onlynorm = False):
