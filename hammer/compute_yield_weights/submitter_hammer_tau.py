@@ -1,18 +1,18 @@
 import os
 from glob import glob
 
-
 files = glob('/pnfs/psi.ch/cms/trivcat/store/user/friti/Rjpsi_inspector_bc_tau_12nov21_v1/*.root')
 print(files)
 files = files[2:] #firsts two are empty, but there may be others, no problem
 nfiles = len(files)
-out_dir = 'Rjpsi_hammer_tau_12nov21_v1'
+#nfiles = 1
+out_dir = 'Rjpsi_hammer_tau_24jan22_v2'
 files_per_job = 1
 njobs = int(nfiles/files_per_job)
 print(njobs," will be submitted")
 
-template_inspector = "hammer_tau_TEMPLATE.py"
-template_fileout = "RJpsi_hammer_bc_tau_12nov21_v1_TEMPLATE.root"
+template_inspector = "hammer_tau_TEMPLATE_v2.py"
+template_fileout = "RJpsi_hammer_bc_tau_24jan22_v2_TEMPLATE.root"
 
 ##########################################################################################
 ##########################################################################################
@@ -26,6 +26,8 @@ if not os.path.exists(out_dir):
     os.makedirs(out_dir)
     os.makedirs(out_dir + '/logs')
     os.makedirs(out_dir + '/errs')
+    os.system('cp bgl_variations.py '+out_dir+'/.')
+
 for ijob in range(njobs):
 
     tmp_inspector = template_inspector.replace('TEMPLATE', 'chunk%d' %ijob)
