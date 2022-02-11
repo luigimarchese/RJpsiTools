@@ -39,18 +39,26 @@ prepreselection = ' & '.join([
     #'mmm_p4_par>10',
     #'k_raw_db_corr_iso04_rel<0.3',
     #'jpsivtx_cos2D>0.99',
+    #''mu1_isFromMuT > 0.5',
+    #''mu2_isFromMuT>0.5',
+    #''mu1_isFromJpsi_MuT>0.5',
+    #''mu2_isFromJpsi_MuT>0.5',
+    #''k_isFromMuT>0.5',    
+])
+
+triggerselection = ' & '.join([
     'mu1_isFromMuT > 0.5',
     'mu2_isFromMuT>0.5',
     'mu1_isFromJpsi_MuT>0.5',
     'mu2_isFromJpsi_MuT>0.5',
-    'k_isFromMuT>0.5',    
+    'k_isFromMuT>0.5',
 ])
 
-preselection = ' & '.join([prepreselection, 'Bmass<6.3'])
-preselection_mc = ' & '.join([preselection, 'abs(k_genpdgId)==13'])
+preselection = ' & '.join([prepreselection, triggerselection, 'Bmass<6.3', 'abs(jpsivtx_fit_mass-3.0969)<0.1'])
+preselection_mc = ' & '.join([preselection, triggerselection, 'abs(k_genpdgId)==13', 'abs(jpsivtx_fit_mass-3.0969)<0.1'])
 
-preselection_hm = ' & '.join([prepreselection, 'Bmass>6.3'])
-preselection_hm_mc = ' & '.join([preselection_hm, 'abs(k_genpdgId)==13'])
+preselection_hm = ' & '.join([prepreselection, triggerselection, 'Bmass>6.3', 'abs(jpsivtx_fit_mass-3.0969)<0.1'])
+preselection_hm_mc = ' & '.join([preselection_hm, triggerselection, 'abs(k_genpdgId)==13', 'abs(jpsivtx_fit_mass-3.0969)<0.1'])
 
 
 pass_id = 'k_mediumID>0.5 & k_raw_db_corr_iso03_rel<0.2'
