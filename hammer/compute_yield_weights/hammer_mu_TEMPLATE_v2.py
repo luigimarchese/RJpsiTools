@@ -4,7 +4,6 @@ Starting from Kiselev FF (standard MC FF), this script reweights to BGL FF (upda
 It takes as input a flat ntupla (like output of inspector)
 N.B. The NAN probles has been solved: all the hammer weights should be different from NaN
 '''
-import argparse
 import ROOT
 from time import time
 from datetime import datetime, timedelta
@@ -13,11 +12,10 @@ from hammer import hepmc, pdg
 from root_pandas import read_root, to_root
 import numpy as np
 import math
+from bgl_variations import variations
+from itertools import product
 from glob import glob
-
-ROOT.gROOT.SetBatch()   
-ROOT.gStyle.SetOptStat(0)
-
+import argparse
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--files_per_job', dest='files_per_job', default=2    , type=int)
@@ -41,10 +39,15 @@ ff_input_scheme = dict()
 ff_input_scheme["BcJpsi"] = "Kiselev"
 ham.set_ff_input_scheme(ff_input_scheme)
 
-ff_scheme  = dict()
-
-ff_scheme['BcJpsi'] = 'BGLVar'
-ham.add_ff_scheme('BGL', ff_scheme)
+ff_schemes  = dict()
+ff_schemes['bglvar' ] = {'BcJpsi':'BGLVar' }
+for i, j in product(range(11), ['up', 'down']):
+#for i, j in product(range(1), ['up', 'down']):
+    unc = 'e%d%s'%(i,j)
+    ff_schemes['bglvar_%s'%unc] = {'BcJpsi':'BGLVar_%s'%unc  }
+                        
+for k, v in ff_schemes.items():
+    ham.add_ff_scheme(k, v)
 ham.add_total_sum_of_weights() # adds "Total Sum of Weights" histo with auto bin filling
 ham.set_units("GeV")
 ham.init_run()
@@ -55,15 +58,18 @@ fname = files[(jobid)*files_per_job:(jobid+1)*files_per_job]
 fname = fname[0]
 print("files: ",fname)
 
+for i, j in product(range(11), ['up', 'down']):
+    unc = 'e%d%s'%(i,j)
+    ham.set_ff_eigenvectors('BctoJpsi', 'BGLVar_%s'%unc, variations['e%d'%i][j])
+
 fin = ROOT.TFile.Open(fname)
 tree = fin.Get('tree')
-
-maxevents = -1
-
 tree_df = read_root(fname, 'tree', where='is_jpsi_mu & is3m')
 
 pids = []
-weights = []
+weights = dict()
+for k in ff_schemes.keys():
+    weights[k] = []
 
 start = time()
 maxevents = maxevents if maxevents>=0 else tree.GetEntries() # total number of events in the files
@@ -112,15 +118,18 @@ for i, ev in enumerate(tree):
     pids.append(pid)
 
     ham.process_event()
-    weights.append(ham.get_weight('BGL'))
+    for k in ff_schemes.keys():
+        weights[k].append(ham.get_weight(k))
     if i>maxevents: break
 
-reduced_tree = tree_df[:len(weights)].copy()
+reduced_tree = tree_df[:len(weights[k])].copy()
 
 #it shouldn't be needed anymore: nan problem solved
-reduced_tree['hammer'] = np.nan_to_num(np.array(weights)) 
+for k in ff_schemes.keys():
+    reduced_tree['hammer_'+k] = np.nan_to_num(np.array(weights[k])) 
 #output file
 to_root(reduced_tree, 'HOOK_FILE_OUT', key='tree')
 print("Success!")        
 print("File HOOK_FILE_OUT saved!" )
+
 

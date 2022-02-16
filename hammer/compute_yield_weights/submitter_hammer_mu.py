@@ -18,14 +18,15 @@ from glob import glob
 files = glob('/pnfs/psi.ch/cms/trivcat/store/user/friti/Rjpsi_inspector_bc_mu_01Dec21_v1/*.root')
 print(files)
 nfiles = len(files)
-out_dir = 'Rjpsi_hammer_mu_01Dec21_v1'
+out_dir = 'Rjpsi_hammer_mu_24jan22_v2'
 #keep files per job at 1, because the script does not support different
 files_per_job = 1
 njobs = int(nfiles/files_per_job)
+#njobs = 2
 print(njobs," will be submitted")
 
-template_inspector = "hammer_mu_TEMPLATE.py"
-template_fileout = "RJpsi_hammer_bc_01Dec21_v1_TEMPLATE.root"
+template_inspector = "hammer_mu_TEMPLATE_v2.py"
+template_fileout = "RJpsi_hammer_bc_24jan22_v2_TEMPLATE.root"
 
 ##########################################################################################
 ##########################################################################################
@@ -39,6 +40,8 @@ if not os.path.exists(out_dir):
     os.makedirs(out_dir)
     os.makedirs(out_dir + '/logs')
     os.makedirs(out_dir + '/errs')
+os.system('cp bgl_variations.py '+out_dir+'/.')
+
 #os.system('cp files_HbToJPsiMuMu_3MuFilter_old.py ' + out_dir + '/.')
 #os.system('cp -r GeneratorInterface ' + out_dir + '/.')
 
@@ -71,6 +74,7 @@ for ijob in range(njobs):
         'ls /scratch/friti/',
         'python {insp} --files_per_job 1 --jobid {jobid}',
         'xrdcp /scratch/friti/{scratch_dir}/{fout} root://t3dcachedb.psi.ch:1094////pnfs/psi.ch/cms/trivcat/store/user/friti/{se_dir}/{fout}',
+        #'xrdcp /scratch/friti/{scratch_dir}/{fout} /pnfs/psi.ch/cms/trivcat/store/user/friti/{se_dir}/{fout}',
         'rm /scratch/friti/{scratch_dir}/{fout}',
         'echo {fout} Saved!',
         '',
@@ -89,6 +93,7 @@ for ijob in range(njobs):
     
     command_sh_batch = ' '.join([
         'sbatch', 
+        '-p long',
         #'-p testnew', 
         '--account=t3', 
         '-o %s/logs/chunk%d.log' %(out_dir, ijob),
