@@ -100,13 +100,13 @@ ff_weights['jpsi_tau_bglvar_e10Down' ] = 1./0.554
 ff_weights['jpsi_mu_bglvar_e10Down'  ] = 1./0.603
 
 weights = dict()
-bc_weight = 0.09 *1.1 *1.04
+bc_weight = 0.09 *1.1 *1.04 * 0.85
 #bc_weight = 0.15  #for prev ff_weights
 #bc_weight = 1.53 #for prev oct21
 fr = 0.19
 #hbmu_norm = 8.5 *1.5 #without weights
 #hbmu_norm = 8.5 *0.5 *0.65 #0.65 from fit, so it will make the fit converge better (old sample)
-hbmu_norm = 0.3 * 0.85 *0.7*0.1 * 2.7 *1.6  # new sample (0.85 from fit)
+hbmu_norm = 0.3 * 0.85 *0.7*0.1 * 2.7 *1.6 *0.85  # new sample (0.85 from fit)
 
 
 weights['jpsi_tau' ] = bc_weight * ff_weights['jpsi_tau' ]
@@ -121,6 +121,7 @@ weights['jpsi_hc'  ] = bc_weight
 weights['fakes'    ] = 1.  #fr/(1-fr) #2.7 # 2.5 # 2.7
 #weights['fakes'    ] = 2 * 1.2 #fr/(1-fr) #2.7 # 2.5 # 2.7
 weights['data'     ] = 1.
+#weights['dimuon'     ] = 1.
 weights['jpsi_x'] = 15
 weights['jpsi_x_mu'] = 1. * hbmu_norm # 10. # 8.5
 weights['jpsi_x_mu_hm'] = 1. * hbmu_norm # 10. # 8.5
@@ -160,6 +161,7 @@ titles['jpsi_3pi' ] = 'B_{c}#rightarrowJ/#Psi3#pi'
 titles['jpsi_hc'  ] = 'B_{c}#rightarrowJ/#PsiH_{c}'
 titles['data'     ] = 'observed'
 titles['fakes'   ] = 'fakes'#'J/#Psi + X'
+titles['dimuon'] = 'comb J/#Psi'
 titles['jpsi_x'] = 'J/#Psi + X'
 titles['jpsi_x_mu'] = 'J/#Psi + #mu'
 titles['jpsi_x_mu_hm'] = 'J/#Psi + #mu HM'
@@ -223,6 +225,7 @@ colours['jpsi_x_mu_from_other'] = col2[8]
 colours['jpsi_x_mu_from_sigma'] = col2[6]
 colours['jpsi_x_mu_from_xi'] = col2[7]
 
+colours['dimuon'] = ROOT.kGreen+1
 colours['jpsi_3pi'] = col2[6]
 colours['jpsi_pi'] = col2[7]
 

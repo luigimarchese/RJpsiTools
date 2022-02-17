@@ -177,19 +177,23 @@ def get_DiMuonBkg(selection, var_index):
 
     if var_index == 0: 
         dataframe["SBs"] = dataframe["SBs"].Filter(filterLSB).Define("Q_sq_extrap", "SB_extrap(Bpt_reco, 0, Jpsi_scale, mu1pt, mu1eta, mu1phi, mu1mass, mu2pt, mu2eta, mu2phi, mu2mass, kpt, keta, kphi, kmass)")
-        Q2_extrap_hist["SBs"] = dataframe["SBs"].Filter(filterLSB).Histo1D(("Q_sqLSB_extrap","Q_sqLSB_extrap;  q^{2} [GeV^{2}];",24,0,10.5),"Q_sq_extrap")
-        DimuonShape = Q2_extrap_hist["SBs"].GetValue()
+        Q2_extrap_hist["SBs"] = dataframe["SBs"].Filter(filterLSB).Histo1D(("Q_sqLSB_extrap","Q_sqLSB_extrap;  q^{2} [GeV^{2}];",20,5.5,10),"Q_sq_extrap")
+        #DimuonShape = Q2_extrap_hist["SBs"].GetValue()
+        DimuonShape = Q2_extrap_hist["SBs"]
     elif var_index == 1:
         dataframe["SBs"] = dataframe["SBs"].Filter(filterLSB).Define("m_miss_sq_extrap", "SB_extrap(Bpt_reco, 1, Jpsi_scale, mu1pt, mu1eta, mu1phi, mu1mass, mu2pt, mu2eta, mu2phi, mu2mass, kpt, keta, kphi, kmass)")
         m_miss_extrap_hist["SBs"] = dataframe["SBs"].Filter(filterLSB).Histo1D(("m_miss_sqLSB_extrap","m_miss_sq_extrap;  q^{2} [GeV^{2}];",50,0,9),"m_miss_sq_extrap")
-        DimuonShape = m_miss_extrap_hist["SBs"].GetValue()
+        #DimuonShape = m_miss_extrap_hist["SBs"].GetValue()
+        DimuonShape = m_miss_extrap_hist["SBs"]
     elif var_index == 2:
         dataframe["SBs"] = dataframe["SBs"].Filter(filterLSB).Define("pt_var_extrap", "SB_extrap(Bpt_reco, 2, Jpsi_scale, mu1pt, mu1eta, mu1phi, mu1mass, mu2pt, mu2eta, mu2phi, mu2mass, kpt, keta, kphi, kmass)")
         pt_var_extrap_hist["SBs"] = dataframe["SBs"].Filter(filterLSB).Histo1D(("pt_varLSB_extrap","pt_var_extrap;  p_{T}^{var} [GeV];",50,0,50),"pt_var_extrap")
-        DimuonShape = pt_var_extrap_hist["SBs"].GetValue()
+        #DimuonShape = pt_var_extrap_hist["SBs"].GetValue()
+        DimuonShape = pt_var_extrap_hist["SBs"]
     elif var_index == 3:
         dataframe["SBs"] = dataframe["SBs"].Filter(filterLSB).Define("pt_miss_vec_extrap", "SB_extrap(Bpt_reco, 3, Jpsi_scale, mu1pt, mu1eta, mu1phi, mu1mass, mu2pt, mu2eta, mu2phi, mu2mass, kpt, keta, kphi, kmass)")
         pt_miss_vec_extrap_hist["SBs"] = dataframe["SBs"].Filter(filterLSB).Histo1D(("pt_miss_vecLSB_extrap","pt_miss_vec_extrap;  vector p_{T}^{miss} [GeV];",50,0,30),"pt_miss_vec_extrap")
+        #imuonShape = pt_miss_vec_extrap_hist["SBs"].GetValue()
         DimuonShape = pt_miss_vec_extrap_hist["SBs"].GetValue()
     elif var_index == 4:
         dataframe["SBs"] = dataframe["SBs"].Filter(filterLSB).Define("pt_miss_scal_extrap", "SB_extrap(Bpt_reco, 4, Jpsi_scale, mu1pt, mu1eta, mu1phi, mu1mass, mu2pt, mu2eta, mu2phi, mu2mass, kpt, keta, kphi, kmass)")
@@ -355,14 +359,14 @@ def get_DiMuonBkg(selection, var_index):
         JpsiMassSRCanvas.Print('FitJpsiMassSR.png')
         #CompletePDF.Draw("SAME")
         
-    Normalization = NBkg.getVal()/NSgl.getVal()
-    DimuonShape.Scale(Normalization)
+    Normalization = NBkg.getVal()/DimuonShape.Integral()
+    DimuonShape.GetValue().Scale(Normalization)
     if(sanitycheck):
         print("Dimuon Normalization: ",  Normalization)
         DiMuonShapeCanvas = TCanvas("DiMuonShapeCanvas", "DiMuonShapeCanvas", 0, 0, 700, 700)
         DiMuonShapeCanvas.cd()
-        DimuonShape.Draw("pe")
+        DimuonShape.GetValue().Draw("pe")
         DiMuonShapeCanvas.Print('NormalizedDiMuonShape.png')
-                        
+    print("DiMuon done")
     return DimuonShape
                     

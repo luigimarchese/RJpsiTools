@@ -58,6 +58,8 @@ shape_nuisances = True
 flat_fakerate = False # false mean that we use the NN weights for the fr
 scale_mc_in_fail = False #True if you want to rescale the yield in fail of MC according to the yield of data
 compute_mean_weights = False # True if you want to compute the mean of the weights; False if you want to load tm
+add_dimuon = True
+compute_dimuon = True
 
 if not compute_mean_weights:
     from samples import mean_nn_data_weights_lm, mean_nn_mc_weights_lm, mean_nn_data_weights_hm, mean_nn_mc_weights_hm
@@ -198,21 +200,23 @@ def create_datacard_prep(hists, shape_hists, shapes_names, sample_names, channel
                 hh.SetName(sname + '_'+channel)
                 hh.Write()
 
-    if only_pass: #the rate of fakes must be == integral in case of only pass category fit, while ==1 in case of two regions
-        if channel == 'ch1' :
-            create_datacard_ch1_onlypass(label, name, myhists,False, jpsi_x_mu_samples, which_sample_bbb_unc)
-        else:
-            create_datacard_ch3_onlypass(label, name,  myhists, False, jpsi_x_mu_samples, which_sample_bbb_unc)
+    if not add_dimuon:
+        if only_pass: #the rate of fakes must be == integral in case of only pass category fit, while ==1 in case of two regions
+            if channel == 'ch1' :
+                create_datacard_ch1_onlypass(label, name, myhists,False, jpsi_x_mu_samples, which_sample_bbb_unc)
+            else:
+                create_datacard_ch3_onlypass(label, name,  myhists, False, jpsi_x_mu_samples, which_sample_bbb_unc)
 
-    else:
-        if channel == 'ch1' :
-            create_datacard_ch1(label, name,  myhists,  False, jpsi_x_mu_samples, which_sample_bbb_unc)
-        elif channel == 'ch2' :
-            create_datacard_ch2(label, name,  myhists,  False, jpsi_x_mu_samples, which_sample_bbb_unc)
-        elif channel == 'ch3' :
-            create_datacard_ch3(label, name,  myhists,  False, jpsi_x_mu_samples, which_sample_bbb_unc)
         else:
-            create_datacard_ch4(label, name,  myhists,  False, jpsi_x_mu_samples, which_sample_bbb_unc)
+            if channel == 'ch1' :
+                create_datacard_ch1(label, name,  myhists,  False, jpsi_x_mu_samples, which_sample_bbb_unc)
+            elif channel == 'ch2' :
+                create_datacard_ch2(label, name,  myhists,  False, jpsi_x_mu_samples, which_sample_bbb_unc)
+            elif channel == 'ch3' :
+                create_datacard_ch3(label, name,  myhists,  False, jpsi_x_mu_samples, which_sample_bbb_unc)
+            else:
+                create_datacard_ch4(label, name,  myhists,  False, jpsi_x_mu_samples, which_sample_bbb_unc)
+
     fout.Close()
 
 # pass the jpsi_x_mu hists chi, sigma, lambda
@@ -719,7 +723,31 @@ if __name__ == '__main__':
                             temp_hists_fake_nn[k]['%s_%s' %(k, kk)] = vv.Filter(fail_id).Histo1D(v[0], k, 'total_weight_wfr_norm')
                     else:
                         temp_hists_fake_nn[k]['%s_%s' %(k, kk)] = vv.Filter(fail_id).Histo1D(v[0], k, 'total_weight_wfr')
-                            
+            # Di muon bkg
+            if k == 'Q_sq':
+                if add_dimuon:
+                    if compute_dimuon:
+                        print("Doing the Dimuon",k)
+                        if not iteration:
+                            temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(pass_id+" & Bmass<6.3 & Q_sq>5.5", 0)
+                            temp_hists_fake[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass<6.3 & Q_sq>5.5", 0)
+                            if not flat_fakerate:
+                                temp_hists_fake_nn[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass<6.3 & Q_sq>5.5", 0)
+                    #else:
+                    #take it from a file
+                        
+                '''if iteration:
+                    temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(pass_id+" & Bmass>6.3", 0)
+                    print(type(temp_hists[k]['%s_dimuon'%k]))
+                    print(type(temp_hists[k]['%s_jpsi_tau'%k]))
+                    print(temp_hists[k].items())
+                    temp_hists_fake[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass>6.3", 0)
+                    if not flat_fakerate:
+                temp_hists_fake_nn[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass>6.3", 0)'''
+                #print(type(temp_hists[k]['%s_dimuon'%k]))
+                #print(type(temp_hists[k]['%s_jpsi_tau'%k]))
+                #print(temp_hists[k].items())
+
     
         # Create pointers for the shapes histos 
         if shape_nuisances:
@@ -730,8 +758,8 @@ if __name__ == '__main__':
                 unc_hists_fake_nn = {} # pass muon ID category
             for k, v in histos.items():    
                 # Compute them only for the variables that we want to fit
-                if (k not in datacards and iteration == 0) or (k!='Bmass' and iteration):
-                #if (k!='Bmass' and iteration):
+                if (k not in datacards and iteration == 0) or (k not in histos and iteration):
+                    #if (k not in datacards and iteration == 0) or (k!='Bmass' and iteration):
                     continue
                 unc_hists     [k] = {}
                 unc_hists_fake[k] = {}
@@ -799,7 +827,7 @@ if __name__ == '__main__':
                         if ihist.GetBinContent(i) <= 0:
                             ihist.SetBinContent(i,0.0001)
 
-            if shape_nuisances and ((k in datacards and  iteration==0) or (k == 'Bmass' and iteration)):
+            if shape_nuisances and ((k in datacards and  iteration==0) or (k in histos and iteration)):
             #if shape_nuisances and ((iteration==0) or (k == 'Bmass' and iteration)):
                 
                 for i, kv in enumerate(unc_hists[k].items()):
@@ -829,14 +857,20 @@ if __name__ == '__main__':
                     
 
             c1.cd()
-            
-            leg = create_legend(temp_hists, [str(k) for k,v in samples.items()], titles)
+            # add also comb bkg histos
+            if add_dimuon:
+                samples_for_legend = [str(k) for k in samples]+['dimuon']
+            else:
+                samples_for_legend = [str(k) for k in samples]
+
+            leg = create_legend(temp_hists, samples_for_legend, titles)
             main_pad.cd()
             main_pad.SetLogy(False)
         
             # some look features
             maxima = [] 
             data_max = 0.
+
             for i, kv in enumerate(temp_hists[k].items()):
                 key = kv[0]
                 ihist = kv[1]
@@ -858,6 +892,7 @@ if __name__ == '__main__':
                 ths1_fake_nn = ROOT.THStack('stack_fake_nn', '')
 
             for i, kv in enumerate(temp_hists[k].items()):
+                
                 key = kv[0]
                 if key=='%s_data'%k: continue
                 ihist = kv[1]
@@ -1049,10 +1084,12 @@ if __name__ == '__main__':
             c1.SaveAs('plots_ul/%s/%s/pdf/log/%s.pdf' %(label, channels[0], k))
             c1.SaveAs('plots_ul/%s/%s/png/log/%s.png' %(label, channels[0], k))
         
-            if shape_nuisances and ((k in datacards and  iteration==0) or (k == 'Bmass' and iteration)):
+            if shape_nuisances and ((k in datacards and  iteration==0) or (k in histos and iteration)):
             #if shape_nuisances and ((iteration==0) or (k == 'Bmass' and iteration)):
-                create_datacard_prep(temp_hists[k], unc_hists[k], shapes, [name for name,v in samples.items()], channels[0], k, label, which_sample_bbb_unc)
-                plot_shape_nuisances(label, k, channels[0], [name for name,v in samples.items()], which_sample_bbb_unc, compute_sf = compute_sf, compute_sf_onlynorm = compute_sf_onlynorm)
+
+                create_datacard_prep(temp_hists[k], unc_hists[k], shapes, samples_for_legend, channels[0], k, label, which_sample_bbb_unc)
+                if not add_dimuon:
+                    plot_shape_nuisances(label, k, channels[0], [name for name,v in samples.items()], which_sample_bbb_unc, compute_sf = compute_sf, compute_sf_onlynorm = compute_sf_onlynorm)
 
             #####################################################
             # Now creating and saving the stack of the fail region
@@ -1155,14 +1192,14 @@ if __name__ == '__main__':
                 c1.SaveAs('plots_ul/%s/%s/png/log/%s.png' %(label, channels[1], k))
                 
                 if not flat_fakerate:
-                    if shape_nuisances and ((k in datacards and  iteration==0) or (k == 'Bmass' and iteration)):
+                    if shape_nuisances and ((k in datacards and  iteration==0) or (k in histos and iteration)):
                     #if shape_nuisances and ((iteration==0) or (k == 'Bmass' and iteration)):
                         if not flat_fakerate:
-                            create_datacard_prep(temp_hists_fake_nn[k], unc_hists_fake_nn[k], shapes, [name for name,v in samples.items()], channels[1], k, label, which_sample_bbb_unc_fake)
+                            create_datacard_prep(temp_hists_fake_nn[k], unc_hists_fake_nn[k], shapes, samples_for_legend, channels[1], k, label, which_sample_bbb_unc_fake)
                         else:
-                            create_datacard_prep(temp_hists_fake_nn[k], unc_hists_fake[k], shapes, [name for name,v in samples.items()], channels[1], k, label, which_sample_bbb_unc_fake)
+                            create_datacard_prep(temp_hists_fake_nn[k], unc_hists_fake[k], shapes, samples_for_legend, channels[1], k, label, which_sample_bbb_unc_fake)
                         #create_datacard_prep(temp_hists_fake[k],unc_hists_fake[k],shapes,'fail',k,label)
-                        if not only_pass:
+                        if not only_pass and not add_dimuon:
                             plot_shape_nuisances(label, k, channels[1], [name for name,v in samples.items()], which_sample_bbb_unc_fake, compute_sf = compute_sf, compute_sf_onlynorm = compute_sf_onlynorm)
             #####################################################
             # Now creating and saving the stack of the fail region
@@ -1264,7 +1301,7 @@ if __name__ == '__main__':
             c1.SaveAs('plots_ul/%s/%s_flat/png/log/%s.png' %(label, channels[1], k))
 
             if flat_fakerate:
-                if shape_nuisances and ((k in datacards and  iteration==0) or (k == 'Bmass' and iteration)):
+                if shape_nuisances and ((k in datacards and  iteration==0) or (k in histos and iteration)):
                 #if shape_nuisances and ((iteration==0) or (k == 'Bmass' and iteration)):
                     if not flat_fakerate:
                         create_datacard_prep(temp_hists_fake[k], unc_hists_fake_nn[k], shapes, [name for name,v in samples.items()], channels[1], k, label, which_sample_bbb_unc_fake)
@@ -1272,7 +1309,7 @@ if __name__ == '__main__':
                         create_datacard_prep(temp_hists_fake[k], unc_hists_fake[k], shapes, [name for name,v in samples.items()], channels[1], k, label, which_sample_bbb_unc_fake)
                         
                     #create_datacard_prep(temp_hists_fake[k],unc_hists_fake[k],shapes,'fail',k,label)
-                    if not only_pass:
+                    if not only_pass and not add_dimuon:
                         plot_shape_nuisances(label, k, channels[1], [name for name,v in samples.items()], which_sample_bbb_unc_fake, compute_sf = compute_sf, compute_sf_onlynorm = compute_sf_onlynorm)
 
 
