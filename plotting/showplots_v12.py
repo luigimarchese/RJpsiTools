@@ -333,7 +333,7 @@ ratio_pad.SetBottomMargin(0.45)
 if __name__ == '__main__':
     
     #datacards = ['mu1pt', 'Q_sq', 'm_miss_sq', 'E_mu_star', 'E_mu_canc', 'bdt_tau', 'Bmass', 'mcorr', 'decay_time_ps','k_raw_db_corr_iso04_rel']
-    datacards = ['Q_sq','m_miss_sq']
+    datacards = ['Q_sq','jpsiK_mass','Bmass','bdt_tau']
 
     # timestamp
     label = datetime.now().strftime('%d%b%Y_%Hh%Mm%Ss')
@@ -341,7 +341,7 @@ if __name__ == '__main__':
     # create plot directories
     make_directories(label)
     
-    central_weights_string = 'ctau_weight_central*br_weight*puWeight*sf_reco_total*sf_id_jpsi'
+    central_weights_string = 'ctau_weight_central*br_weight*puWeight*sf_reco_total*sf_id_jpsi*sf_id_k'
 
     # access the samples, via RDataFrames
     samples_orig = dict()
@@ -361,14 +361,21 @@ if __name__ == '__main__':
 
     #load the samples (jpsi_x_mu even if I want it splitted)
     for k in sample_names:
-        samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_prepresel.root'%(tree_dir,k)) 
-        print("Loading sample %s/%s_prepresel.root"%(tree_dir,k))    
+        samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_fakerate_only_iso.root'%(tree_dir,k)) 
+        #samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_prepresel.root'%(tree_dir,k)) 
+        #samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_bdt_comb.root'%(tree_dir,k)) 
+        #if k!='data':
+        #    samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_sf_werrors.root'%(tree_dir,k)) 
+        #else: 
+        #    samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_fakerate.root'%(tree_dir,k)) 
+        #print("Loading sample %s/%s_prepresel.root"%(tree_dir,k))    
 
     #Blind analysis: hide the value of rjpsi for the fit
     if blind_analysis:
         random.seed(2)
         rand = random.randint(0, 10000)
         blind = rand/10000 *1.5 +0.5
+        #blind = 1.
     else:
         blind = 1.
 
@@ -397,11 +404,18 @@ if __name__ == '__main__':
 
     if flat_fakerate == False:
         for sample in samples_orig:
-            samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr', 'tmp_weight*nn/(1-nn)') 
-
+            #samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr', 'tmp_weight') 
+            #samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr', 'tmp_weight*nn/(1-nn)') 
+            #samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr', 'tmp_weight*fakerate_weight_w_weights_qsq_gen') 
+            #if sample == 'data':
+            samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr', 'tmp_weight*fakerate_data') 
+            #else:
+            #    samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr', 'tmp_weight*fakerate_bcmu') 
+                
     # the scale factor on the id on the third muon only for the PASS region
     for sample in samples_orig:
-        samples_orig[sample] = samples_orig[sample].Define('total_weight', 'tmp_weight*sf_id_k' if sample!='data' else 'tmp_weight')
+        #samples_orig[sample] = samples_orig[sample].Define('total_weight', 'tmp_weight*sf_id_k' if sample!='data' else 'tmp_weight')
+        samples_orig[sample] = samples_orig[sample].Define('total_weight', 'tmp_weight' if sample!='data' else 'tmp_weight')
             
     ##############################################
     ##### Preselection ###########################
@@ -543,6 +557,7 @@ if __name__ == '__main__':
                     # Only jpsi for now, bc the sf_id for the third muon is only in the pass region!
                     if (sname != 'data'):
                         shapes[sname + '_sfIdJpsiUp'], shapes[sname + '_sfIdJpsiDown'] = define_shape_nuisances(sname, shapes, samples, 'sfIdJpsi', 'sf_id_jpsi', 'sf_id_all_jpsi_up', 'sf_id_all_jpsi_down', central_weights_string)
+                        shapes[sname + '_sfIdkUp'], shapes[sname + '_sfIdkDown'] = define_shape_nuisances(sname, shapes, samples, 'sfIdk', 'sf_id_k', 'sf_id_all_k_up', 'sf_id_all_k_down', central_weights_string)
 
             ######################################
             ########  FORM FACTORS  ##############
@@ -590,23 +605,30 @@ if __name__ == '__main__':
 
             if flat_fakerate == False:
                 for name in shapes:
-                    shapes[name] = shapes[name].Define('shape_weight_wfr','shape_weight_tmp*nn/(1-nn)') #fail region
-        
+                    #shapes[name] = shapes[name].Define('shape_weight_wfr','shape_weight_tmp') #fail region
+                    #shapes[name] = shapes[name].Define('shape_weight_wfr','shape_weight_tmp*nn/(1-nn)') #fail region
+                    #shapes[name] = shapes[name].Define('shape_weight_wfr','shape_weight_tmp*fakerate_weight_w_weights_qsq_gen') #fail region
+                    #if 'data' in name:
+                    shapes[name] = shapes[name].Define('shape_weight_wfr','shape_weight_tmp*fakerate_data') #fail region
+                    #else:
+                    #    shapes[name] = shapes[name].Define('shape_weight_wfr','shape_weight_tmp*fakerate_bcmu') #fail region
 
             # it has to be defined before I multiply the pass region weight for sf_id_k
             # it's the pass region because shape_Weight is used for the pass region onyl
-            for sname in samples:
+            '''for sname in samples:
                 if (sname != 'data'):
                     shapes[sname + '_sfIdkUp'] = samples[sname]
                     shapes[sname + '_sfIdkUp'] = shapes[sname + '_sfIdkUp'].Define('shape_weight', 'tmp_weight*sf_id_all_k_up')
                     shapes[sname + '_sfIdkDown'] = samples[sname]
                     shapes[sname + '_sfIdkDown'] = shapes[sname + '_sfIdkDown'].Define('shape_weight', 'tmp_weight*sf_id_all_k_down')
-
+            '''
             # For the Pass region we add the sf_id_k and its shape uncetrtainty
             # it's the pass region because I use shape_weight, while for the fail region I use shape_weight_wfr
             for name in shapes:
-                if 'sfIdk' not in name:
-                    shapes[name] = shapes[name].Define('shape_weight','shape_weight_tmp*sf_id_k')
+                # this is to anticorrelate
+                #if 'sfIdk' not in name:
+                #    shapes[name] = shapes[name].Define('shape_weight','shape_weight_tmp*sf_id_k')
+                shapes[name] = shapes[name].Define('shape_weight','shape_weight_tmp')
             
 
             '''
@@ -667,8 +689,8 @@ if __name__ == '__main__':
                 unc_hists_fake[k] = {}
                 for kk, vv in shapes.items():
                     unc_hists     [k]['%s_%s' %(k, kk)] = vv.Filter(pass_id).Histo1D(v[0], k, 'shape_weight')
-                    if 'sfIdk' in kk: #no shape unc for SF k for fail region
-                        continue
+                    #if 'sfIdk' in kk: #no shape unc for SF k for fail region
+                    #    continue
                     if flat_fakerate:
                         unc_hists_fake[k]['%s_%s' %(k, kk)] = vv.Filter(fail_id).Histo1D(v[0], k, 'shape_weight')
                     else:
@@ -808,8 +830,8 @@ if __name__ == '__main__':
             if flat_fakerate:
                 fakes.Scale(weights['fakes'])
 
-            fakes.Scale(weights['fakes'])
             ths1.Add(fakes)
+            print(k,fakes.Integral())
             maxima.append(fakes.GetMaximum())
             ths1.Draw('hist')
             try:

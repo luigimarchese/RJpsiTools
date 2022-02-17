@@ -41,7 +41,10 @@ prepreselection = ' & '.join([
     # cut on mjpsi using different bins of eta
     '(((((abs(mu1eta)<1) & (abs(mu2eta)>1)) | ((abs(mu1eta)>1) & (abs(mu2eta)<1))) & (abs(jpsivtx_fit_mass-3.0969)<0.07)) | ((abs(mu1eta)<1) & (abs(mu2eta)<1) & (abs(jpsivtx_fit_mass-3.0969)<0.05)) | ((abs(mu1eta)>1) & (abs(mu2eta)>1) & (abs(jpsivtx_fit_mass-3.0969)<0.1)))',
     'k_mediumID>0.5',
-    #'Q_sq>5',
+    #'Bmass>6.3',
+    #'Q_sq>5.5',
+    #'Q_sq>7.5',
+    #'mcorr<8',
     #'Q_sq<6'
 ])
 

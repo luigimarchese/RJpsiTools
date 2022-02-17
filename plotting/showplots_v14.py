@@ -66,7 +66,7 @@ compute_sf_onlynorm = False # compute only the sf normalisation (best case)
 blind_analysis = True
 rjpsi = 1
 
-asimov = True
+asimov = False
 only_pass = False
 
 if asimov:
@@ -362,7 +362,7 @@ if __name__ == '__main__':
 
     #load the samples (jpsi_x_mu even if I want it splitted)
     for k in sample_names:
-        samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_fakerate_only_iso.root'%(tree_dir,k)) 
+        samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_fakerate_only_iso_zcomp.root'%(tree_dir,k)) 
         #samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_prepresel.root'%(tree_dir,k)) 
         #samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_bdt_comb.root'%(tree_dir,k)) 
         #if k!='data':
