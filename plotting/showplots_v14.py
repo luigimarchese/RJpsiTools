@@ -58,8 +58,8 @@ shape_nuisances = True
 flat_fakerate = False # false mean that we use the NN weights for the fr
 scale_mc_in_fail = False #True if you want to rescale the yield in fail of MC according to the yield of data
 compute_mean_weights = False # True if you want to compute the mean of the weights; False if you want to load tm
-add_dimuon = True
-compute_dimuon = True
+add_dimuon = False
+compute_dimuon = False
 
 if not compute_mean_weights:
     from samples import mean_nn_data_weights_lm, mean_nn_mc_weights_lm, mean_nn_data_weights_hm, mean_nn_mc_weights_hm
@@ -335,7 +335,7 @@ if __name__ == '__main__':
     
     #datacards = ['mu1pt', 'Q_sq', 'm_miss_sq', 'E_mu_star', 'E_mu_canc', 'bdt_tau', 'Bmass', 'mcorr', 'decay_time_ps','k_raw_db_corr_iso04_rel']
     #datacards = ['Q_sq','jpsiK_mass','Bmass','bdt_tau']
-    datacards = ['Q_sq']
+    datacards = ['Q_sq','bdt']
 
     # timestamp
     label = datetime.now().strftime('%d%b%Y_%Hh%Mm%Ss')
@@ -343,7 +343,7 @@ if __name__ == '__main__':
     # create plot directories
     make_directories(label)
     
-    central_weights_string = 'ctau_weight_central*br_weight*puWeight*sf_reco_total*sf_id_jpsi*sf_id_k'
+    central_weights_string = 'ctau_weight_central*br_weight*puWeight*sf_reco_total*sf_id_jpsi*sf_id_k*jpsimass_weights_for_correction'
 
     # access the samples, via RDataFrames
     samples_orig = dict()
@@ -367,7 +367,8 @@ if __name__ == '__main__':
 
     #load the samples (jpsi_x_mu even if I want it splitted)
     for k in sample_names:
-        samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_fakerate_only_iso_zcomp.root'%(tree_dir,k)) 
+        samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_bdt_v4.root'%(tree_dir,k)) 
+        #samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_fakerate_only_iso_corr.root'%(tree_dir,k)) 
         #samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_prepresel.root'%(tree_dir,k)) 
         #samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_bdt_comb.root'%(tree_dir,k)) 
         #if k!='data':
