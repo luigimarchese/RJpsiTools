@@ -173,7 +173,7 @@ histos['Bdir_eta'                  ] = ['Bdir_eta'                  , '', 30,   
 histos['Bdir_phi'                  ] = ['Bdir_phi'                  , '', 20, -np.pi, np.pi, 'B #phi from PV-SV direction'                                   ]
 histos['mcorr'                     ] = ['mcorr'                     , '', 50,      4,    15, 'm_{corr} (GeV)']                                                
 '''
-histos['decay_time_ps'             ] = ['decay_time_ps'             , '', 50,      0,    10, 't (ps)']                                                        
+#histos['decay_time_ps'             ] = ['decay_time_ps'             , '', 50,      0,    10, 't (ps)']                                                        
 histos['ip3d'                      ] = ['ip3d'                      , '', 50,  -0.05,  0.05, '#mu_{3} IP3D(vtx_{J/#Psi}) (cm)']                               
 #histos['ip3d_e_corr'               ] = ['ip3d_e_corr'               , '', 50,      0,  0.01, 'corrected #mu_{3} IP3D(vtx_{J/#Psi}) unc. (cm)']                
 #histos['ip3d_sig_corr'             ] = ['ip3d_sig_corr'             , '', 50,     -5,     5, 'corrected #mu_{3} IP3D(vtx_{J/#Psi}) significance'             ]

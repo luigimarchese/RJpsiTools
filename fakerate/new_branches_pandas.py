@@ -3,7 +3,7 @@ from uproot_methods import TLorentzVectorArray
 
 def to_define(df):
     df['ip3d_sig'                  ] = df['ip3d']/df['ip3d_e']
-    df['decay_time_ps'             ] = df['decay_time'] * 1e12
+    #df['decay_time_ps'             ] = df['decay_time'] * 1e12
     df['abs_mu1_dxy'               ] = abs(df['mu1_dxy'])
     df['abs_mu2_dxy'               ] = abs(df['mu2_dxy'])
     df['mu1_dxy_sig'               ] = abs(df['mu1_dxy']//df['mu1_dxyErr'])
@@ -45,8 +45,8 @@ def to_define(df):
     df['m13'                       ] = (mu1_p4+mu3_p4).mass
 
     #df['bct'                       ] = df['bvtx_lxy*6.275/Bpt_reco'                                      
-    #df['jpsiK_p4'                  ] = df['mu1_p4+mu2_p4+kaon_p4'                                        
-    #df['jpsiK_mass'                ] = df['jpsiK_p4.mass()'                                              
+    jpsiK_p4                         = mu1_p4+mu2_p4+k_p4
+    df['jpsiK_mass'                ] = jpsiK_p4.mass
     #df['jpsiK_pt'                  ] = df['jpsiK_p4.pt()'                                                
     #df['jpsiK_eta'                 ] = df['jpsiK_p4.eta()'                                               
     #df['jpsiK_phi'                 ] = df['jpsiK_p4.phi()'                                               
