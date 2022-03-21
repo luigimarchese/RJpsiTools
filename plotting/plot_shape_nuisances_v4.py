@@ -9,7 +9,7 @@ from officialStyle import officialStyle
 from samples import sample_names, sample_names_explicit_all, sample_names_explicit_jpsimother_compressed
 from cmsstyle import CMS_lumi
 import os
-from histos import histos
+from histos import histos, histos_hm
 import numpy as np
 
 ROOT.gROOT.SetBatch()   
@@ -122,6 +122,7 @@ def plot_shape_nuisances(histos_folder, variable, channel, sample_names=sample_n
                     if sname != 'jpsi_tau' and sname != 'jpsi_mu':
                         continue
 
+                        
                 # Only Bc datasets have the ctau systematics
                 if syst in ctau_syst:
                     if sname == 'jpsi_x' or 'jpsi_x_mu' in sname:
@@ -136,6 +137,8 @@ def plot_shape_nuisances(histos_folder, variable, channel, sample_names=sample_n
                     # only single bbb
                     if len(which_sample_single_bbb)>=1:
                         #print("yes",which_sample_single_bbb[int(syst.replace('bbb','').replace(channel,''))-1], sname)
+                        if which_sample_single_bbb[int(syst.replace('bbb','').replace(channel,''))-1] == None:
+                            continue
                         if not 'jpsi_x_mu_from_'+which_sample_single_bbb[int(syst.replace('bbb','').replace(channel,''))-1] == sname:
                             continue
                         else:
@@ -157,11 +160,20 @@ def plot_shape_nuisances(histos_folder, variable, channel, sample_names=sample_n
                     histo_down.SetBinError(i,his_down.GetBinError(i))
                 maxx.append(histo_down.GetMaximum())
                 
+                if syst in hammer_syst:
+                    int_value = ROOT.TPaveText(0.7, 0.65, 0.88, 0.72, 'nbNDC')
+                    int_value.AddText('int up = %.2f int down = %.2f int cent = %.2f' %(histo_up.Integral(),histo_down.Integral(), histo_central.Integral()))
+                    int_value.SetFillColor(0)
+                    int_value.Draw('EP')
+
                 if path == '/work/friti/rjpsi_tools/CMSSW_10_6_14/src/RJpsiTools/plotting/multi_plots/':
                     histo_central.SetTitle(';Unrolled 2D bins;events')
                 else:
-                    histo_central.SetTitle(';'+histos[variable][1]+';events')
-                    
+                    try:
+                        histo_central.SetTitle(';'+histos[variable][1]+';events')
+                    except:
+                        histo_central.SetTitle(';'+histos_hm[variable][1]+';events')
+                        
                 histo_central.SetLineColor(ROOT.kBlack)
                 histo_central.SetMarkerStyle(8)
                 histo_central.SetMarkerColor(ROOT.kBlack)
@@ -182,9 +194,9 @@ def plot_shape_nuisances(histos_folder, variable, channel, sample_names=sample_n
                 leg.SetFillStyle(0)
                 leg.SetTextFont(42)
                 leg.SetTextSize(0.035)
-                leg.AddEntry(histo_central, 'central value',  'EP')
-                leg.AddEntry(histo_up, 'up value',  'EP')
-                leg.AddEntry(histo_down, 'down value',  'EP')
+                leg.AddEntry(histo_central, 'central value %f'%histo_central.Integral(),  'EP')
+                leg.AddEntry(histo_up, 'up value %f'%histo_up.Integral(),  'EP')
+                leg.AddEntry(histo_down, 'down value %f'%histo_down.Integral(),  'EP')
                 leg.Draw('same')
                 
                 CMS_lumi(c3, 4, 0, cmsText = 'CMS', extraText = ' Work in Progress', lumi_13TeV = 'L = 59.7 fb^{-1}', verbose = False)

@@ -48,7 +48,7 @@ def norm_nuisances(f, channel, histos, jpsi_split):
         elif histo == 'fakes':
             ctau_string    += ' - '
             pu_string      += ' - '
-            fakes_lm_string   += ' 1.5 '
+            fakes_lm_string   += ' 1.1 '
             fakes_hm_string   += ' 1.5 '
             trigger_string += ' - '
         elif histo == 'jpsi_x_mu' and jpsi_split:
@@ -174,6 +174,8 @@ def bbb_single_nuisances(f, channel, histos, which_sample_bbb_unc):
     nbins = histos['data'].GetNbinsX()
 
     for i,sample in enumerate(which_sample_bbb_unc):
+        if sample == None:
+            continue
         string = 'jpsi_x_mu_from_%s_single_bbb%d%s shape '%(sample,i+1,channel)
         for histo in histos:
             if histo == 'data':
