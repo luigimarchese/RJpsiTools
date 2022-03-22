@@ -9,7 +9,7 @@ import numpy as np
 ROOT.gROOT.SetBatch()   
 ROOT.gStyle.SetOptStat(0)
 
-def shape_comparison(histos_original, histos_folder, variable, channel, sample_names=sample_names, path = '/work/friti/rjpsi_tools/CMSSW_10_6_14/src/RJpsiTools/plotting/plots_ul/', verbose = False):
+def shape_comparison(histos_original, histos_folder, variable, channel, sample_names=sample_names, path = '/work/lmarches/CMS/RJPsi_Tools/CMSSW_10_6_14/src/RJpsiTools/plotting/plots_ul/', verbose = False):
 
     #print("#######################  "+channel+ "  #####################")
     # output folder

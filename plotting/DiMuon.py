@@ -51,23 +51,25 @@ def get_DiMuonBkg(selection, var_index):
     print("==================================")
     print("regions: ", regions)
 
-    sanitycheck                   = False
+    sanitycheck                           = False
     
-    #hists                        = {}
-    Q2hist                        = {}
-    Q2_extrap_hist                = {}
-    m_miss_extrap_hist            = {}
-    pt_var_extrap_hist            = {}
-    pt_miss_vec_extrap_hist       = {}
-    pt_miss_scal_extrap_hist      = {}
-    m_miss_extrap_hist            = {}
-    JpsimassShape                 = {}
-    Jpsimass                      = {}
-    JpsimassSB                    = {}
-    JpsimassLSB                   = {}
-    Q2LSBcanvas                   = {}
-    Q2_extrapcanvas               = {}
-    DimuonShape                   = {}
+    #hists                                = {}
+    Q2hist                                = {}
+    Q2_extrap_hist                        = {}
+    m_miss_extrap_hist                    = {}
+    pt_var_extrap_hist                    = {}
+    pt_miss_vec_extrap_hist               = {}
+    pt_miss_scal_extrap_hist              = {}
+    m_miss_extrap_hist                    = {}
+    jpsivtx_log10_lxy_sig_estrap_hist     = {}
+    JpsimassShape                         = {}
+    Jpsimass                              = {}
+    JpsimassSB                            = {}
+    JpsimassLSB                           = {}
+    Q2LSBcanvas                           = {}
+    Q2_extrapcanvas                       = {}
+    DimuonShape                           = {}
+    
     
     ######################
     ##### Defintions #####
@@ -85,7 +87,14 @@ def get_DiMuonBkg(selection, var_index):
     '''for s in ["SBs"]:
     filterLSB = ' & '.join([preselectionLSB, pass_id])
     hists[s] = dataframe[s].Filter(filterLSB).Histo1D(('Q2LSB%s'%s,"Q2LSB;  q^{2} [GeV^{2}]; Events/0.5 GeV",24,0,10.5),"Q_sq")'''
-    
+
+    #define new columns
+    for s in ["SR", "SBs"]:
+        for new_column, new_definition in to_define: 
+            if dataframe[s].HasColumn(new_column):
+                continue       
+            dataframe[s] = dataframe[s].Define(new_column, new_definition)
+        
     ### Get the relevant histos and information from the DataFrames  ###
     
     ### Get the histo with the full invariant-mass distribution to extract the Dimuon shape ###
@@ -199,6 +208,10 @@ def get_DiMuonBkg(selection, var_index):
         dataframe["SBs"] = dataframe["SBs"].Filter(filterLSB).Define("pt_miss_scal_extrap", "SB_extrap(Bpt_reco, 4, Jpsi_scale, mu1pt, mu1eta, mu1phi, mu1mass, mu2pt, mu2eta, mu2phi, mu2mass, kpt, keta, kphi, kmass)")
         pt_miss_extrap_hist["SBs"] = dataframe["SBs"].Filter(filterLSB).Histo1D(("pt_miss_scalLSB_extrap","pt_miss_scal_extrap;  scalar p_{T}^{miss} [GeV];",60,-10,50),"pt_miss_scal_extrap")
         DimuonShape = pt_miss_scal_extrap_hist["SBs"].GetValue()
+    elif var_index == 5:
+        # This is the variable to be used for the HM (channel 3, pass,  and channel 4, fail). Since it's a vertex variable, the extrapolation from SB to SR with the techinque is not needed. Indeed, this extrapolation rescales the mass part of the 4-momentum of the Jpsi 4-momentum. Since vertex variables are not touched, we can simply move the variable from the SB to the SR.
+        jpsivtx_log10_lxy_sig_estrap_hist["SBs"] = dataframe["SBs"].Filter(filterLSB).Histo1D(("jpsivtx_log10_lxy_sigLSB_extrap","jpsivtx_log10_lxy_sig_extrap; log_{10} vtx(#mu_{1}, #mu_{2}) L_{xy}/#sigma_{L_{xy}};",20,-1,1),"jpsivtx_log10_lxy_sig")
+        DimuonShape = jpsivtx_log10_lxy_sig_estrap_hist["SBs"].GetValue()
         
     if(sanitycheck):
         Q2_extrapcanvas = TCanvas("Q2_extrapcanvasc", "Q2_extrapcanvasc")
@@ -360,7 +373,8 @@ def get_DiMuonBkg(selection, var_index):
         #CompletePDF.Draw("SAME")
         
     Normalization = NBkg.getVal()/DimuonShape.Integral()
-    DimuonShape.GetValue().Scale(Normalization)
+    #DimuonShape.GetValue().Scale(Normalization)
+    DimuonShape.Scale(Normalization)
     if(sanitycheck):
         print("Dimuon Normalization: ",  Normalization)
         DiMuonShapeCanvas = TCanvas("DiMuonShapeCanvas", "DiMuonShapeCanvas", 0, 0, 700, 700)
