@@ -4,6 +4,7 @@ This script does the final histograms for the fit for the rjpsi analysis
  - Computes the shape uncertainties
  - Multiplies the veSsamplesnts for all the weights
  - Saves png, pdf and .root files with the histos in pass and fail regions + all the shape nuisances
+
 Difference from _v14:
 - deleted all the options to have different weights from different NN for the fakes: we decided to use the same NN for both contributions (data and MC)
 Difference from _v13:
