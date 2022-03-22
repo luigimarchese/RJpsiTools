@@ -211,7 +211,7 @@ def get_DiMuonBkg(selection, var_index):
     elif var_index == 5:
         # This is the variable to be used for the HM (channel 3, pass,  and channel 4, fail). Since it's a vertex variable, the extrapolation from SB to SR with the techinque is not needed. Indeed, this extrapolation rescales the mass part of the 4-momentum of the Jpsi 4-momentum. Since vertex variables are not touched, we can simply move the variable from the SB to the SR.
         jpsivtx_log10_lxy_sig_estrap_hist["SBs"] = dataframe["SBs"].Filter(filterLSB).Histo1D(("jpsivtx_log10_lxy_sigLSB_extrap","jpsivtx_log10_lxy_sig_extrap; log_{10} vtx(#mu_{1}, #mu_{2}) L_{xy}/#sigma_{L_{xy}};",20,-1,1),"jpsivtx_log10_lxy_sig")
-        DimuonShape = jpsivtx_log10_lxy_sig_estrap_hist["SBs"].GetValue()
+        DimuonShape = jpsivtx_log10_lxy_sig_estrap_hist["SBs"]
         
     if(sanitycheck):
         Q2_extrapcanvas = TCanvas("Q2_extrapcanvasc", "Q2_extrapcanvasc")

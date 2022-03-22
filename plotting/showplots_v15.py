@@ -76,7 +76,7 @@ print(preselection)
 shape_nuisances = True
 flat_fakerate = False # false mean that we use the NN weights for the fr
 add_dimuon = True
-compute_dimuon = False
+compute_dimuon = True
 
 compute_sf_onlynorm = False # compute only the sf normalisation (best case)
 blind_analysis = True
@@ -744,24 +744,26 @@ if __name__ == '__main__':
                     #        temp_hists_fake_nn[k]['%s_%s' %(k, kk)] = vv.Filter(fail_id).Histo1D(v[0], k, 'total_weight_wfr_norm')
                     #else:
                     temp_hists_fake_nn[k]['%s_%s' %(k, kk)] = vv.Filter(fail_id).Histo1D(v[0], k, 'total_weight_wfr')
+
             # Di muon bkg
-            if k == 'Q_sq': #changed 15_03_2022
-                if add_dimuon: #changed with moving if k ==  'Q_sq':  later, 15_03_2022
-                    if compute_dimuon:
-                        if not iteration:
+            #print("CIAO",add_dimuon,iteration,k)
+            if add_dimuon: #changed with moving if k ==  'Q_sq':  later, 15_03_2022
+                if not iteration:
+                    if k == 'Q_sq': #changed 15_03_2022
+                        if compute_dimuon:
                             print("Doing the Dimuon",k)
                             temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(pass_id+" & Bmass<6.3 & Q_sq>5.5", 0)
                             temp_hists_fake[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass<6.3 & Q_sq>5.5", 0)
                             if not flat_fakerate:
                                 temp_hists_fake_nn[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass<6.3 & Q_sq>5.5", 0)
-            if k == 'jpsivtx_log10_lxy_sig':  #changed from this line 15_03_2022 up to
-                if compute_dimuon:
-                    if iteration:
-                        print("Doing the Dimuon",k)
-                        temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(pass_id+" & Bmass>6.3", 5)
-                        temp_hists_fake[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass>6.3", 5)
-                        if not flat_fakerate:
-                            temp_hists_fake_nn[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass>6.3", 5)  #changed up to this line 15_03_2022
+                if iteration:
+                    if k == 'jpsivtx_log10_lxy_sig':  #changed from this line 15_03_2022 up to
+                        if compute_dimuon:
+                            print("Doing the Dimuon",k)
+                            temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(pass_id+" & Bmass>6.3", 5)
+                            temp_hists_fake[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass>6.3", 5)
+                            if not flat_fakerate:
+                                temp_hists_fake_nn[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass>6.3", 5)  #changed up to this line 15_03_2022
                         #else:
                         #take it from a file
                         
@@ -887,11 +889,12 @@ if __name__ == '__main__':
 
             c1.cd()
             # add also comb bkg histos
-            if add_dimuon:
+            if add_dimuon and ((not iteration and k=='Q_sq') or (iteration and k=='jpsivtx_log10_lxy_sig')):
                 samples_for_legend = [str(k) for k in samples]+['dimuon']
             else:
                 samples_for_legend = [str(k) for k in samples]
 
+            #print("CIAO2",k,temp_hists, samples_for_legend)
             leg = create_legend(temp_hists, samples_for_legend, titles)
             main_pad.cd()
             main_pad.SetLogy(False)

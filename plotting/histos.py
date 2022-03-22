@@ -2,15 +2,15 @@ import ROOT
 import numpy as np
 
 histos_hm = dict()
-histos_hm['Bmass'                     ] = (ROOT.RDF.TH1DModel('Bmass'                     , '', 1,      6.3,    10), '3#mu mass (GeV)'                                               , 0)
 histos_hm['jpsivtx_log10_lxy_sig'     ] = (ROOT.RDF.TH1DModel('jpsivtx_log10_lxy_sig'     , '', 20,     -1,     1), 'log_{10} vtx(#mu_{1}, #mu_{2}) L_{xy}/#sigma_{L_{xy}}'         , 1)
+histos_hm['Bmass'                     ] = (ROOT.RDF.TH1DModel('Bmass'                     , '', 1,      6.3,    10), '3#mu mass (GeV)'                                               , 0)
 histos_hm['norm'                      ] = (ROOT.RDF.TH1DModel('norm'                      , '',  1,      0,     1), 'normalisation'                                                 , 0)
 
 histos = dict()   
 
 #histos['Q_sq'                      ] = (ROOT.RDF.TH1DModel('Q_sq'                      , '', 15,      5.5,    10), 'q^{2} (GeV^{2})'                                               , 0)
 histos['Q_sq'                      ] = (ROOT.RDF.TH1DModel('Q_sq'                      , '', 20,      5.5,    10), 'q^{2} (GeV^{2})'                                               , 0)
-
+'''
 histos['mez_min'                      ] = (ROOT.RDF.TH1DModel('mez_min'                      , '', 30,      -70,    70), 'min #nu pz [GeV] '                                               , 0)
 histos['mez_max'                      ] = (ROOT.RDF.TH1DModel('mez_max'                      , '', 30,      -70,    70), 'max #nu pz [GeV]'                                               , 0)
 
@@ -237,6 +237,7 @@ histos['ip3d_sig'                  ] = (ROOT.RDF.TH1DModel('ip3d_sig'           
 
 #histos['bdt'                   ] = (ROOT.RDF.TH1DModel('bdt_v4'                   , '', 15,      0.,     0.95), 'BDT '                                                , 0)
 histos['bdt_tau_fakes_v6'                   ] = (ROOT.RDF.TH1DModel('bdt_tau_fakes_v6'                   , '', 15,      0.,     1), 'BDT #tau vs fakes'                                                , 0)
-#histos['bdt_mu_v1'                   ] = (ROOT.RDF.TH1DModel('bdt_mu_v1'                   , '', 15,      0.,     1), 'BDT #mu vs fakes'                                                , 0)
+#histos['bdt_mu_v1'                   ] = (ROOT.RDF.TH1DModel('bdt_mu_v1'                   , '', 15,      0.,     1), 'BDT #mu vs fakes'                                               , 0)
+'''
 histos['bdt_tau_mu_v2'                   ] = (ROOT.RDF.TH1DModel('bdt_tau_mu_v2'                   , '', 15,      0.,     1), 'BDT #tau vs #mu'                                                , 0)
 histos['norm'                      ] = (ROOT.RDF.TH1DModel('norm'                      , '',  1,      0,     1), 'normalisation'                                                 , 0)
