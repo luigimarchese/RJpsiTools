@@ -17,7 +17,7 @@ ROOT.gStyle.SetOptStat(0)
 
 sfrange = 16
 
-def plot_shape_nuisances(histos_folder, variable, channel, sample_names=sample_names, which_sample_single_bbb =[], plot3d = False, fakes = True, path = '/work/friti/rjpsi_tools/CMSSW_10_6_14/src/RJpsiTools/plotting/plots_ul/', compute_sf = False, verbose = False, compute_sf_onlynorm = False):
+def plot_shape_nuisances(histos_folder, variable, channel, sample_names=sample_names, which_sample_single_bbb =[], plot3d = False, fakes = True, path = '/work/lmarches/CMS/RJPsi_Tools/CMSSW_10_6_14/src/RJpsiTools/plotting/plots_ul/', compute_sf = False, verbose = False, compute_sf_onlynorm = False):
 
     '''
     Function that plots the systematic shape uncertainties in a root file.

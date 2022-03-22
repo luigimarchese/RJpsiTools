@@ -75,7 +75,7 @@ print(preselection)
 
 shape_nuisances = True
 flat_fakerate = False # false mean that we use the NN weights for the fr
-add_dimuon = False
+add_dimuon = True
 compute_dimuon = False
 
 compute_sf_onlynorm = False # compute only the sf normalisation (best case)
@@ -745,17 +745,25 @@ if __name__ == '__main__':
                     #else:
                     temp_hists_fake_nn[k]['%s_%s' %(k, kk)] = vv.Filter(fail_id).Histo1D(v[0], k, 'total_weight_wfr')
             # Di muon bkg
-            if k == 'Q_sq':
-                if add_dimuon:
+            if k == 'Q_sq': #changed 15_03_2022
+                if add_dimuon: #changed with moving if k ==  'Q_sq':  later, 15_03_2022
                     if compute_dimuon:
-                        print("Doing the Dimuon",k)
                         if not iteration:
+                            print("Doing the Dimuon",k)
                             temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(pass_id+" & Bmass<6.3 & Q_sq>5.5", 0)
                             temp_hists_fake[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass<6.3 & Q_sq>5.5", 0)
                             if not flat_fakerate:
                                 temp_hists_fake_nn[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass<6.3 & Q_sq>5.5", 0)
-                    #else:
-                    #take it from a file
+            if k == 'jpsivtx_log10_lxy_sig':  #changed from this line 15_03_2022 up to
+                if compute_dimuon:
+                    if iteration:
+                        print("Doing the Dimuon",k)
+                        temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(pass_id+" & Bmass>6.3", 5)
+                        temp_hists_fake[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass>6.3", 5)
+                        if not flat_fakerate:
+                            temp_hists_fake_nn[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass>6.3", 5)  #changed up to this line 15_03_2022
+                        #else:
+                        #take it from a file
                         
                 '''if iteration:
                     temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(pass_id+" & Bmass>6.3", 0)
