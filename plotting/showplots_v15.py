@@ -752,18 +752,18 @@ if __name__ == '__main__':
                     if k == 'Q_sq': #changed 15_03_2022
                         if compute_dimuon:
                             print("Doing the Dimuon",k)
-                            temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(pass_id+" & Bmass<6.3 & Q_sq>5.5", 0)
-                            temp_hists_fake[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass<6.3 & Q_sq>5.5", 0)
+                            temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(pass_id+" & Bmass<6.3 & Q_sq>5.5", 0, 0)
+                            temp_hists_fake[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass<6.3 & Q_sq>5.5", 0, 1)
                             if not flat_fakerate:
-                                temp_hists_fake_nn[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass<6.3 & Q_sq>5.5", 0)
+                                temp_hists_fake_nn[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass<6.3 & Q_sq>5.5", 0, 0)
                 if iteration:
                     if k == 'jpsivtx_log10_lxy_sig':  #changed from this line 15_03_2022 up to
                         if compute_dimuon:
                             print("Doing the Dimuon",k)
-                            temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(pass_id+" & Bmass>6.3", 5)
-                            temp_hists_fake[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass>6.3", 5)
+                            temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(pass_id+" & Bmass>6.3", 5, 0)
+                            temp_hists_fake[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass>6.3", 5, 1)
                             if not flat_fakerate:
-                                temp_hists_fake_nn[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass>6.3", 5)  #changed up to this line 15_03_2022
+                                temp_hists_fake_nn[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass>6.3", 5, 0)  #changed up to this line 15_03_2022
                         #else:
                         #take it from a file
                         
