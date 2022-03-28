@@ -41,6 +41,7 @@ def norm_nuisances(f, channel, histos, jpsi_split):
     pu_string   = 'puWeight shape '
     fakes_lm_string = 'fake_rate_lm lnN '
     fakes_hm_string = 'fake_rate_hm lnN '
+    dimuon_string = 'dimuon_norm lnN '
     trigger_string = 'trigger lnN '
     for i,histo in enumerate(histos):
         if histo == 'data':
@@ -51,6 +52,15 @@ def norm_nuisances(f, channel, histos, jpsi_split):
             fakes_lm_string   += ' 1.1 '
             fakes_hm_string   += ' 1.5 '
             trigger_string += ' - '
+            dimuon_string += ' - '
+        elif histo == 'dimuon':
+            ctau_string    += ' - '
+            pu_string      += ' - '
+            fakes_lm_string   += ' - '
+            fakes_hm_string   += ' - '
+            trigger_string += ' - '
+            dimuon_string += ' 0.1 '
+
         elif histo == 'jpsi_x_mu' and jpsi_split:
             continue
         elif'jpsi_x_mu' in histo:
@@ -59,15 +69,18 @@ def norm_nuisances(f, channel, histos, jpsi_split):
             fakes_lm_string   += ' - '
             fakes_hm_string   += ' - '
             trigger_string += ' 1.05 '
+            dimuon_string += ' - '
         else:
             ctau_string    += ' 1 '
             pu_string      += ' 1 '
             fakes_lm_string   += ' - '
             fakes_hm_string   += ' - '
             trigger_string += ' 1.05 '
+            dimuon_string += ' - '
 
     f.write(" %s \n"%ctau_string)
     f.write(" %s  \n"%pu_string)
+    f.write(" %s  \n"%dimuon_string)
     if channel == 'ch1' or channel == 'ch3':
         f.write(" %s  \n"%fakes_lm_string)
     #elif  channel == 'ch3':
@@ -202,7 +215,7 @@ def sf_nuisances(f, channel, histos, sfReco_nuisances, sfIdjpsi_nuisances, sfIdk
             string_id_jpsi += ' %s '%sfIdjpsi_nuisances['jpsi_x_mu']
             string_id_k += ' %s '%sfIdk_nuisances['jpsi_x_mu']
             string_reco += ' %s '%sfReco_nuisances['jpsi_x_mu']
-        elif histo == 'fakes':
+        elif histo == 'fakes' or histo == 'dimuon':
             string_id_jpsi += ' - '
             string_id_k += ' - '
             string_reco += ' - '

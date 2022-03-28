@@ -63,7 +63,10 @@ parser = ArgumentParser()
 
 parser.add_argument('--asimov' ,default = False,action='store_true', help='Default makes no asimov')
 parser.add_argument('--label', default='%s'%(datetime.now().strftime('%d%b%Y_%Hh%Mm%Ss')),help='addition to the preselection')
-parser.add_argument('--preselection_plus', default='Q_sq>5.5',help='addition to the preselection')
+parser.add_argument('--preselection_plus', default='jpsivtx_svprob>1e-2',help='addition to the preselection')
+parser.add_argument('--add_dimuon' ,default = False,action='store_true', help='Default doesnt add dimuon')
+parser.add_argument('--compute_dimuon' ,default = False,action='store_true', help='Default doesnt compute dimuon; it works only if add_dimuon is True')
+parser.add_argument('--dimuon_load', default='24Mar2022_15h29m26s',help='if add_dimuon== True and compute_dimuon==False, this is used to load the dimuon shapes from somewhere')
 
 args = parser.parse_args()
 
@@ -75,12 +78,14 @@ print(preselection)
 
 shape_nuisances = True
 flat_fakerate = False # false mean that we use the NN weights for the fr
-add_dimuon = True
-compute_dimuon = True
 
 compute_sf_onlynorm = False # compute only the sf normalisation (best case)
 blind_analysis = True
 rjpsi = 1
+
+add_dimuon = args.add_dimuon
+compute_dimuon = args.compute_dimuon
+dimuon_load = args.dimuon_load
 
 asimov = args.asimov
 print(type(asimov),asimov)
@@ -136,6 +141,8 @@ def make_directories(label):
         os.system('mkdir -p plots_ul/%s/%s/png/log/' %(label,ch))
     
     os.system('mkdir -p plots_ul/%s/datacards/' %label)
+    if compute_dimuon:
+        os.system('mkdir -p plots_ul/%s/dimuon/' %label)
 
 def save_yields(label, temp_hists):
     with open('plots_ul/%s/yields.txt' %label, 'w') as ff:
@@ -175,8 +182,10 @@ def create_legend(temp_hists, sample_names, titles):
     for kk in sample_names:
         if jpsi_x_mu_split_jpsimother:
             if kk == 'jpsi_x_mu': continue
-            
-        leg.AddEntry(temp_hists[k]['%s_%s' %(k, kk)].GetValue(), titles[kk], 'F' if kk!='data' else 'EP')
+        if kk == 'dimuon':
+            leg.AddEntry(temp_hists[k]['%s_%s' %(k, kk)], titles[kk], 'F' if kk!='data' else 'EP')
+        else:
+            leg.AddEntry(temp_hists[k]['%s_%s' %(k, kk)].GetValue(), titles[kk], 'F' if kk!='data' else 'EP')
             
     return leg
 
@@ -213,7 +222,7 @@ def create_datacard_prep(hists, shape_hists, shapes_names, sample_names, channel
                 hh.SetName(sname + '_'+channel)
                 hh.Write()
 
-    if not add_dimuon:
+    if not add_dimuon or add_dimuon:
         if only_pass: #the rate of fakes must be == integral in case of only pass category fit, while ==1 in case of two regions
             if channel == 'ch1' :
                 create_datacard_ch1_onlypass(label, name, myhists,False, jpsi_x_mu_samples, which_sample_bbb_unc)
@@ -752,18 +761,68 @@ if __name__ == '__main__':
                     if k == 'Q_sq': #changed 15_03_2022
                         if compute_dimuon:
                             print("Doing the Dimuon",k)
-                            temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(pass_id+" & Bmass<6.3 & Q_sq>5.5", 0, 0)
-                            temp_hists_fake[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass<6.3 & Q_sq>5.5", 0, 1)
+                            temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(pass_id+" & Bmass<6.3 & Q_sq>5.5 &"+args.preselection_plus, 0, 0, label, 'ch1').GetValue()
+                            temp_hists_fake[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass<6.3 & Q_sq>5.5 & "+args.preselection_plus, 0, 0, label, 'ch2_flat').GetValue()
                             if not flat_fakerate:
-                                temp_hists_fake_nn[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass<6.3 & Q_sq>5.5", 0, 0)
+                                temp_hists_fake_nn[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass<6.3 & Q_sq>5.5 &"+args.preselection_plus, 0, 1, label, 'ch2').GetValue()
+                            #save them on file
+                            fout = ROOT.TFile.Open('plots_ul/%s/dimuon/dimuon_%s.root' %(label, k), 'UPDATE')
+                            fout.cd()
+                            temp_hists[k]['%s_dimuon'%k].SetName("dimuon_ch1")
+                            temp_hists[k]['%s_dimuon'%k].Write()
+                            temp_hists_fake[k]['%s_dimuon'%k].SetName("dimuon_ch2_flat")
+                            temp_hists_fake[k]['%s_dimuon'%k].Write()
+                            if not flat_fakerate:
+                                temp_hists_fake_nn[k]['%s_dimuon'%k].SetName("dimuon_ch2")
+                                temp_hists_fake_nn[k]['%s_dimuon'%k].Write()
+                            fout.Close()
+                        #take from file
+                        else:
+                            dimuon_path = 'plots_ul/'+dimuon_load+'/dimuon/'
+                            fdimuon = ROOT.TFile.Open(dimuon_path+"/dimuon_Q_sq.root","r")
+                            #a = ROOT.RDF.RResultPtr[ROOT.TH1D]()
+                            #a.GetValue() = f.Get("dimuon_ch1")
+                            #print(a,type(a))
+                            temp_hists[k]['%s_dimuon'%k] = fdimuon.Get("dimuon_ch1")
+                            temp_hists_fake[k]['%s_dimuon'%k] = fdimuon.Get("dimuon_ch2_flat")
+                            if not flat_fakerate:
+                                temp_hists_fake_nn[k]['%s_dimuon'%k] = fdimuon.Get("dimuon_ch2")
+
+                            print(temp_hists[k]['%s_dimuon'%k])
                 if iteration:
                     if k == 'jpsivtx_log10_lxy_sig':  #changed from this line 15_03_2022 up to
                         if compute_dimuon:
                             print("Doing the Dimuon",k)
-                            temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(pass_id+" & Bmass>6.3", 5, 0)
-                            temp_hists_fake[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass>6.3", 5, 1)
+                            temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(pass_id+" & Bmass>6.3 &"+args.preselection_plus, 5, 0, label, 'ch3').GetValue()
+                            temp_hists_fake[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass>6.3 &"+args.preselection_plus, 5, 0, label, 'ch4_flat').GetValue()
                             if not flat_fakerate:
-                                temp_hists_fake_nn[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass>6.3", 5, 0)  #changed up to this line 15_03_2022
+                                temp_hists_fake_nn[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass>6.3 &"+args.preselection_plus, 5, 1, label, 'ch4').GetValue()  
+                                                        #save them on file
+                            fout = ROOT.TFile.Open('plots_ul/%s/dimuon/dimuon_%s.root' %(label, k), 'UPDATE')
+                            fout.cd()
+                            temp_hists[k]['%s_dimuon'%k].SetName("dimuon_ch3")
+                            temp_hists[k]['%s_dimuon'%k].Write()
+                            temp_hists_fake[k]['%s_dimuon'%k].SetName("dimuon_ch4_flat")
+                            temp_hists_fake[k]['%s_dimuon'%k].Write()
+                            if not flat_fakerate:
+                                temp_hists_fake_nn[k]['%s_dimuon'%k].SetName("dimuon_ch4")
+                                temp_hists_fake_nn[k]['%s_dimuon'%k].Write()
+                            fout.Close()
+                        #take from file
+                        else:
+                            dimuon_path = 'plots_ul/'+dimuon_load+'/dimuon/'
+                            fdimuon = ROOT.TFile.Open(dimuon_path+"/dimuon_jpsivtx_log10_lxy_sig.root","r")
+                            #a = ROOT.RDF.RResultPtr[ROOT.TH1D]()
+                            #a.GetValue() = f.Get("dimuon_ch1")
+                            #print(a,type(a))
+                            temp_hists[k]['%s_dimuon'%k] = fdimuon.Get("dimuon_ch3")
+                            temp_hists_fake[k]['%s_dimuon'%k] = fdimuon.Get("dimuon_ch4_flat")
+                            if not flat_fakerate:
+                                temp_hists_fake_nn[k]['%s_dimuon'%k] = fdimuon.Get("dimuon_ch4")
+
+                            print(temp_hists[k]['%s_dimuon'%k])
+                            #f.Close()
+
                         #else:
                         #take it from a file
                         
@@ -932,14 +991,22 @@ if __name__ == '__main__':
                 ihist.Draw('hist' + 'same'*(i>0))
                 #print("Integral %s %f"%(key,ihist.Integral()))
                 if not jpsi_x_mu_split_jpsimother:
-                    ths1.Add(ihist.GetValue())
+                    if key=='%s_dimuon':
+                        ths1.Add(ihist)
+                    else:
+                        ths1.Add(ihist.GetValue())
+
                 else:
                     # if I want to explicitly see the splitting in the plots, I save them in ths1
                     #if jpsi_x_mu_explicit_show_on_plots: 
                     if key=='%s_jpsi_x_mu'%k: continue
-                    ths1.Add(ihist.GetValue())
+                    if key=='%s_dimuon'%k:
+                        ths1.Add(ihist)
+                    else:
+                        ths1.Add(ihist.GetValue())
             
             # apply same aestethics to pass and fail
+            print(temp_hists_fake[k])
             for kk in temp_hists[k].keys():
                 temp_hists_fake[k][kk].GetXaxis().SetTitle(temp_hists[k][kk].GetXaxis().GetTitle())
                 temp_hists_fake[k][kk].GetYaxis().SetTitle(temp_hists[k][kk].GetYaxis().GetTitle())
@@ -978,7 +1045,10 @@ if __name__ == '__main__':
                     #elif 'jpsi_x_mu_' in kv[0]: #if one of the splittings of jpsi_x_mu
                     #    continue
                 else:
-                    fakes_fail.Add(kv[1].GetPtr(), -1.)
+                    if 'dimuon' in kv[0]:
+                        fakes_fail.Add(kv[1], -1.)
+                    else:
+                        fakes_fail.Add(kv[1].GetPtr(), -1.)
                     
             # fakes from fail *NN
             if not flat_fakerate:
@@ -987,8 +1057,11 @@ if __name__ == '__main__':
                         kv[1].SetLineColor(ROOT.kBlack)
                         continue
                     else:
-                        fakes_failnn.Add(kv[1].GetPtr(), -1.)
-                        
+                        if 'dimuon'in kv[0]:
+                            fakes_failnn.Add(kv[1], -1.)
+                        else:
+                            fakes_failnn.Add(kv[1].GetPtr(), -1.)
+                                                    
             # choose which one goes to Pass region
             if not flat_fakerate:
                 #check fakes do not have <= 0 bins
@@ -1143,11 +1216,17 @@ if __name__ == '__main__':
                     ihist = kv[1]
                     #print("Integral %s %f"%(key,ihist.Integral()))
                     if not jpsi_x_mu_split_jpsimother:
-                        ths1_fake_nn.Add(ihist.GetValue())
+                        if key=='%s_dimuon'%k:
+                            ths1_fake_nn.Add(ihist)
+                        else:
+                            ths1_fake_nn.Add(ihist.GetValue())
                     else:
                         # if I want to explicitly see the splitting in the plots, I save them in ths1_fake_nn
                         if key=='%s_jpsi_x_mu'%k: continue
-                        ths1_fake_nn.Add(ihist.GetValue())
+                        if key=='%s_dimuon'%k:
+                            ths1_fake_nn.Add(ihist)
+                        else:
+                            ths1_fake_nn.Add(ihist.GetValue())
 
                 temp_hists_fake_nn[k]['%s_fakes' %k] = fakes_failnn.Clone()
                 ths1_fake_nn.Add(fakes_failnn.Clone())
@@ -1254,11 +1333,17 @@ if __name__ == '__main__':
                 ihist = kv[1]
                 #print("Integral %s %f"%(key,ihist.Integral()))
                 if not jpsi_x_mu_split_jpsimother:
-                    ths1_fake.Add(ihist.GetValue())
+                    if key=='%s_dimuon'%k:
+                        ths1_fake.Add(ihist)
+                    else:
+                        ths1_fake.Add(ihist.GetValue())
                 else:
                     # if I want to explicitly see the splitting in the plots, I save them in ths1_fake
                     if key=='%s_jpsi_x_mu'%k: continue
-                    ths1_fake.Add(ihist.GetValue())
+                    if key=='%s_dimuon'%k:
+                        ths1_fake.Add(ihist)
+                    else:
+                        ths1_fake.Add(ihist.GetValue())
 
             temp_hists_fake[k]['%s_fakes' %k] = fakes_fail.Clone()
             ths1_fake.Add(fakes_fail.Clone())
@@ -1356,7 +1441,9 @@ if __name__ == '__main__':
                 shape_comparison({'jpsi_mu':temp_hists[k]['%s_jpsi_mu' %k],'jpsi_tau':temp_hists[k]['%s_jpsi_tau' %k],"fakes":fakes},label, k, channels[0], [name for name,v in samples.items()], verbose = True)
             if channels[1] == 'ch2' and not flat_fakerate:
                 shape_comparison({'jpsi_mu':temp_hists_fake_nn[k]['%s_jpsi_mu' %k],'jpsi_tau':temp_hists_fake_nn[k]['%s_jpsi_tau' %k],"fakes":fakes_failnn},label, k, channels[1], [name for name,v in samples.items()], verbose = True)
-
+            
+            #try:
+            #    fdimuon.Close()
 
 
 save_yields(label, temp_hists)

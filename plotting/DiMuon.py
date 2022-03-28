@@ -34,8 +34,11 @@ from create_datacard_v3 import create_datacard_ch1, create_datacard_ch2, create_
 ROOT.ROOT.EnableImplicitMT()
 
 
-def get_DiMuonBkg(selection, var_index, isfail):
-    
+def get_DiMuonBkg(selection, var_index, isfail, label, channel):
+
+    if not os.path.exists('plots_ul/'+label+'/dimuon/'):
+        os.makedirs('plots_ul/'+label+'/dimuon/')
+
     tree_name = 'BTo3Mu'
     tree_dir = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_Dec2021/'
         
@@ -53,7 +56,7 @@ def get_DiMuonBkg(selection, var_index, isfail):
     print("==================================")
     print("regions: ", regions)
 
-    sanitycheck                           = False
+    sanitycheck                           = True
     
     #hists                                = {}
     Q2hist                                = {}
@@ -108,7 +111,7 @@ def get_DiMuonBkg(selection, var_index, isfail):
         SBMasscanvas = TCanvas("SBMassc", "SBMassc")
         SBMasscanvas.cd()
         JpsimassShape["SBs"].Draw("pe")
-        SBMasscanvas.Print('SBMasscanvas.png')
+        SBMasscanvas.Print('plots_ul/'+label+'/dimuon/SBMasscanvas_'+channel+'.png')
         
     ### LSB ###
     #filterLSB = ' & '.join([preselectionLSB, pass_id])
@@ -125,7 +128,7 @@ def get_DiMuonBkg(selection, var_index, isfail):
         Q2LSBcanvas = TCanvas("Q2LSBcan", "Q2LSBcan")
         Q2LSBcanvas.cd()
         Q2hist["SBs"].Draw("pe")
-        Q2LSBcanvas.Print('Q2LSBcan.png') 
+        Q2LSBcanvas.Print('plots_ul/'+label+'/dimuon/Q2LSBcan_'+channel+'.png') 
                 
         '''for s in ["SBs"]:
         Q2LSBcanvas[s] = TCanvas("Q2LSBc", "Q2LSBc")
@@ -143,7 +146,7 @@ def get_DiMuonBkg(selection, var_index, isfail):
         SRMasscanvas = TCanvas("SRMassc", "SRMassc")
         SRMasscanvas.cd()
         Jpsimass["SR"].Draw("pe")
-        SRMasscanvas.Print('SRMasscanvas.png')
+        SRMasscanvas.Print('plots_ul/'+label+'/dimuon/SRMasscanvas'+channel+'.png')
 
     ############################# 
     ####### Dimuon Shape  #######
@@ -233,8 +236,8 @@ def get_DiMuonBkg(selection, var_index, isfail):
     if(sanitycheck):
         Q2_extrapcanvas = TCanvas("Q2_extrapcanvasc", "Q2_extrapcanvasc")
         Q2_extrapcanvas.cd()
-        Q2_extrap_hist["SBs"].Draw("pe")
-        Q2_extrapcanvas.Print('Q2_extrapcanvas.png')
+        DimuonShape.Draw("pe")
+        Q2_extrapcanvas.Print('plots_ul/'+label+'/dimuon/Q2_extrapcanvas'+channel+'.png')
         
     #################################### 
     ####### Dimuon Normalization #######
@@ -291,14 +294,14 @@ def get_DiMuonBkg(selection, var_index, isfail):
     SBdataset   = ROOT.RooDataHist("SBdataset", "SBdataset", ROOT.RooArgList(massSB), HJpsimassSB)
     framemassSB = massSB.frame(ROOT.RooFit.Name(""), ROOT.RooFit.Title(""), ROOT.RooFit.Bins(200))
     SBdataset.plotOn(framemassSB,ROOT.RooFit.Binning(200, 2, 4),ROOT.RooFit.MarkerSize(1.5))
-    PDFSB.fitTo(SBdataset,ROOT.RooFit.Save(),RooFit.PrintLevel(-1),RooFit.PrintEvalErrors(-1))
+    PDFSB.fitTo(SBdataset,ROOT.RooFit.Save())#,RooFit.PrintLevel(-1),RooFit.PrintEvalErrors(-1))
 
     PDFSB.plotOn(framemassSB)
     if(sanitycheck):
         JpsiMassSBCanvas = TCanvas("FitShapeJpsiMassSB", "FitShapeJpsiMassSB")
         JpsiMassSBCanvas.cd()
         framemassSB.Draw()
-        JpsiMassSBCanvas.Print('FitShapeJpsiMassSB.png')
+        JpsiMassSBCanvas.Print('plots_ul/'+label+'/dimuon/FitShapeJpsiMassSB'+channel+'.png')
         
     BkgShapetoFix = bkgSlope.getVal()                                       
     if(sanitycheck):
@@ -310,7 +313,7 @@ def get_DiMuonBkg(selection, var_index, isfail):
     SRdataset.plotOn(framemass,ROOT.RooFit.Name("data"),ROOT.RooFit.Binning(200, 2, 4))
     bkgSlope.setConstant(ROOT.kTRUE)
     bkgSlope.setVal(BkgShapetoFix)
-    CompletePDF.fitTo(SRdataset,ROOT.RooFit.Save(),RooFit.PrintLevel(-1),RooFit.PrintEvalErrors(-1))
+    CompletePDF.fitTo(SRdataset,ROOT.RooFit.Save())#,RooFit.PrintLevel(-1),RooFit.PrintEvalErrors(-1))
     CompletePDF.plotOn(framemass)
     CompletePDF.plotOn(framemass,ROOT.RooFit.Components("Expo"),ROOT.RooFit.LineColor(ROOT.kGreen),ROOT.RooFit.FillColor(ROOT.kGreen),ROOT.RooFit.DrawOption("F"),ROOT.RooFit.MoveToBack())
     CompletePDF.plotOn(framemass,ROOT.RooFit.Components("CBall"),ROOT.RooFit.LineColor(ROOT.kGray),ROOT.RooFit.FillColor(ROOT.kGray),ROOT.RooFit.DrawOption("F"),ROOT.RooFit.MoveToBack())
@@ -387,7 +390,7 @@ def get_DiMuonBkg(selection, var_index, isfail):
         framemassPulls.Draw()
         #framemass.Draw()
         #Jpsimass["SR"].Draw("pe")
-        JpsiMassSRCanvas.Print('FitJpsiMassSR.png')
+        JpsiMassSRCanvas.Print('plots_ul/'+label+'/dimuon/FitJpsiMassSR'+channel+'.png')
         #CompletePDF.Draw("SAME")
         
     Normalization = NBkg.getVal()/DimuonShape.Integral()
@@ -398,7 +401,7 @@ def get_DiMuonBkg(selection, var_index, isfail):
         DiMuonShapeCanvas = TCanvas("DiMuonShapeCanvas", "DiMuonShapeCanvas", 0, 0, 700, 700)
         DiMuonShapeCanvas.cd()
         DimuonShape.GetValue().Draw("pe")
-        DiMuonShapeCanvas.Print('NormalizedDiMuonShape.png')
+        DiMuonShapeCanvas.Print('plots_ul/'+label+'/dimuon/NormalizedDiMuonShape'+channel+'.png')
     print("DiMuon done")
     return DimuonShape
                     
