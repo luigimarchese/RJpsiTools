@@ -100,7 +100,7 @@ ff_weights['jpsi_tau_bglvar_e10Down' ] = 1./0.554
 ff_weights['jpsi_mu_bglvar_e10Down'  ] = 1./0.603
 
 weights = dict()
-bc_weight = 0.09 *1.1 *1.04 * 0.85 * 0.9
+bc_weight = 0.09 *1.1 *1.04 * 0.85 * 0.9 
 #bc_weight = 0.15  #for prev ff_weights
 #bc_weight = 1.53 #for prev oct21
 fr = 0.19
@@ -225,7 +225,7 @@ colours['jpsi_x_mu_from_other'] = col2[8]
 colours['jpsi_x_mu_from_sigma'] = col2[6]
 colours['jpsi_x_mu_from_xi'] = col2[7]
 
-colours['dimuon'] = ROOT.kGreen+1
+colours['dimuon'] = col2[8]
 colours['jpsi_3pi'] = col2[6]
 colours['jpsi_pi'] = col2[7]
 
