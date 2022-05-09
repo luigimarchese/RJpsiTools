@@ -7,8 +7,7 @@ This script does the final histograms for the fit for the rjpsi analysis
 
 Difference from _v14:
 - deleted all the options to have different weights from different NN for the fakes: we decided to use the same NN for both contributions (data and MC)
-Difference from _v13:
-- all the fakes differences
+Difference from _v13:- all the fakes differences
 DIfference from _v12:
 - Now its plots always the ch2 and ch4 flat fakerate, even in flatfakerate == False
 - Deleted some options for jpsi_x_mu (like splitting into hm and lm)
@@ -23,8 +22,8 @@ Difference from _v5:
 Difference from _v4:
 - new option for jpsiXMu bkg to be splitted in the different contributions: 
    - FIXME: the datacard production gives an error: I will solve this when we have the new MC, because now we don't need that function
-
 '''
+
 #system
 import os
 import copy
@@ -365,9 +364,7 @@ ratio_pad.SetBottomMargin(0.45)
 
 if __name__ == '__main__':
     
-    #datacards = ['mu1pt', 'Q_sq', 'm_miss_sq', 'E_mu_star', 'E_mu_canc', 'bdt_tau', 'Bmass', 'mcorr', 'decay_time_ps','k_raw_db_corr_iso04_rel']
-    #datacards = ['Q_sq','jpsiK_mass','Bmass','bdt_tau']
-    datacards = ['Q_sq','Q_sq_jpsimcorr']#,'m_miss_sq']
+    datacards = ['Q_sq','Q_sq_jpsimcorr','Bpt_reco']
     #datacards = histos
 
     # timestamp
@@ -375,23 +372,14 @@ if __name__ == '__main__':
     # create plot directories
     make_directories(label)
     
-    #central_weights_string = 'ctau_weight_central*br_weight*puWeight*sf_reco_total*sf_id_jpsi*sf_id_k*jpsimass_weights_for_correction*mc_correction_pt0_weight'
-    central_weights_string = 'ctau_weight_central*br_weight*puWeight*sf_reco_total*sf_id_jpsi*sf_id_k*jpsimass_weights_for_correction'
+    central_weights_string = 'ctau_weight_central*br_weight*puWeight*sf_reco_total*sf_id_jpsi*sf_id_k*jpsimass_weights_for_correction*bc_mc_correction_weight_central' #the mc_correction_central weight is 1, added just to generalize the function for shape uncertainties
 
     # access the samples, via RDataFrames
     samples_orig = dict()
     samples_pres = dict()
     samples_lm = dict()
 
-    #if scale_mc_in_fail and compute_mean_weights:
-    #    mean_nn_data_weights_lm = dict()
-    #    mean_nn_mc_weights_lm = dict()
-
     tree_name = 'BTo3Mu'
-    #Different paths depending on the sample
-    #tree_dir = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2021May31_nn'
-    #tree_dir = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_Oct2021'
-    #tree_dir = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_Dec2021/smaller/'
     tree_dir = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_Dec2021/'
 
     print("=============================")
@@ -401,15 +389,6 @@ if __name__ == '__main__':
     #load the samples (jpsi_x_mu even if I want it splitted)
     for k in sample_names:
         samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_with_mc_corrections.root'%(tree_dir,k)) 
-        #samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_bdt_vv1.root'%(tree_dir,k)) 
-        #samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_with_mc_corrections.root'%(tree_dir,k)) 
-        #samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_prepresel.root'%(tree_dir,k)) 
-        #samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_bdt_comb.root'%(tree_dir,k)) 
-        #if k!='data':
-        #    samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_sf_werrors.root'%(tree_dir,k)) 
-        #else: 
-        #    samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_fakerate.root'%(tree_dir,k)) 
-        #print("Loading sample %s/%s_prepresel.root"%(tree_dir,k))    
 
     #Blind analysis: hide the value of rjpsi for the fit
     if blind_analysis:
@@ -424,8 +403,9 @@ if __name__ == '__main__':
     #################################################
     ####### Weights ################################
     #################################################
-    
-    correction_weight = 'mc_correction_pteta_weight'
+
+    '''
+    correction_weight = 'mc_correction_gen_eta_weight'
     for k, v in samples_orig.items():
         #print(k)
         samples_orig[k] = samples_orig[k].Define('br_weight', '%f' %weights[k])
@@ -440,7 +420,7 @@ if __name__ == '__main__':
         else:
             samples_orig[k] = samples_orig[k].Define('tmp_weight', central_weights_string  if k!='data' else 'br_weight') 
         '''
-        for k, v in samples_orig.items():
+    for k, v in samples_orig.items():
         #print(k)
         samples_orig[k] = samples_orig[k].Define('br_weight', '%f' %weights[k])
         if k=='jpsi_tau':
@@ -451,7 +431,7 @@ if __name__ == '__main__':
             samples_orig[k] = samples_orig[k].Define('tmp_weight', central_weights_string +'*jpsimother_weight')
         else:
             samples_orig[k] = samples_orig[k].Define('tmp_weight', central_weights_string  if k!='data' else 'br_weight') 
-        '''
+            
 
         #define new columns   
         for new_column, new_definition in to_define: 
@@ -640,7 +620,15 @@ if __name__ == '__main__':
                     if (sname != 'data'):
                         shapes[sname + '_sfIdJpsiUp'], shapes[sname + '_sfIdJpsiDown'] = define_shape_nuisances(sname, shapes, samples, 'sfIdJpsi', 'sf_id_jpsi', 'sf_id_all_jpsi_up', 'sf_id_all_jpsi_down', central_weights_string)
                         shapes[sname + '_sfIdkUp'], shapes[sname + '_sfIdkDown'] = define_shape_nuisances(sname, shapes, samples, 'sfIdk', 'sf_id_k', 'sf_id_all_k_up', 'sf_id_all_k_down', central_weights_string)
+            
 
+                ######################################
+                ########  MC CORRECTIONS  ############
+                ######################################
+                if ('jpsi_x_mu' not in sname and sname != 'data' ):    #Only Bc samples want this nuisance
+                    shapes[sname + '_bccorrUp'], shapes[sname + '_bccorrDown'] = define_shape_nuisances(sname, shapes, samples, 'bccorr', 'bc_mc_correction_weight_central', 'bc_mc_correction_weight_up_0p8', 'bc_mc_correction_weight_down_0p8', central_weights_string)
+            
+            
             ######################################
             ########  FORM FACTORS  ##############
             #####################################
@@ -1142,7 +1130,7 @@ if __name__ == '__main__':
             if not asimov:
                 temp_hists[k]['%s_data'%k].Draw('EP SAME')
                 
-            CMS_lumi(main_pad, 4, 0, cmsText = 'CMS', extraText = ' Work in Progress', lumi_13TeV = 'L = 59.7 fb^{-1}')
+            CMS_lumi(main_pad, 4, 0, cmsText = 'CMS', extraText = ' Preliminary', lumi_13TeV = 'L = 59.7 fb^{-1}')
             main_pad.cd()
             # if the analisis if blind, we don't want to show the rjpsi prefit value
             if not blind_analysis:
