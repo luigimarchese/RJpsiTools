@@ -117,7 +117,6 @@ def br_nuisances(f, channel, histos, jpsi_split):
         'psi2s_tau':1.15}
 
     # br nuisances
-    br_nuisances_strings = []
     for sample in br_nuisances:
         string = 'br_%s_over_mu lnN '%sample
         for histo in histos:
@@ -129,7 +128,18 @@ def br_nuisances(f, channel, histos, jpsi_split):
                 string += ' - '
             else:
                 string += ' %s '%br_nuisances[sample]
-        f.write('%s \n'%string)
+        f.write('%s \n'%string)        
+    
+    bc_corr = 'bccorr shape '
+    for histo in histos:
+        if histo == 'data':
+            continue
+        elif 'jpsi_x_mu' in histo or histo == 'fakes':
+            bc_corr += ' - '
+        else:
+            bc_corr += ' 1 '
+    
+    f.write('%s \n'%bc_corr)
 
 def bbb_nuisances(f, channel, histos, jpsi_split, hmlm_split, jpsi_x_mu_samples):
     
@@ -271,7 +281,7 @@ def create_datacard_ch1(label, var_name,  histos, hmlm_split, jpsi_x_mu_samples,
     rates(f, 'ch1', histos, jpsi_split)
     norm_nuisances(f, 'ch1', histos, jpsi_split)
     ff_nuisances(f, 'ch1', histos, jpsi_split)
-    br_nuisances(f, 'ch1', histos, jpsi_split)
+    br_nuisances(f, 'ch1', histos, jpsi_split) #br nuisances and mc correction for bc
     if jpsi_split:
         jpsimother_nuisances(f, 'ch1', histos, jpsi_x_mu_samples)
         if hmlm_split:

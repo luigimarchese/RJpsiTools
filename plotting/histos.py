@@ -9,16 +9,20 @@ histos_hm['norm'                      ] = (ROOT.RDF.TH1DModel('norm'            
 histos = dict()   
 
 #histos['Q_sq'                      ] = (ROOT.RDF.TH1DModel('Q_sq'                      , '', 15,      5.5,    10), 'q^{2} (GeV^{2})'                                               , 0)
+#histos['Q_sq'                      ] = (ROOT.RDF.TH1DModel('Q_sq'                      , '', 20,      0,    4.5), 'q^{2} (GeV^{2})'                                               , 0)
 histos['Q_sq'                      ] = (ROOT.RDF.TH1DModel('Q_sq'                      , '', 20,      5.5,    10), 'q^{2} (GeV^{2})'                                               , 0)
+#histos['Q_sq_up'                      ] = (ROOT.RDF.TH1DModel('Q_sq_up'                      , '', 20,      5.5,    10), 'up q^{2} (GeV^{2})'                                               , 0)
+#histos['Q_sq_down'                      ] = (ROOT.RDF.TH1DModel('Q_sq_down'                      , '', 20,      5.5,    10), 'down q^{2} (GeV^{2})'                                               , 0)
+#histos['is_it_bc'                   ] = (ROOT.RDF.TH1DModel('is_it_bc'                   , '',  3,     -1,     2), 'is it bc'                                                      , 0)
+#histos['Q_sq_jpsimcorr'                      ] = (ROOT.RDF.TH1DModel('Q_sq_jpsimcorr'                      , '', 20,      5.5,    10), 'q^{2} (GeV^{2})'                                               , 0)
 '''
-histos['mez_min'                      ] = (ROOT.RDF.TH1DModel('mez_min'                      , '', 30,      -70,    70), 'min #nu pz [GeV] '                                               , 0)
-histos['mez_max'                      ] = (ROOT.RDF.TH1DModel('mez_max'                      , '', 30,      -70,    70), 'max #nu pz [GeV]'                                               , 0)
+#histos['mez_min'                      ] = (ROOT.RDF.TH1DModel('mez_min'                      , '', 30,      -70,    70), 'min #nu pz [GeV] '                                               , 0)
+#histos['mez_max'                      ] = (ROOT.RDF.TH1DModel('mez_max'                      , '', 30,      -70,    70), 'max #nu pz [GeV]'                                               , 0)
 
 #histos['Q_sq'                      ] = (ROOT.RDF.TH1DModel('Q_sq'                      , '', 24,      0,    10.5), 'q^{2} (GeV^{2})'                                               , 0)
 #histos['Q_sq'                      ] = (ROOT.RDF.TH1DModel('Q_sq'                      , '', 1,      0,    10.5), 'q^{2} (GeV^{2})'                                               , 0)
 #histos['Q_sq'                      ] = (ROOT.RDF.TH1DModel('Q_sq'                      , '', 50,      -20,    20), 'q^{2} (GeV^{2})'                                               , 0)
 #histos['Q_sq'                      ] = (ROOT.RDF.TH1DModel('Q_sq'                      , '', 24,      4.5,    10.5), 'q^{2} (GeV^{2})'                                               , 0)
-
 histos['mu1pt'                     ] = (ROOT.RDF.TH1DModel('mu1pt'                     , '', 50,      0,    40), '#mu_{1} p_{T} (GeV)'                                           , 0)
 histos['mu2pt'                     ] = (ROOT.RDF.TH1DModel('mu2pt'                     , '', 50,      0,    20), '#mu_{2} p_{T} (GeV)'                                           , 0)
 histos['kpt'                       ] = (ROOT.RDF.TH1DModel('kpt'                       , '', 50,      0,    30), '#mu_{3} p_{T} (GeV)'                                           , 0)
@@ -34,23 +38,31 @@ histos['mu2eta'                    ] = (ROOT.RDF.TH1DModel('mu2eta'             
 histos['keta'                      ] = (ROOT.RDF.TH1DModel('keta'                      , '', 6,     np.array([-2.5, -1.2, -0.8, 0 , 0.8, 1.2,2.5])), '#mu_{3} #eta'                                                  , 0)
 
 histos['Bpt'                       ] = (ROOT.RDF.TH1DModel('Bpt'                       , '', 50,      10,    50), '3#mu p_{T} (GeV)'                                              , 0)
-
+'''
+#histos['Bmass'                     ] = (ROOT.RDF.TH1DModel('Bmass'                     , '', 50,      3.2,     5.1), '3#mu mass (GeV)'                                               , 0)
+#histos['Bmass'                     ] = (ROOT.RDF.TH1DModel('Bmass'                     , '', 50,      5.3,     6.3), '3#mu mass (GeV)'                                               , 0)
 #histos['Bmass'                     ] = (ROOT.RDF.TH1DModel('Bmass'                     , '', 50,      3.2,     6.3), '3#mu mass (GeV)'                                               , 0)
-histos['Bmass'                     ] = (ROOT.RDF.TH1DModel('Bmass'                     , '', 24,      3.2,     6.3), '3#mu mass (GeV)'                                               , 0)
-
+#histos['Bmass'                     ] = (ROOT.RDF.TH1DModel('Bmass'                     , '', 50,      3.2,     10), '3#mu mass (GeV)'                                               , 0)
+'''
 #histos['Bmass'                     ] = (ROOT.RDF.TH1DModel('Bmass'                     , '', 30,      6.3,    10), '3#mu mass (GeV)'                                               , 0)
+
 
 histos['m13'                     ] = (ROOT.RDF.TH1DModel('m13'                     , '', 100,      2.5,     3.5), 'm13 (GeV)'                                               , 0)
 histos['m23'                     ] = (ROOT.RDF.TH1DModel('m23'                     , '', 100,      2.5,     3.5), 'm23 (GeV)'                                               , 0)
 #histos['Bmass'                     ] = (ROOT.RDF.TH1DModel('Bmass'                     , '', 60,      3,    10), '3#mu mass (GeV)'                                               , 0)
 histos['Beta'                      ] = (ROOT.RDF.TH1DModel('Beta'                      , '', 30,     -3,     3), '3#mu eta'                                                      , 0)
 histos['Bphi'                      ] = (ROOT.RDF.TH1DModel('Bphi'                      , '', 20, -np.pi, np.pi), '3#mu #phi'                                                     , 0)
+'''
 histos['Bpt_reco'                  ] = (ROOT.RDF.TH1DModel('Bpt_reco'                  , '', 50,      0,    80), 'corrected 3#mu p_{T} (GeV)'                                    , 0)
-histos['abs_mu1_dxy'               ] = (ROOT.RDF.TH1DModel('mu1_dxy'                   , '', 50,      0,   0.2), '#mu_{1} |d_{xy}| (cm)'                                         , 1)
+#histos['bc_gen_pt'                  ] = (ROOT.RDF.TH1DModel('bc_gen_pt'                  , '', 50,      0,    80), 'gen 3#mu p_{T} (GeV)'                                    , 0)
+#histos['Bpt_reco_down'                  ] = (ROOT.RDF.TH1DModel('Bpt_reco_down'                  , '', 50,      0,    80), 'down 3#mu p_{T} (GeV)'                                    , 0)
+#histos['Bpt_reco_up'                  ] = (ROOT.RDF.TH1DModel('Bpt_reco_up'                  , '', 50,      0,    80), 'up 3#mu p_{T} (GeV)'                                    , 0)
+'''
+histos['abs_mu1_dxy'               ] = (ROOT.RDF.TH1DModel('mu1_dxy'                   , '', 50,      0,   0.06), '#mu_{1} |d_{xy}| (cm)'                                         , 1)
 histos['mu1_dxy_sig'               ] = (ROOT.RDF.TH1DModel('mu1_dxy_sig'               , '', 50,      0,    10), '#mu_{1} |d_{xy}|/#sigma_{d_{xy}}'                              , 1)
-histos['abs_mu2_dxy'               ] = (ROOT.RDF.TH1DModel('mu2_dxy'                   , '', 50,      0,   0.2), '#mu_{2} |d_{xy}| (cm)'                                         , 1)
+histos['abs_mu2_dxy'               ] = (ROOT.RDF.TH1DModel('mu2_dxy'                   , '', 50,      0,   0.06), '#mu_{2} |d_{xy}| (cm)'                                         , 1)
 histos['mu2_dxy_sig'               ] = (ROOT.RDF.TH1DModel('mu2_dxy_sig'               , '', 50,      0,    10), '#mu_{2} |d_{xy}|/#sigma_{d_{xy}}'                              , 1)
-histos['abs_k_dxy'                 ] = (ROOT.RDF.TH1DModel('k_dxy'                     , '', 50,      0,   0.2), '#mu_{3} |d_{xy}| (cm)'                                         , 1)
+histos['abs_k_dxy'                 ] = (ROOT.RDF.TH1DModel('k_dxy'                     , '', 50,      0,   0.06), '#mu_{3} |d_{xy}| (cm)'                                         , 1)
 histos['k_dxy_sig'                 ] = (ROOT.RDF.TH1DModel('k_dxy_sig'                 , '', 50,      0,    10), '#mu_{3} |d_{xy}|/#sigma_{d_{xy}}'                              , 1)
 histos['abs_mu1_dz'                ] = (ROOT.RDF.TH1DModel('mu1_dz'                    , '', 50,      0,   0.4), '#mu_{1} |d_{z}| (cm)'                                          , 1)
 histos['mu1_dz_sig'                ] = (ROOT.RDF.TH1DModel('mu1_dz_sig'                , '', 50,      0,    10), '#mu_{1} |d_{z}|/#sigma_{d_{z}}'                                , 1)
@@ -58,6 +70,11 @@ histos['abs_mu2_dz'                ] = (ROOT.RDF.TH1DModel('mu2_dz'             
 histos['mu2_dz_sig'                ] = (ROOT.RDF.TH1DModel('mu2_dz_sig'                , '', 50,      0,    10), '#mu_{2} |d_{z}|/#sigma_{d_{z}}'                                , 1)
 histos['abs_k_dz'                  ] = (ROOT.RDF.TH1DModel('k_dz'                      , '', 50,      0,   0.4), '#mu_{3} |d_{z}| (cm)'                                          , 1)
 histos['k_dz_sig'                  ] = (ROOT.RDF.TH1DModel('k_dz_sig'                  , '', 50,      0,    10), '#mu_{3} |d_{z}|/#sigma_{d_{z}}'                                , 1)
+histos['k_dxyErr'                  ] = (ROOT.RDF.TH1DModel('k_dxyErr'                  , '', 50,      0,    0.01), '#mu_{3} #sigma_{d_{xy}}'                                , 1)
+histos['mu1_dxyErr'                  ] = (ROOT.RDF.TH1DModel('mu1_dxyErr'                  , '', 50,      0,    0.01), '#mu_{1} #sigma_{d_{xy}}'                                , 1)
+histos['mu2_dxyErr'                  ] = (ROOT.RDF.TH1DModel('mu2_dxyErr'                  , '', 50,      0,    0.01), '#mu_{2} #sigma_{d_{xy}}'                                , 1)
+'''
+'''
 # histos['Blxy_sig'                  ] = (ROOT.RDF.TH1DModel('Blxy_sig'                  , '', 50,      0,    60), 'L_{xy}/#sigma_{L_{xy}}'                                        , 1)
 # histos['Blxy'                      ] = (ROOT.RDF.TH1DModel('Blxy'                      , '',100,      0,     2), 'L_{xy} (cm)'                                                   , 1)
 # histos['Blxy_unc'                  ] = (ROOT.RDF.TH1DModel('Blxy_unc'                  , '',100,      0,  0.02), '#sigma_{L_{xy}} (cm)'                                          , 1)
@@ -73,7 +90,6 @@ histos['bvtx_log10_lxy_sig_corr'   ] = (ROOT.RDF.TH1DModel('bvtx_log10_lxy_sig_c
 
 histos['bvtx_svprob'               ] = (ROOT.RDF.TH1DModel('bvtx_svprob'               , '', 50,      0,     1), 'vtx(#mu_{1}, #mu_{2}, #mu_{3}) probability'                    , 0)
 histos['bvtx_log10_svprob'         ] = (ROOT.RDF.TH1DModel('bvtx_log10_svprob'         , '', 51,     -8,     1), 'log_{10} vtx(#mu_{1}, #mu_{2}, #mu_{3}) probability'           , 1)
-
 histos['bvtx_log10_lxy'            ] = (ROOT.RDF.TH1DModel('bvtx_log10_lxy'            , '', 51,     -4,     1), 'log_{10} vtx(#mu_{1}, #mu_{2}, #mu_{3}) L_{xy}'                , 1)
 histos['bvtx_log10_lxy_sig'        ] = (ROOT.RDF.TH1DModel('bvtx_log10_lxy_sig'        , '', 51,     -2,     2), 'log_{10} vtx(#mu_{1}, #mu_{2}, #mu_{3}) L_{xy}/#sigma_{L_{xy}}', 1)
 #histos['bvtx_cos2D'                ] = (ROOT.RDF.TH1DModel('bvtx_cos2D'                , '',100,    0.9,     1), '2D cos#alpha'                                                  , 1)
@@ -85,17 +101,21 @@ histos['jpsivtx_lxy'               ] = (ROOT.RDF.TH1DModel('jpsivtx_lxy'        
 histos['jpsivtx_lxy_unc'           ] = (ROOT.RDF.TH1DModel('jpsivtx_lxy_unc'           , '', 60,      0,  0.02), 'vtx(#mu_{1}, #mu_{2}) #sigma_{L_{xy}} (cm)'                                          , 1)
 histos['jpsivtx_lxy_unc_corr'      ] = (ROOT.RDF.TH1DModel('jpsivtx_lxy_unc_corr'      , '', 60,      0,  0.02), 'vtx(#mu_{1}, #mu_{2}) corrected #sigma_{L_{xy}} (cm)'                                          , 1)
 histos['jpsivtx_lxy_sig_corr'      ] = (ROOT.RDF.TH1DModel('jpsivtx_lxy_sig_corr'      , '', 50,      0,    60), 'vtx(#mu_{1}, #mu_{2}) corrected L_{xy}/#sigma_{L_{xy}}'                                        , 1)
+
 histos['jpsivtx_log10_lxy_sig_corr'] = (ROOT.RDF.TH1DModel('jpsivtx_log10_lxy_sig_corr', '', 51,     -2,     2), 'corrected log_{10} vtx(#mu_{1}, #mu_{2}) L_{xy}/#sigma_{L_{xy}}'         , 1)
 
 histos['jpsivtx_svprob'            ] = (ROOT.RDF.TH1DModel('jpsivtx_svprob'            , '', 50,      0,     1), 'vtx(#mu_{1}, #mu_{2}) probability'                             , 0)
 histos['jpsivtx_log10_svprob'      ] = (ROOT.RDF.TH1DModel('jpsivtx_log10_svprob'      , '', 51,     -8,     1), 'log_{10} vtx(#mu_{1}, #mu_{2}) probability'                    , 1)
 
 histos['jpsivtx_log10_lxy'         ] = (ROOT.RDF.TH1DModel('jpsivtx_log10_lxy'         , '', 51,     -4,     1), 'log_{10} vtx(#mu_{1}, #mu_{2}) L_{xy}'                         , 1)
+
 histos['jpsivtx_log10_lxy_sig'     ] = (ROOT.RDF.TH1DModel('jpsivtx_log10_lxy_sig'     , '', 51,     -2,     2), 'log_{10} vtx(#mu_{1}, #mu_{2}) L_{xy}/#sigma_{L_{xy}}'         , 1)
+
 #histos['jpsivtx_cos2D'             ] = (ROOT.RDF.TH1DModel('jpsivtx_cos2D'             , '',100,    0.9,     1), '2D cos#alpha'                                                  , 1)
 histos['jpsivtx_cos2D'             ] = (ROOT.RDF.TH1DModel('jpsivtx_cos2D'             , '',100,    0.99,     1), 'vtx(#mu_{1}, #mu_{2}) 2D cos#alpha'                                                  , 1)
 
-histos['m_miss_sq'                 ] = (ROOT.RDF.TH1DModel('m_miss_sq'                 , '', 50,      0,    9), 'm^{2}_{miss} (GeV^{2})'                                        , 0)
+#histos['m_miss_sq'                 ] = (ROOT.RDF.TH1DModel('m_miss_sq'                 , '', 50,      0,    9), 'm^{2}_{miss} (GeV^{2})'                                        , 0)
+histos['m_miss_sq'                 ] = (ROOT.RDF.TH1DModel('m_miss_sq'                 , '', 50,      1.7,    9), 'm^{2}_{miss} (GeV^{2})'                                        , 0)
 
 
 
@@ -104,13 +124,17 @@ histos['m2missjpsipi'              ] = (ROOT.RDF.TH1DModel('m2missjpsipi'       
 histos['q2jpsik'                   ] = (ROOT.RDF.TH1DModel('q2jpsik'                   , '', 50,      0,    12), 'q^{2} (GeV^{2})'                                               , 0)
 histos['q2jpsipi'                  ] = (ROOT.RDF.TH1DModel('q2jpsipi'                  , '', 50,      0,    12), 'q^{2} (GeV^{2})'                                               , 0)
 histos['pt_var'                    ] = (ROOT.RDF.TH1DModel('pt_var'                    , '', 50,      0,    50), 'p_{T}^{var} (GeV)'                                             , 0)
+
 #histos['pt_miss_vec'               ] = (ROOT.RDF.TH1DModel('pt_miss_vec'               , '', 50,      0,    50), 'vector p_{T}^{miss} (GeV)'                                     , 0)
 histos['pt_miss_vec'               ] = (ROOT.RDF.TH1DModel('pt_miss_vec'               , '', 50,      0,    30), 'vector p_{T}^{miss} (GeV)'                                     , 0)
 histos['pt_miss_scal'              ] = (ROOT.RDF.TH1DModel('pt_miss_scal'              , '', 60,    -10,    50), 'scalar p_{T}^{miss} (GeV)'                                     , 0)
 
-histos['E_mu_star'                 ] = (ROOT.RDF.TH1DModel('E_mu_star'                 , '', 50,      0.3,   2.3), 'E_{#mu_{3}}* (GeV)'                                            , 0)
 
-histos['E_mu_canc'                 ] = (ROOT.RDF.TH1DModel('E_mu_canc'                 , '', 50,      0,     6), 'E_{#mu_{3}}^{#} (GeV)'                                         , 0)
+#histos['E_mu_star'                 ] = (ROOT.RDF.TH1DModel('E_mu_star'                 , '', 50,      0.3,   2.3), 'E_{#mu_{3}}* (GeV)'                                            , 0)
+histos['E_mu_star'                 ] = (ROOT.RDF.TH1DModel('E_mu_star'                 , '', 50,      0.3,   1.65), 'E_{#mu_{3}}* (GeV)'                                            , 0)
+
+histos['E_mu_canc'                 ] = (ROOT.RDF.TH1DModel('E_mu_canc'                 , '', 50,      0,     2.6), 'E_{#mu_{3}}^{#} (GeV)'                                         , 0)
+#histos['E_mu_canc'                 ] = (ROOT.RDF.TH1DModel('E_mu_canc'                 , '', 50,      0,     6), 'E_{#mu_{3}}^{#} (GeV)'                                         , 0)
 #histos['E_mu_star'                 ] = (ROOT.RDF.TH1DModel('E_mu_star'                 , '', 50,      0,   10), 'E_{#mu_{3}}* (GeV)'                                            , 0)
 #histos['E_mu_canc'                 ] = (ROOT.RDF.TH1DModel('E_mu_canc'                 , '', 50,      0,     10), 'E_{#mu_{3}}^{#} (GeV)'                                         , 0)
 
@@ -178,7 +202,8 @@ histos['DR_mu1mu2'                 ] = (ROOT.RDF.TH1DModel('DR_mu1mu2'          
 
 #histos['jpsi_mass'                 ] = (ROOT.RDF.TH1DModel('jpsi_mass'                 , '', 50,    2.9,   3.2), 'm(#mu_{1}, #mu_{2}) (GeV)'                                     , 0)
 
-histos['jpsivtx_fit_mass'                 ] = (ROOT.RDF.TH1DModel('jpsivtx_fit_mass'                 , '', 50,    2.9,   3.2), 'm(#mu_{1}, #mu_{2}) (GeV)'                                     , 0)
+#histos['jpsivtx_fit_mass'                 ] = (ROOT.RDF.TH1DModel('jpsivtx_fit_mass'                 , '', 50,    2.9,   3.2), 'm(#mu_{1}, #mu_{2}) (GeV)'                                     , 0)
+histos['jpsivtx_fit_mass'                 ] = (ROOT.RDF.TH1DModel('jpsivtx_fit_mass'                 , '', 50,    3,   3.2), 'm(#mu_{1}, #mu_{2}) (GeV)'                                     , 0)
 histos['jpsivtx_fit_mass_corr'                 ] = (ROOT.RDF.TH1DModel('jpsivtx_fit_mass_corr'                 , '', 50,    2.9,   3.2), 'corrected m(#mu_{1}, #mu_{2}) (GeV)'                                     , 0)
 
 histos['jpsi_pt'                   ] = (ROOT.RDF.TH1DModel('jpsi_pt'                   , '', 50,      0,    50), '(#mu_{1}, #mu_{2}) p_{T} (GeV)'                                , 0)
@@ -211,8 +236,11 @@ histos['jpsipi_phi'                ] = (ROOT.RDF.TH1DModel('jpsipi_phi'         
 histos['bct'                       ] = (ROOT.RDF.TH1DModel('bct'                       , '', 50,      0,  1e-1), 'ct (cm)'                                                       , 0)
 # histos['npv_good'                  ] = (ROOT.RDF.TH1DModel('npv_good'                  , '', 70,      0,    70), '# good PV'                                                     , 0)
 histos['nPV'                       ] = (ROOT.RDF.TH1DModel('nPV'                       , '', 70,      0,    70), '#PV'                                                           , 0)
-histos['mmm_p4_par'                ] = (ROOT.RDF.TH1DModel('mmm_p4_par'                , '', 50,    -50,   100), '3-#mu p_{#parallel} (GeV)'                                     , 0)
+
+histos['mmm_p4_par'                ] = (ROOT.RDF.TH1DModel('mmm_p4_par'                , '', 50,    0,   100), '3-#mu p_{#parallel} (GeV)'                                     , 0)
+
 histos['mmm_p4_perp'               ] = (ROOT.RDF.TH1DModel('mmm_p4_perp'               , '', 50,      0,    15), '3-#mu p_{#perp}  (GeV)'                                        , 0)
+
 histos['Bdir_eta'                  ] = (ROOT.RDF.TH1DModel('Bdir_eta'                  , '', 30,     -3,     3), 'B #eta from PV-SV direction'                                   , 0)
 histos['Bdir_phi'                  ] = (ROOT.RDF.TH1DModel('Bdir_phi'                  , '', 20, -np.pi, np.pi), 'B #phi from PV-SV direction'                                   , 0)
 
@@ -223,7 +251,9 @@ histos['decay_time_pv_jpsi'             ] = (ROOT.RDF.TH1DModel('decay_time_ps' 
 histos['ip3d'                      ] = (ROOT.RDF.TH1DModel('ip3d'                      , '', 50,  -0.05,  0.05), '#mu_{3} IP3D(vtx_{J/#Psi}) (cm)'                               , 0)
 histos['ip3d_corr'                      ] = (ROOT.RDF.TH1DModel('ip3d_corr'                      , '', 50,  -0.05,  0.05), 'corrected #mu_{3} IP3D(vtx_{J/#Psi}) (cm)'                               , 0)
 histos['ip3d_e_corr_new'               ] = (ROOT.RDF.TH1DModel('ip3d_e_corr_new'               , '', 50,      0,  0.01), 'corrected #mu_{3} IP3D(vtx_{J/#Psi}) unc. (cm)'                , 0)
+
 histos['ip3d_sig_dcorr'             ] = (ROOT.RDF.TH1DModel('ip3d_sig_dcorr'             , '', 50,     -5,     5), 'corrected #mu_{3} IP3D(vtx_{J/#Psi}) significance'             , 0)
+
 histos['ip3d_sig_corr'             ] = (ROOT.RDF.TH1DModel('ip3d_sig_corr'             , '', 50,     -5,     5), 'corrected #mu_{3} IP3D(vtx_{J/#Psi}) significance'             , 0)
 histos['ip3d_e'                    ] = (ROOT.RDF.TH1DModel('ip3d_e'                    , '', 50,      0,  0.01), '#mu_{3} IP3D(vtx_{J/#Psi}) unc. (cm)'                          , 0)
 
@@ -236,8 +266,10 @@ histos['ip3d_sig'                  ] = (ROOT.RDF.TH1DModel('ip3d_sig'           
 # histos['decay_time'                ] = (ROOT.RDF.TH1DModel('decay_time'                , '', 50,      0,  1e-9), 't (s)'                                                         , 0)
 
 #histos['bdt'                   ] = (ROOT.RDF.TH1DModel('bdt_v4'                   , '', 15,      0.,     0.95), 'BDT '                                                , 0)
-histos['bdt_tau_fakes_v6'                   ] = (ROOT.RDF.TH1DModel('bdt_tau_fakes_v6'                   , '', 15,      0.,     1), 'BDT #tau vs fakes'                                                , 0)
+#histos['bdt_tau_fakes_v6'                   ] = (ROOT.RDF.TH1DModel('bdt_tau_fakes_v6'                   , '', 15,      0.,     1), 'BDT #tau vs fakes'                                                , 0)
 #histos['bdt_mu_v1'                   ] = (ROOT.RDF.TH1DModel('bdt_mu_v1'                   , '', 15,      0.,     1), 'BDT #mu vs fakes'                                               , 0)
+
 '''
-histos['bdt_tau_mu_v2'                   ] = (ROOT.RDF.TH1DModel('bdt_tau_mu_v2'                   , '', 15,      0.,     1), 'BDT #tau vs #mu'                                                , 0)
+#histos['bdt_tau_mu_v2'                   ] = (ROOT.RDF.TH1DModel('bdt_tau_mu_v2'                   , '', 15,      0.,     1), 'BDT #tau vs #mu'                                                , 0)
+
 histos['norm'                      ] = (ROOT.RDF.TH1DModel('norm'                      , '',  1,      0,     1), 'normalisation'                                                 , 0)
