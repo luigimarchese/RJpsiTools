@@ -373,6 +373,7 @@ if __name__ == '__main__':
     make_directories(label)
     
     central_weights_string = 'ctau_weight_central*br_weight*puWeight*sf_reco_total*sf_id_jpsi*sf_id_k*jpsimass_weights_for_correction*bc_mc_correction_weight_central' #the mc_correction_central weight is 1, added just to generalize the function for shape uncertainties
+    #central_weights_string = 'ctau_weight_central*br_weight*puWeight*sf_reco_total*sf_id_jpsi*sf_id_k*jpsimass_weights_for_correction'#*bc_mc_correction_weight_central' #the mc_correction_central weight is 1, added just to generalize the function for shape uncertainties
 
     # access the samples, via RDataFrames
     samples_orig = dict()
@@ -1014,7 +1015,7 @@ if __name__ == '__main__':
                         ths1.Add(ihist.GetValue())
             
             # apply same aestethics to pass and fail
-            print(temp_hists_fake[k])
+            #print(temp_hists_fake[k])
             for kk in temp_hists[k].keys():
                 temp_hists_fake[k][kk].GetXaxis().SetTitle(temp_hists[k][kk].GetXaxis().GetTitle())
                 temp_hists_fake[k][kk].GetYaxis().SetTitle(temp_hists[k][kk].GetYaxis().GetTitle())
