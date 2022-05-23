@@ -55,7 +55,7 @@ from samples import weights, titles, colours, ff_weights
 from selections import preselection, preselection_mc, pass_id, fail_id
 from create_datacard_v3 import create_datacard_ch1, create_datacard_ch2, create_datacard_ch3, create_datacard_ch4, create_datacard_ch1_onlypass, create_datacard_ch3_onlypass
 from plot_shape_nuisances_v4 import plot_shape_nuisances
-from DiMuon import get_DiMuonBkg
+from DiMuon import get_DiMuonBkgNorm, get_DiMuonBkg
 from shape_comparison import shape_comparison
 
 parser = ArgumentParser()
@@ -770,10 +770,11 @@ if __name__ == '__main__':
                     if k == 'Q_sq': #changed 15_03_2022
                         if compute_dimuon:
                             print("Doing the Dimuon",k)
-                            temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(pass_id+" & Bmass<6.3 & Q_sq>5.5 &"+args.preselection_plus, 0, 0, label, 'ch1').GetValue()
-                            temp_hists_fake[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass<6.3 & Q_sq>5.5 & "+args.preselection_plus, 0, 0, label, 'ch2_flat').GetValue()
+                            Norm_SRloose = get_DiMuonBkgNorm() 
+                            temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(Norm_SRloose, pass_id+" & Bmass<6.3 & Q_sq>5.5 &"+args.preselection_plus, 0, 0, label, 'ch1').GetValue()
+                            temp_hists_fake[k]['%s_dimuon'%k] = get_DiMuonBkg(Norm_SRloose, fail_id+" & Bmass<6.3 & Q_sq>5.5 & "+args.preselection_plus, 0, 0, label, 'ch2_flat').GetValue()
                             if not flat_fakerate:
-                                temp_hists_fake_nn[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass<6.3 & Q_sq>5.5 &"+args.preselection_plus, 0, 1, label, 'ch2').GetValue()
+                                temp_hists_fake_nn[k]['%s_dimuon'%k] = get_DiMuonBkg(Norm_SRloose, fail_id+" & Bmass<6.3 & Q_sq>5.5 &"+args.preselection_plus, 0, 1, label, 'ch2').GetValue()
                             #save them on file
                             fout = ROOT.TFile.Open('plots_ul/%s/dimuon/dimuon_%s.root' %(label, k), 'UPDATE')
                             fout.cd()
@@ -802,10 +803,10 @@ if __name__ == '__main__':
                     if k == 'jpsivtx_log10_lxy_sig':  #changed from this line 15_03_2022 up to
                         if compute_dimuon:
                             print("Doing the Dimuon",k)
-                            temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(pass_id+" & Bmass>6.3 &"+args.preselection_plus, 5, 0, label, 'ch3').GetValue()
-                            temp_hists_fake[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass>6.3 &"+args.preselection_plus, 5, 0, label, 'ch4_flat').GetValue()
+                            temp_hists[k]['%s_dimuon'%k] = get_DiMuonBkg(Norm_SRloose, pass_id+" & Bmass>6.3 &"+args.preselection_plus, 5, 0, label, 'ch3').GetValue()
+                            temp_hists_fake[k]['%s_dimuon'%k] = get_DiMuonBkg(Norm_SRloose, fail_id+" & Bmass>6.3 &"+args.preselection_plus, 5, 0, label, 'ch4_flat').GetValue()
                             if not flat_fakerate:
-                                temp_hists_fake_nn[k]['%s_dimuon'%k] = get_DiMuonBkg(fail_id+" & Bmass>6.3 &"+args.preselection_plus, 5, 1, label, 'ch4').GetValue()  
+                                temp_hists_fake_nn[k]['%s_dimuon'%k] = get_DiMuonBkg(Norm_SRloose, fail_id+" & Bmass>6.3 &"+args.preselection_plus, 5, 1, label, 'ch4').GetValue()  
                                                         #save them on file
                             fout = ROOT.TFile.Open('plots_ul/%s/dimuon/dimuon_%s.root' %(label, k), 'UPDATE')
                             fout.cd()
