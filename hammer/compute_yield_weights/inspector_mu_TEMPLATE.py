@@ -26,7 +26,7 @@ parser.add_argument('--jobid'        , dest='jobid'        , default=0    , type
 parser.add_argument('--verbose'      , dest='verbose'      , default=0    , type=int)
 parser.add_argument('--destination'  , dest='destination'  , default='.'  , type=str)
 parser.add_argument('--maxevents'    , dest='maxevents'    , default=-1   , type=int)
-parser.add_argument('--miniaod'      , dest='is_miniaod' , default=1, type=int)
+parser.add_argument('--miniaod'      , dest='is_miniaod' , default=0, type=int)
 args = parser.parse_args()
 
 files_per_job = args.files_per_job
@@ -36,10 +36,13 @@ destination   = args.destination
 maxevents     = args.maxevents
 is_miniaod    = args.is_miniaod
 
-files = glob('/pnfs/psi.ch/cms/trivcat/store/user/friti/HOOK_INPUT/*.root')
+files = HOOK_FILE_IN
+skip_events = HOOK_SKIP_EVENTS
+maxevents = HOOK_MAX_EVENTS
+'''files = glob('/pnfs/psi.ch/cms/trivcat/store/user/friti/HOOK_INPUT/*.root')
 files.sort()
 files = files[(jobid)*files_per_job:(jobid+1)*files_per_job]
-print("files: ",files)
+print("files: ",files)'''
 
 diquarks = [
     1103,
@@ -119,7 +122,6 @@ if is_miniaod:
     handles['genp'   ] = ('prunedGenParticles', Handle('std::vector<reco::GenParticle>'))
     handles['pgp'   ] = ('packedGenParticles', Handle('std::vector<pat::PackedGenParticle>'))
 
-files = ['root://cms-xrd-global.cern.ch///store/mc/RunIISummer20UL18MiniAOD/BcToJPsiMuMu_inclusive_TuneCP5_13TeV-bcvegpy2-pythia8-evtgen/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/00000/AF312F62-A71A-B948-9155-7FF158EA9A5A.root']
 events = Events(files)
 
 branches = [
@@ -228,13 +230,13 @@ tofill = OrderedDict(zip(branches, [np.nan]*len(branches)))
 start = time()
 maxevents = maxevents if maxevents>=0 else events.size() # total number of events in the files
 
-for i, event in enumerate(events):
+for i,event in enumerate(events, start=skip_events):
 
-    if (i+1)>maxevents:
+    if (i+1)>maxevents+skip_events:
         break
         
-    if i%1000==0:
-        percentage = float(i)/maxevents*100.
+    if i%1000==0 or i == skip_events:
+        percentage = float(i)/(maxevents)*100.
         speed = float(i)/(time()-start)
         eta = datetime.now() + timedelta(seconds=(maxevents-i) / max(0.1, speed))
         print('\t===> processing %d / %d event \t completed %.1f%s \t %.1f ev/s \t ETA %s s' %(i, maxevents, percentage, '%', speed, eta.strftime('%Y-%m-%d %H:%M:%S')))

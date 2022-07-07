@@ -19,7 +19,9 @@ parser.add_argument('--files_per_job', dest='files_per_job', default=2    , type
 parser.add_argument('--jobid'        , dest='jobid'        , default=0    , type=int)
 parser.add_argument('--verbose'      , dest='verbose'      , default=0    , type=int)
 parser.add_argument('--destination'  , dest='destination'  , default='.'  , type=str)
-parser.add_argument('--maxevents'    , dest='maxevents'    , default=-1   , type=int)
+parser.add_argument('--maxevents'    , dest='maxevents'    , default=-1  , type=int)
+parser.add_argument('--miniaod'      , dest='is_miniaod' , default=0, type=int)
+
 args = parser.parse_args()
 
 files_per_job = args.files_per_job
@@ -27,12 +29,15 @@ jobid         = args.jobid
 verbose       = args.verbose
 destination   = args.destination
 maxevents     = args.maxevents
+is_miniaod    = args.is_miniaod
 
-files = glob('/pnfs/psi.ch/cms/trivcat/store/user/friti/HOOK_INPUT/*.root')
+files = HOOK_FILE_IN
+
+'''files = glob('/pnfs/psi.ch/cms/trivcat/store/user/friti/HOOK_INPUT/*.root')
 files.sort()
 files = files[(jobid)*files_per_job:(jobid+1)*files_per_job]
 print("files: ",files)
-
+'''
 
 diquarks = [
     1103,
@@ -107,6 +112,10 @@ def printAncestors(particle, ancestors=[], verbose=True):
 handles = OrderedDict()
 handles['genp'   ] = ('genParticles', Handle('std::vector<reco::GenParticle>'))
 handles['genInfo'] = ('generator'   , Handle('GenEventInfoProduct'           ))
+if is_miniaod:
+    handles['genp'   ] = ('prunedGenParticles', Handle('std::vector<reco::GenParticle>'))
+    handles['pgp'   ] = ('packedGenParticles', Handle('std::vector<pat::PackedGenParticle>'))
+
 events = Events(files)
 
 branches = [
@@ -241,6 +250,11 @@ for i, event in enumerate(events):
         speed = float(i)/(time()-start)
         eta = datetime.now() + timedelta(seconds=(maxevents-i) / max(0.1, speed))
         print('\t===> processing %d / %d event \t completed %.1f%s \t %.1f ev/s \t ETA %s s' %(i, maxevents, percentage, '%', speed, eta.strftime('%Y-%m-%d %H:%M:%S')))
+
+    # access the handles
+    for k, v in handles.iteritems():
+        event.getByLabel(v[0], v[1])
+        setattr(event, k, v[1].product())
     event.qscale = event.genInfo.qScale()
    
     if verbose: print('=========>')

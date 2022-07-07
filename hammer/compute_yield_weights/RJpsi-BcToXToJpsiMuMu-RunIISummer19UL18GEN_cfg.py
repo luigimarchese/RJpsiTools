@@ -24,7 +24,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+        input = cms.untracked.int32(-1)
 )
 
 # Input source
@@ -62,7 +62,7 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
         filterName = cms.untracked.string('')
     ),
     eventAutoFlushCompressedSize = cms.untracked.int32(20971520),
-    fileName = cms.untracked.string('file:RJpsi-BcToXToJpsiMuMu-RunIISummer19UL18GEN.root'),
+    fileName = cms.untracked.string('file:RJpsi-BcToXToJpsiMuMu-RunIISummer19UL18GEN_23may.root'),
     outputCommands = process.RAWSIMEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
 )
@@ -143,19 +143,19 @@ process.generator = cms.EDFilter("Pythia8HadronizerFilter",
 
 process.jpsi_from_bc_filter = cms.EDFilter("PythiaFilterMultiAncestor",
     DaughterIDs = cms.untracked.vint32(-13, 13),
-    DaughterMaxEtas = cms.untracked.vdouble(2.52, 2.52),
-    DaughterMaxPts = cms.untracked.vdouble(1000000.0, 1000000.0),
-    DaughterMinEtas = cms.untracked.vdouble(-2.52, -2.52),
-    DaughterMinPts = cms.untracked.vdouble(2.8, 2.8),
-    MaxEta = cms.untracked.double(3.0),
-    MinEta = cms.untracked.double(-3.0),
-    MinPt = cms.untracked.double(6.0),
+    #DaughterMaxEtas = cms.untracked.vdouble(2.52, 2.52),
+    #DaughterMaxPts = cms.untracked.vdouble(1000000.0, 1000000.0),
+    #DaughterMinEtas = cms.untracked.vdouble(-2.52, -2.52),
+    #DaughterMinPts = cms.untracked.vdouble(2.8, 2.8),
+    #MaxEta = cms.untracked.double(3.0),
+    #MinEta = cms.untracked.double(-3.0),
+    #MinPt = cms.untracked.double(6.0),
     MotherIDs = cms.untracked.vint32(541),
     ParticleID = cms.untracked.int32(443)
 )
 
 
-process.ProductionFilterSequence = cms.Sequence(process.generator+process.jpsi_from_bc_filter)
+process.ProductionFilterSequence = cms.Sequence(process.generator)#+process.jpsi_from_bc_filter)
 
 # Path and EndPath definitions
 process.generation_step = cms.Path(process.pgen)
