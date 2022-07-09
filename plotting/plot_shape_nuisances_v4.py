@@ -17,7 +17,7 @@ ROOT.gStyle.SetOptStat(0)
 
 sfrange = 16
 
-def plot_shape_nuisances(histos_folder, variable, channel, sample_names=sample_names, which_sample_single_bbb =[], plot3d = False, fakes = True, path = '/work/lmarches/CMS/RJPsi_Tools/CMSSW_10_6_14/src/RJpsiTools/plotting/plots_ul/', compute_sf = False, verbose = False, compute_sf_onlynorm = False):
+def plot_shape_nuisances(histos_folder, variable, channel, sample_names=sample_names, which_sample_single_bbb =[], plot3d = False, fakes = True, path = '/work/friti/rjpsi_tools/CMSSW_10_6_14/src/RJpsiTools/plotting/plots_ul/', compute_sf = False, verbose = False, compute_sf_onlynorm = False):
 
     '''
     Function that plots the systematic shape uncertainties in a root file.
@@ -61,8 +61,10 @@ def plot_shape_nuisances(histos_folder, variable, channel, sample_names=sample_n
     nbins = his_tmp.GetNbinsX()
 
     bbb_syst = ['bbb'+str(i)+channel for i in range(1,nbins+1)]
+    mc_corr_syst = ['bccorr']
+    fakes_shape_syst = ['fakesshape']
 
-    total_syst = hammer_syst + ctau_syst + pu_syst + bbb_syst 
+    total_syst = hammer_syst + ctau_syst + pu_syst + bbb_syst + mc_corr_syst #+ fakes_shape_syst
     #total_syst = pu_syst 
 
     # Don't compute these because they are approximable to a normalisation nuisance
@@ -90,9 +92,10 @@ def plot_shape_nuisances(histos_folder, variable, channel, sample_names=sample_n
     c3.SetBottomMargin(0.15)
     #ROOT.gPad.SetLogx()    
 
-    for sname in sample_names:
+    for sname in sample_names+['fakes']:
         # Only data and fakes don't have any shape nuisance
-        if (sname != 'data' and sname != 'fakes'):
+        #if (sname != 'data' and sname != 'fakes'):
+        if (sname != 'data' ):
 
             # For the computation of scale factors, I need to reset the value for each sample!
             if compute_sf:
@@ -117,6 +120,14 @@ def plot_shape_nuisances(histos_folder, variable, channel, sample_names=sample_n
                 if verbose: print("Plotting variable "+syst+"for dataset "+sname)
                 maxx = []
 
+                if syst not in fakes_shape_syst and sname =='fakes':
+                    continue
+                if syst in fakes_shape_syst:
+                    if sname != 'fakes':
+                        continue
+                    #print(syst, sname, channel)
+                    if channel == 'ch2' or channel == 'ch4':
+                        continue
                 # Only jpsi tau and jpsi mu have the form factor systematics
                 if syst in hammer_syst:
                     if sname != 'jpsi_tau' and sname != 'jpsi_mu':
@@ -144,9 +155,13 @@ def plot_shape_nuisances(histos_folder, variable, channel, sample_names=sample_n
                         else:
                             syst = 'single_'+syst
                     syst = sname +'_'+syst
+                if syst in mc_corr_syst:
+                    if sname == 'data' or 'jpsi_x_mu' in sname:
+                        continue
                 his_up = fin.Get(sname+'_'+syst+'Up_'+channel)
                 #print(sname+'_'+syst+'Up_'+channel)
                 histo_up = ROOT.TH1F(sname+'_'+syst+'Up',sname+'_'+syst+'Up', nbins, xmin, xmax)
+                #print(sname+'_'+syst+'Up_'+channel)
                 for i in range(1,his_up.GetNbinsX()+1):
                     histo_up.SetBinContent(i,his_up.GetBinContent(i))
                     histo_up.SetBinError(i,his_up.GetBinError(i))

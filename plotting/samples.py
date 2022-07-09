@@ -9,9 +9,6 @@ basic_samples_names = [
     'psi2s_mu' ,
     'psi2s_tau',
      'data'     ,
-    #     'jpsi_3pi' ,
-    #'fakes'   ,
-    #     'jpsi_pi'  ,
 ]
 
 jpsi_x_mu_sample = ['jpsi_x_mu',]
@@ -32,11 +29,9 @@ jpsi_x_mu_sample_jpsimother_splitting_compressed = [ #sigma and xi are compresse
     'jpsi_x_mu_from_bzero',
     'jpsi_x_mu_from_bplus',
     'jpsi_x_mu_from_bzero_s',
-    #'jpsi_x_mu_from_bplus_c',
     'jpsi_x_mu_from_sigma',
     'jpsi_x_mu_from_lambdazero_b',
     'jpsi_x_mu_from_xi',
-    #'jpsi_x_mu_from_other',
 ]
 
 jpsi_x_mu_sample_hmlm_splitting = [sample + hmlm for sample in jpsi_x_mu_sample for hmlm in ['_hm','_lm']]
@@ -47,66 +42,119 @@ sample_names = basic_samples_names +jpsi_x_mu_sample
 sample_names_explicit_hmlm = basic_samples_names + jpsi_x_mu_sample_hmlm_splitting
 sample_names_explicit_jpsimother = basic_samples_names + jpsi_x_mu_sample_jpsimother_splitting
 sample_names_explicit_jpsimother_compressed = basic_samples_names + jpsi_x_mu_sample_jpsimother_splitting_compressed
+#sample_names_explicit_jpsimother_compressed = ['jpsi_mu','data']
 sample_names_explicit_all = basic_samples_names + jpsi_x_mu_sample_all_splitting
 
 # Overall weight to use to renormalize the Bc->jpsi mu and Bc-> jpsi tau samples due to FF reweighting
 # Computed in tools/hammer/compute_yield_weights
+
 ff_weights = dict()
 ff_weights['jpsi_tau' ] = 1./0.554
-ff_weights['jpsi_mu'  ] = 1./0.603
-ff_weights['jpsi_tau_bglvar_e0Up' ] = 1./0.523
-ff_weights['jpsi_mu_bglvar_e0Up'  ] = 1./0.632
-ff_weights['jpsi_tau_bglvar_e0Down' ] = 1./0.589
-ff_weights['jpsi_mu_bglvar_e0Down'  ] = 1./0.578
+ff_weights['jpsi_mu'  ] = 1./0.586
+ff_weights['jpsi_tau_bglvar_e0Up' ] = 1./0.524
+ff_weights['jpsi_mu_bglvar_e0Up'  ] = 1./0.602
+ff_weights['jpsi_tau_bglvar_e0Down' ] = 1./0.588
+ff_weights['jpsi_mu_bglvar_e0Down'  ] = 1./0.573
 ff_weights['jpsi_tau_bglvar_e1Up' ] = 1./0.617
-ff_weights['jpsi_mu_bglvar_e1Up'  ] = 1./0.682
-ff_weights['jpsi_tau_bglvar_e1Down' ] = 1./0.498
-ff_weights['jpsi_mu_bglvar_e1Down'  ] = 1./0.532
-ff_weights['jpsi_tau_bglvar_e2Up' ] = 1./0.609
-ff_weights['jpsi_mu_bglvar_e2Up'  ] = 1./0.623
+ff_weights['jpsi_mu_bglvar_e1Up'  ] = 1./0.658
+ff_weights['jpsi_tau_bglvar_e1Down' ] = 1./0.497
+ff_weights['jpsi_mu_bglvar_e1Down'  ] = 1./0.520
+ff_weights['jpsi_tau_bglvar_e2Up' ] = 1./0.610
+ff_weights['jpsi_mu_bglvar_e2Up'  ] = 1./0.616
 ff_weights['jpsi_tau_bglvar_e2Down' ] = 1./0.502
-ff_weights['jpsi_mu_bglvar_e2Down'  ] = 1./0.586
+ff_weights['jpsi_mu_bglvar_e2Down'  ] = 1./0.559
 ff_weights['jpsi_tau_bglvar_e3Up' ] = 1./0.480
-ff_weights['jpsi_mu_bglvar_e3Up'  ] = 1./0.529
+ff_weights['jpsi_mu_bglvar_e3Up'  ] = 1./0.516
 ff_weights['jpsi_tau_bglvar_e3Down' ] = 1./0.635
-ff_weights['jpsi_mu_bglvar_e3Down'  ] = 1./0.684
+ff_weights['jpsi_mu_bglvar_e3Down'  ] = 1./0.662
 ff_weights['jpsi_tau_bglvar_e4Up' ] = 1./0.481
-ff_weights['jpsi_mu_bglvar_e4Up'  ] = 1./0.517
+ff_weights['jpsi_mu_bglvar_e4Up'  ] = 1./0.504
 ff_weights['jpsi_tau_bglvar_e4Down' ] = 1./0.633
-ff_weights['jpsi_mu_bglvar_e4Down'  ] = 1./0.698
+ff_weights['jpsi_mu_bglvar_e4Down'  ] = 1./0.675
 ff_weights['jpsi_tau_bglvar_e5Up' ] = 1./0.512
-ff_weights['jpsi_mu_bglvar_e5Up'  ] = 1./0.552
+ff_weights['jpsi_mu_bglvar_e5Up'  ] = 1./0.538
 ff_weights['jpsi_tau_bglvar_e5Down' ] = 1./0.599
-ff_weights['jpsi_mu_bglvar_e5Down'  ] = 1./0.659
+ff_weights['jpsi_mu_bglvar_e5Down'  ] = 1./0.637
 ff_weights['jpsi_tau_bglvar_e6Up' ] = 1./0.566
-ff_weights['jpsi_mu_bglvar_e6Up'  ] = 1./0.618
+ff_weights['jpsi_mu_bglvar_e6Up'  ] = 1./0.599
 ff_weights['jpsi_tau_bglvar_e6Down' ] = 1./0.543
-ff_weights['jpsi_mu_bglvar_e6Down'  ] = 1./0.589
+ff_weights['jpsi_mu_bglvar_e6Down'  ] = 1./0.573
 ff_weights['jpsi_tau_bglvar_e7Up' ] = 1./0.625
-ff_weights['jpsi_mu_bglvar_e7Up'  ] = 1./0.693
+ff_weights['jpsi_mu_bglvar_e7Up'  ] = 1./0.669
 ff_weights['jpsi_tau_bglvar_e7Down' ] = 1./0.488
-ff_weights['jpsi_mu_bglvar_e7Down'  ] = 1./0.521
-ff_weights['jpsi_tau_bglvar_e8Up' ] = 1./0.541
-ff_weights['jpsi_mu_bglvar_e8Up'  ] = 1./0.589
+ff_weights['jpsi_mu_bglvar_e7Down'  ] = 1./0.508
+ff_weights['jpsi_tau_bglvar_e8Up' ] = 1./0.542
+ff_weights['jpsi_mu_bglvar_e8Up'  ] = 1./0.572
 ff_weights['jpsi_tau_bglvar_e8Down' ] = 1./0.568
-ff_weights['jpsi_mu_bglvar_e8Down'  ] = 1./0.618
-ff_weights['jpsi_tau_bglvar_e9Up' ] = 1./0.586
-ff_weights['jpsi_mu_bglvar_e9Up'  ] = 1./0.633
+ff_weights['jpsi_mu_bglvar_e8Down'  ] = 1./0.601
+ff_weights['jpsi_tau_bglvar_e9Up' ] = 1./0.587
+ff_weights['jpsi_mu_bglvar_e9Up'  ] = 1./0.616
 ff_weights['jpsi_tau_bglvar_e9Down' ] = 1./0.523
-ff_weights['jpsi_mu_bglvar_e9Down'  ] = 1./0.575
+ff_weights['jpsi_mu_bglvar_e9Down'  ] = 1./0.557
 ff_weights['jpsi_tau_bglvar_e10Up' ] = 1./0.554
-ff_weights['jpsi_mu_bglvar_e10Up'  ] = 1./0.603
+ff_weights['jpsi_mu_bglvar_e10Up'  ] = 1./0.586
 ff_weights['jpsi_tau_bglvar_e10Down' ] = 1./0.554
-ff_weights['jpsi_mu_bglvar_e10Down'  ] = 1./0.603
+ff_weights['jpsi_mu_bglvar_e10Down'  ] = 1./0.586
+
+
+
+
+#ff_weights = dict()
+#ff_weights['jpsi_tau' ] = 1./0.554
+#ff_weights['jpsi_mu'  ] = 1./0.603
+#ff_weights['jpsi_tau_bglvar_e0Up' ] = 1./0.523
+#ff_weights['jpsi_mu_bglvar_e0Up'  ] = 1./0.632
+#ff_weights['jpsi_tau_bglvar_e0Down' ] = 1./0.589
+#ff_weights['jpsi_mu_bglvar_e0Down'  ] = 1./0.578
+#ff_weights['jpsi_tau_bglvar_e1Up' ] = 1./0.617
+#ff_weights['jpsi_mu_bglvar_e1Up'  ] = 1./0.682
+#ff_weights['jpsi_tau_bglvar_e1Down' ] = 1./0.498
+#ff_weights['jpsi_mu_bglvar_e1Down'  ] = 1./0.532
+#ff_weights['jpsi_tau_bglvar_e2Up' ] = 1./0.609
+#ff_weights['jpsi_mu_bglvar_e2Up'  ] = 1./0.623
+#ff_weights['jpsi_tau_bglvar_e2Down' ] = 1./0.502
+#ff_weights['jpsi_mu_bglvar_e2Down'  ] = 1./0.586
+#ff_weights['jpsi_tau_bglvar_e3Up' ] = 1./0.480
+#ff_weights['jpsi_mu_bglvar_e3Up'  ] = 1./0.529
+#ff_weights['jpsi_tau_bglvar_e3Down' ] = 1./0.635
+#ff_weights['jpsi_mu_bglvar_e3Down'  ] = 1./0.684
+#ff_weights['jpsi_tau_bglvar_e4Up' ] = 1./0.481
+#ff_weights['jpsi_mu_bglvar_e4Up'  ] = 1./0.517
+#ff_weights['jpsi_tau_bglvar_e4Down' ] = 1./0.633
+#ff_weights['jpsi_mu_bglvar_e4Down'  ] = 1./0.698
+#ff_weights['jpsi_tau_bglvar_e5Up' ] = 1./0.512
+#ff_weights['jpsi_mu_bglvar_e5Up'  ] = 1./0.552
+#ff_weights['jpsi_tau_bglvar_e5Down' ] = 1./0.599
+#ff_weights['jpsi_mu_bglvar_e5Down'  ] = 1./0.659
+#ff_weights['jpsi_tau_bglvar_e6Up' ] = 1./0.566
+#ff_weights['jpsi_mu_bglvar_e6Up'  ] = 1./0.618
+#ff_weights['jpsi_tau_bglvar_e6Down' ] = 1./0.543
+#ff_weights['jpsi_mu_bglvar_e6Down'  ] = 1./0.589
+#ff_weights['jpsi_tau_bglvar_e7Up' ] = 1./0.625
+#ff_weights['jpsi_mu_bglvar_e7Up'  ] = 1./0.693
+#ff_weights['jpsi_tau_bglvar_e7Down' ] = 1./0.488
+#ff_weights['jpsi_mu_bglvar_e7Down'  ] = 1./0.521
+#ff_weights['jpsi_tau_bglvar_e8Up' ] = 1./0.541
+#ff_weights['jpsi_mu_bglvar_e8Up'  ] = 1./0.589
+#ff_weights['jpsi_tau_bglvar_e8Down' ] = 1./0.568
+#ff_weights['jpsi_mu_bglvar_e8Down'  ] = 1./0.618
+#ff_weights['jpsi_tau_bglvar_e9Up' ] = 1./0.586
+#ff_weights['jpsi_mu_bglvar_e9Up'  ] = 1./0.633
+#ff_weights['jpsi_tau_bglvar_e9Down' ] = 1./0.523
+#ff_weights['jpsi_mu_bglvar_e9Down'  ] = 1./0.575
+#ff_weights['jpsi_tau_bglvar_e10Up' ] = 1./0.554
+#ff_weights['jpsi_mu_bglvar_e10Up'  ] = 1./0.603
+#ff_weights['jpsi_tau_bglvar_e10Down' ] = 1./0.554
+#ff_weights['jpsi_mu_bglvar_e10Down'  ] = 1./0.603
 
 weights = dict()
-bc_weight = 0.09 *1.1 *1.04 * 0.85 * 0.9 
+bc_weight = 0.09 *1.1 *1.04 * 0.85 * 0.9 *1.4
 #bc_weight = 0.15  #for prev ff_weights
 #bc_weight = 1.53 #for prev oct21
 fr = 0.19
 #hbmu_norm = 8.5 *1.5 #without weights
 #hbmu_norm = 8.5 *0.5 *0.65 #0.65 from fit, so it will make the fit converge better (old sample)
-hbmu_norm = 0.3 * 0.85 *0.7*0.1 * 2.7 *1.6 *0.85 * 1.8  # new sample (0.85 from fit)
+hbmu_norm = 0.3 * 0.85 *0.7*0.1 * 2.7 *1.6 *0.85 * 1.8 *1.4    # new sample (0.85 from fit)
 
 
 weights['jpsi_tau' ] = bc_weight * ff_weights['jpsi_tau' ]
@@ -236,7 +284,7 @@ for i,name in enumerate(jpsi_x_mu_sample_all_splitting):
             colours[name] = col2[int(i/2)]
         else:
             colours[name] = col3[int((i-1)/2)]
-
+'''
 mean_nn_data_weights_lm = dict()
 mean_nn_mc_weights_lm = dict()
 
@@ -289,3 +337,4 @@ mean_nn_mc_weights_hm['jpsi_x_mu_from_lambdazero_b'] = 2.563
 mean_nn_mc_weights_hm['jpsi_x_mu_from_xi'] = 2.564
 mean_nn_mc_weights_hm['jpsi_x_mu_from_sigma'] = 2.577
 
+'''

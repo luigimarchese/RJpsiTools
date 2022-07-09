@@ -39,9 +39,9 @@ def norm_nuisances(f, channel, histos, jpsi_split):
     # Define strings for nuisances
     ctau_string = 'ctau shape '
     pu_string   = 'puWeight shape '
+    fakesshape_string = 'fakesshape shape '
     fakes_lm_string = 'fake_rate_lm lnN '
     fakes_hm_string = 'fake_rate_hm lnN '
-    dimuon_string = 'dimuon_norm lnN '
     trigger_string = 'trigger lnN '
     for i,histo in enumerate(histos):
         if histo == 'data':
@@ -49,40 +49,40 @@ def norm_nuisances(f, channel, histos, jpsi_split):
         elif histo == 'fakes':
             ctau_string    += ' - '
             pu_string      += ' - '
+            fakesshape_string   += ' 1 '
             fakes_lm_string   += ' 1.1 '
             fakes_hm_string   += ' 1.5 '
             trigger_string += ' - '
-            dimuon_string += ' - '
-        elif histo == 'dimuon':
-            ctau_string    += ' - '
-            pu_string      += ' - '
-            fakes_lm_string   += ' - '
-            fakes_hm_string   += ' - '
-            trigger_string += ' - '
-            dimuon_string += ' 0.1 '
 
         elif histo == 'jpsi_x_mu' and jpsi_split:
             continue
         elif'jpsi_x_mu' in histo:
             ctau_string    += ' - '
             pu_string      += ' 1 '
+            fakesshape_string   += ' - '
             fakes_lm_string   += ' - '
             fakes_hm_string   += ' - '
             trigger_string += ' 1.05 '
-            dimuon_string += ' - '
+        elif histo == 'dimuon':
+            ctau_string    += ' - '
+            pu_string      += ' - '
+            fakesshape_string   += ' - '
+            fakes_lm_string   += ' - '
+            fakes_hm_string   += ' - '
+            trigger_string += ' - '
         else:
             ctau_string    += ' 1 '
             pu_string      += ' 1 '
+            fakesshape_string   += ' - '
             fakes_lm_string   += ' - '
             fakes_hm_string   += ' - '
             trigger_string += ' 1.05 '
-            dimuon_string += ' - '
 
     f.write(" %s \n"%ctau_string)
     f.write(" %s  \n"%pu_string)
-    f.write(" %s  \n"%dimuon_string)
     if channel == 'ch1' or channel == 'ch3':
         f.write(" %s  \n"%fakes_lm_string)
+        #f.write(" %s  \n"%fakesshape_string)
     #elif  channel == 'ch3':
     #    f.write(" %s  \n"%fakes_hm_string)
     f.write(" %s  \n"%trigger_string)
@@ -134,7 +134,7 @@ def br_nuisances(f, channel, histos, jpsi_split):
     for histo in histos:
         if histo == 'data':
             continue
-        elif 'jpsi_x_mu' in histo or histo == 'fakes':
+        elif 'jpsi_x_mu' in histo or histo == 'fakes' or histo == 'dimuon':
             bc_corr += ' - '
         else:
             bc_corr += ' 1 '
@@ -269,10 +269,23 @@ def lm_nuisances(f, channel, histos):
             lm_string   += ' - '
 
     f.write(" %s \n"%lm_string)
+
+def dimuon(f, channel, histos):
+    # Define strings for nuisances
+    dimuon_string = 'dimuon_norm lnN '
+    for i,histo in enumerate(histos):
+        if histo == 'data':
+            continue
+        elif 'dimuon' in histo:
+            dimuon_string   += ' 1.5 '
+        else:
+            dimuon_string   += ' - '
+
+    f.write(" %s \n"%dimuon_string)
     
 # date; name of the variable for the fit; array of histos; bool if jpsi_x_mu must be split; bool if we also have the high mass low mass split; jpsi_x_mu_samples
 
-def create_datacard_ch1(label, var_name,  histos, hmlm_split, jpsi_x_mu_samples, which_sample_bbb_unc =[]):
+def create_datacard_ch1(label, var_name,  histos, hmlm_split, jpsi_x_mu_samples, which_sample_bbb_unc =[], add_dimuon = False):
     jpsi_split = len(jpsi_x_mu_samples)>1
 
     f= open('plots_ul/%s/datacards/datacard_ch1_%s.txt' %(label, var_name),"w")
@@ -282,6 +295,8 @@ def create_datacard_ch1(label, var_name,  histos, hmlm_split, jpsi_x_mu_samples,
     norm_nuisances(f, 'ch1', histos, jpsi_split)
     ff_nuisances(f, 'ch1', histos, jpsi_split)
     br_nuisances(f, 'ch1', histos, jpsi_split) #br nuisances and mc correction for bc
+    if add_dimuon:
+        dimuon(f, 'ch1', histos)
     if jpsi_split:
         jpsimother_nuisances(f, 'ch1', histos, jpsi_x_mu_samples)
         if hmlm_split:
@@ -434,13 +449,16 @@ def create_datacard_ch2(label, var_name,  histos, hmlm_split, jpsi_x_mu_samples,
 
     f.close()
 
-def create_datacard_ch3(label, var_name,  histos, hmlm_split, jpsi_x_mu_samples, which_sample_bbb_unc =[]):
+def create_datacard_ch3(label, var_name,  histos, hmlm_split, jpsi_x_mu_samples, which_sample_bbb_unc =[],add_dimuon = False):
     jpsi_split = len(jpsi_x_mu_samples)>1
 
     f= open('plots_ul/%s/datacards/datacard_ch3_%s.txt' %(label, var_name),"w")
     first_part(f, 'ch3', histos)
     rates(f, 'ch3', histos, jpsi_split)
     norm_nuisances(f, 'ch3', histos,jpsi_split)
+    if add_dimuon:
+        dimuon(f, 'ch3', histos)
+
     #ff_nuisances(f, 'ch3', histos)
     #br_nuisances(f, 'ch3', histos)
     if jpsi_split:
