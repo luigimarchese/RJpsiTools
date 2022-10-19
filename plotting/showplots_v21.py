@@ -23,6 +23,19 @@ Difference from _v4:
 - new option for jpsiXMu bkg to be splitted in the different contributions: 
    - FIXME: the datacard production gives an error: I will solve this when we have the new MC, because now we don't need that function
 '''
+
+data = 68
+mc = 68
+alpha = 68
+
+data_p03 = 69
+mc_p03 = 69
+alpha_p03 = 69
+
+data_m03 = 70
+mc_m03 = 70
+alpha_m03 = 70
+
 '''
 data = 65
 mc = 65
@@ -36,12 +49,13 @@ data_m03 = 66
 mc_m03 = 66
 alpha_m03 = 66
 '''
+
 '''
 data = 3
 mc = 3
 alpha = 3
 '''
-
+'''
 data = 62
 mc = 62
 alpha = 62
@@ -53,7 +67,7 @@ alpha_p03 = 63
 data_m03 = 64
 mc_m03 = 64
 alpha_m03 = 64
-
+'''
 
 #data = 31
 #mc = 37
@@ -96,8 +110,9 @@ parser = ArgumentParser()
 
 parser.add_argument('--asimov' ,default = False,action='store_true', help='Default makes no asimov')
 parser.add_argument('--low_q2' ,default = False,action='store_true', help='Default makes high q2 histos')
+parser.add_argument('--less_bins' ,default = False,action='store_true', help='Default makes histos with less bins')
 parser.add_argument('--label', default='%s'%(datetime.now().strftime('%d%b%Y_%Hh%Mm%Ss')),help='addition to the preselection')
-parser.add_argument('--preselection_plus', default='jpsivtx_svprob>1e-2',help='addition to the preselection')
+parser.add_argument('--preselection_plus', default='mu2pt>4',help='addition to the preselection')
 parser.add_argument('--add_dimuon' ,default = False,action='store_true', help='Default doesnt add dimuon')
 parser.add_argument('--compute_dimuon' ,default = False,action='store_true', help='Default doesnt compute dimuon; it works only if add_dimuon is True')
 parser.add_argument('--dimuon_load', default='24Mar2022_15h29m26s',help='if add_dimuon== True and compute_dimuon==False, this is used to load the dimuon shapes from somewhere')
@@ -106,8 +121,16 @@ args = parser.parse_args()
 
 label = args.label
 
-preselection =  ' & '.join([preselection, args.preselection_plus])
-preselection_mc =  ' & '.join([preselection_mc, args.preselection_plus])
+nn_weights_selection =  ' & '.join([
+    'abs((fakerate_onlydata_%d-fakerate_alpha_%d*fakerate_onlymc_%d)/(1-fakerate_alpha_%d))<10'%(data,alpha,mc,alpha),
+    'abs((fakerate_onlydata_%d-fakerate_alpha_%d*fakerate_onlymc_%d)/(1-fakerate_alpha_%d))<10'%(data_p03,alpha_p03,mc_p03,alpha_p03),
+    'abs((fakerate_onlydata_%d-fakerate_alpha_%d*fakerate_onlymc_%d)/(1-fakerate_alpha_%d))<10'%(data_m03,alpha_m03,mc_m03,alpha_m03),
+])
+
+preselection_plus = ' & '.join([nn_weights_selection, args.preselection_plus])
+
+preselection =  ' & '.join([preselection, preselection_plus])
+preselection_mc =  ' & '.join([preselection_mc, preselection_plus])
 print(preselection)
 
 shape_nuisances = True
@@ -135,6 +158,8 @@ jpsi_x_mu_split_jpsimother = True #true if you want to split the jpsimu bkg cont
 compress_xi_and_sigma = True # If jpsi_x_mu_split_jpsimother is True, this compress the xi and sigma contributes into 1 each
 if args.low_q2:
     from histos import histos_lowq2 as histos_lm
+elif args.less_bins:
+    from histos import histos_lessbins as histos_lm
 else:
     from histos import histos as histos_lm
 
@@ -150,6 +175,9 @@ if jpsi_x_mu_split_jpsimother:
 if add_hm_categories:
     from selections import preselection_hm, preselection_hm_mc
     from histos import histos_hm
+
+    preselection_hm = ' & '.join([preselection_hm, nn_weights_selection])
+    preselection_hm_mc = ' & '.join([preselection_hm_mc, nn_weights_selection])
 
 dateTimeObj = datetime.now()
 print(dateTimeObj.hour, ':', dateTimeObj.minute, ':', dateTimeObj.second, '.', dateTimeObj.microsecond)
@@ -282,27 +310,37 @@ def create_datacard_prep(hists, shape_hists, shapes_names, sample_names, channel
 
     fout.Close()
 
+debug_binbybin = False
+
 # pass the jpsi_x_mu hists chi, sigma, lambda
 def make_single_binbybin(hists, channel, label, name):
+    if(debug_binbybin):print("Channel ",channel," name ",name)
     if only_pass and (channel == 'ch2' or channel == 'ch4'):
         return
     fout = ROOT.TFile.Open('plots_ul/%s/datacards/datacard_%s_%s.root' %(label, channel, name), 'UPDATE')
     which_sample = []
     # loop over the bins of the hist
     for i in range(1,hists['sigma'].GetValue().GetNbinsX()+1):
-        
-        # if at least 2 of them are zero, no uncertainty bc gives problems to the fit
+        if (debug_binbybin): print("bin n ",i)
+        # if at least 2 of them are zero, no uncertainty bcs gives problems to the fit
         flag = 0
         for s1,s2 in zip(['sigma','xi','lambdazero_b'],['xi','lambdazero_b','sigma']):
-            if (hists[s1].GetValue().GetBinContent(i)<0.01 and hists[s2].GetValue().GetBinContent(i)<0.01):
+            if (hists[s1].GetValue().GetBinContent(i)<0.001 and hists[s2].GetValue().GetBinContent(i)<0.001):
+                if(debug_binbybin): print(s1,s1," both are zero ")
                 flag = 1
         if flag == 1:
             which_sample.append(None)
             continue
+
+        if(debug_binbybin):print("sigma, xi, lambdazero values ",hists['sigma'].GetValue().GetBinContent(i),hists['xi'].GetValue().GetBinContent(i),hists['lambdazero_b'].GetValue().GetBinContent(i))
+        if(debug_binbybin):print("sigma, xi, lambdazero error ",hists['sigma'].GetValue().GetBinError(i),hists['xi'].GetValue().GetBinError(i),hists['lambdazero_b'].GetValue().GetBinError(i))
         # compute the quadratic sum of the stat unc of the 3 
         stat_unc = math.sqrt(hists['sigma'].GetValue().GetBinError(i)*hists['sigma'].GetValue().GetBinError(i)+hists['xi'].GetValue().GetBinError(i)*hists['xi'].GetValue().GetBinError(i)+ hists['lambdazero_b'].GetValue().GetBinError(i)*hists['lambdazero_b'].GetValue().GetBinError(i))
+
+        if(debug_binbybin): print("stat uncertainty", stat_unc)
         #find the bin with highest uncertainty amongst the 3 contributes
         highest_stat = max(hists, key = lambda x:hists[x].GetValue().GetBinError(i))
+        if(debug_binbybin): print("sample with highest stat ", highest_stat)
         #print(i,hists['sigma'].GetValue().GetBinError(i),hists['xi'].GetValue().GetBinError(i),hists['lambdazero_b'].GetValue().GetBinError(i), stat_unc)
         which_sample.append(highest_stat)
 
@@ -321,6 +359,7 @@ def make_single_binbybin(hists, channel, label, name):
                 histo_up.SetBinError(nbin,hists[highest_stat].GetValue().GetBinError(nbin))
                 histo_down.SetBinContent(nbin,hists[highest_stat].GetValue().GetBinContent(nbin))
                 histo_down.SetBinError(nbin,hists[highest_stat].GetValue().GetBinError(nbin))
+            if(debug_binbybin):print("nbin ",nbin," histo content ",hists[highest_stat].GetValue().GetBinContent(nbin))
         fout.cd()
         histo_up.Write()
         histo_down.Write()
@@ -913,26 +952,7 @@ if __name__ == '__main__':
         print('====> now looping')
         for k, v in histos.items():
             print("Histo %s"%k)
-            single_bbb_histos = {}
-            single_bbb_histos_fake = {}
-            for sample,sample_item in samples.items():
-                if "jpsi_x_mu" in sample:
-                    if not jpsi_x_mu_split_jpsimother: # The general binbybin only for jpsi_x_mu when it is not splitted
-                        make_binbybin(temp_hists[k]['%s_%s'%(k,sample)],sample,channels[0], label, k)
-                        if not flat_fakerate:
-                            make_binbybin(temp_hists_fake_nn[k]['%s_%s'%(k,sample)],sample,channels[1], label, k)
-                        else:
-                            make_binbybin(temp_hists_fake[k]['%s_%s'%(k,sample)],sample,channels[1], label, k)
-                    if 'sigma' in sample or 'xi' in sample or 'lambda' in sample:
-                        single_bbb_histos[sample.replace("jpsi_x_mu_from_","")]=temp_hists[k]['%s_%s'%(k,sample)]
-                        if not flat_fakerate:
-                            single_bbb_histos_fake[sample.replace("jpsi_x_mu_from_","")]=temp_hists_fake_nn[k]['%s_%s'%(k,sample)]
-                        else:
-                            single_bbb_histos_fake[sample.replace("jpsi_x_mu_from_","")]=temp_hists_fake[k]['%s_%s'%(k,sample)]
 
-            which_sample_bbb_unc = make_single_binbybin(single_bbb_histos, channels[0], label, k)
-            which_sample_bbb_unc_fake = make_single_binbybin(single_bbb_histos_fake, channels[1], label, k)
-            
             #check that bins are not zero (if they are, correct)
             for i, kv in enumerate(temp_hists[k].items()):
                 key = kv[0]
@@ -958,6 +978,27 @@ if __name__ == '__main__':
                     for i in range(1,ihist.GetNbinsX()+1):
                         if ihist.GetBinContent(i) <= 0:
                             ihist.SetBinContent(i,0.0001)
+
+            single_bbb_histos = {}
+            single_bbb_histos_fake = {}
+            for sample,sample_item in samples.items():
+                if "jpsi_x_mu" in sample:
+                    if not jpsi_x_mu_split_jpsimother: # The general binbybin only for jpsi_x_mu when it is not splitted
+                        make_binbybin(temp_hists[k]['%s_%s'%(k,sample)],sample,channels[0], label, k)
+                        if not flat_fakerate:
+                            make_binbybin(temp_hists_fake_nn[k]['%s_%s'%(k,sample)],sample,channels[1], label, k)
+                        else:
+                            make_binbybin(temp_hists_fake[k]['%s_%s'%(k,sample)],sample,channels[1], label, k)
+                    if 'sigma' in sample or 'xi' in sample or 'lambda' in sample:
+                        single_bbb_histos[sample.replace("jpsi_x_mu_from_","")]=temp_hists[k]['%s_%s'%(k,sample)]
+                        if not flat_fakerate:
+                            single_bbb_histos_fake[sample.replace("jpsi_x_mu_from_","")]=temp_hists_fake_nn[k]['%s_%s'%(k,sample)]
+                        else:
+                            single_bbb_histos_fake[sample.replace("jpsi_x_mu_from_","")]=temp_hists_fake[k]['%s_%s'%(k,sample)]
+
+            which_sample_bbb_unc = make_single_binbybin(single_bbb_histos, channels[0], label, k)
+            which_sample_bbb_unc_fake = make_single_binbybin(single_bbb_histos_fake, channels[1], label, k)
+            
 
             if shape_nuisances and ((k in datacards and  iteration==0) or (k in histos and iteration)):
             #if shape_nuisances and ((iteration==0) or (k == 'Bmass' and iteration)):
