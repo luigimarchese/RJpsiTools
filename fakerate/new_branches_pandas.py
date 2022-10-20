@@ -1,8 +1,17 @@
+import numpy as np
 import ROOT
 from uproot_methods import TLorentzVectorArray
+import pandas as pd
 
 def to_define(df):
+    df['Bpt_reco_log'         ] = np.log10(df['Bpt_reco'])                                    
+    df['Bpt_log'         ] = np.log10(df['Bpt'])                                    
+    df['abs_Beta'               ] = abs(df['Beta'])
     df['ip3d_sig'                  ] = df['ip3d']/df['ip3d_e']
+    df['ip3d_corr'                 ]=pd.concat([1.16*df['ip3d'][df.run==1],df['ip3d'][df.run>1]])
+    df['ip3d_e_corr_new'           ]=pd.concat([1.12*df[df.run==1]['ip3d_e'],df[df.run>1]['ip3d_e']])
+
+    df['ip3d_sig_dcorr'            ]= df['ip3d_corr']/df['ip3d_e_corr_new']
     #df['decay_time_ps'             ] = df['decay_time'] * 1e12
     df['abs_mu1_dxy'               ] = abs(df['mu1_dxy'])
     df['abs_mu2_dxy'               ] = abs(df['mu2_dxy'])
@@ -10,6 +19,9 @@ def to_define(df):
     df['mu2_dxy_sig'               ] = abs(df['mu2_dxy']/df['mu2_dxyErr'])                                      
     df['abs_k_dxy'                 ] = abs(df['k_dxy'])                                                   
     df['k_dxy_sig'                 ] = abs(df['k_dxy']/df['k_dxyErr'])                                          
+    df['abs_k_eta'                ] = abs(df['keta'])                                                  
+    df['abs_mu1_eta'                ] = abs(df['mu1eta'])                                                  
+    df['abs_mu2_eta'                ] = abs(df['mu2eta'])                                                  
     df['abs_mu1_dz'                ] = abs(df['mu1_dz'])                                                  
     df['abs_mu2_dz'                ] = abs(df['mu2_dz'])                                                  
     df['mu1_dz_sig'                ] = abs(df['mu1_dz']/df['mu1_dzErr'])                                        
@@ -19,13 +31,23 @@ def to_define(df):
     df['abs_mu1mu2_dz'             ] = abs(df['mu1_dz']-df['mu2_dz'])                                           
     df['abs_mu1k_dz'               ] = abs(df['mu1_dz']-df['k_dz'])                                             
     df['abs_mu2k_dz'               ] = abs(df['mu2_dz']-df['k_dz'])                                             
+    df['jpsivtx_log10_lxy_sig'     ] = np.log10(df['jpsivtx_lxy_sig'])
+    df['bvtx_log10_lxy_sig'        ] = np.log10(df['bvtx_lxy_sig'])
+    df['jpsivtx_log10_lxy'         ] = np.log10(df['jpsivtx_lxy'])
     #df['bvtx_log10_svprob'         ] = TMath::Log10(df['bvtx_svprob'])                                    
     #df['jpsivtx_log10_svprob'      ] = TMath::Log10(df['jpsivtx_svprob'])
     '''df['bvtx_log10_lxy'            ] = TMath::Log10(df['bvtx_lxy)'                                       
-    df['jpsivtx_log10_lxy'         ] = TMath::Log10(df['jpsivtx_lxy)'                                    
-    df['bvtx_log10_lxy_sig'        ] = TMath::Log10(df['bvtx_lxy_sig)'                                   
-    df['jpsivtx_log10_lxy_sig'     ] = TMath::Log10(df['jpsivtx_lxy_sig)'                                
+     df['jpsivtx_log10_lxy_sig'     ] = TMath::Log10(df['jpsivtx_lxy_sig)'                                
     '''
+    df['jpsivtx_lxy_unc_corr'                 ]=pd.concat([1.10*df['jpsivtx_lxy_unc'][df.run==1],df['jpsivtx_lxy_unc'][df.run>1]])
+    df['bvtx_lxy_unc_corr'                 ]=pd.concat([1.14*df['bvtx_lxy_unc'][df.run==1],df['bvtx_lxy_unc'][df.run>1]])
+    df['jpsivtx_lxy_sig_corr'           ]= df['jpsivtx_lxy']/df['jpsivtx_lxy_unc_corr']
+    df['bvtx_lxy_sig_corr'           ]= df['bvtx_lxy']/df['bvtx_lxy_unc_corr']
+    df['jpsivtx_log10_lxy_sig_corr'     ] = np.log10(df['jpsivtx_lxy_sig_corr'])
+    df['bvtx_log10_lxy_sig_corr'     ] = np.log10(df['bvtx_lxy_sig_corr'])
+    df['bvtx_log10_svprob'     ] = np.log10(df['bvtx_svprob'])
+    df['jpsivtx_log10_svprob'     ] = np.log10(df['jpsivtx_svprob'])
+    df['bvtx_log10_lxy'     ] = np.log10(df['bvtx_lxy'])
 
     df['b_iso03_rel'               ] = df['b_iso03']/df['Bpt']                                                  
     df['b_iso04_rel'               ] = df['b_iso04']/df['Bpt']                                                  
@@ -39,6 +61,8 @@ def to_define(df):
     mu2_p4 =  TLorentzVectorArray.from_ptetaphim(df['mu2pt'], df['mu2eta'], df['mu2phi'], df['mu2mass'])  
     mu3_p4 =  TLorentzVectorArray.from_ptetaphim(df['kpt'], df['keta'], df['kphi'], df['kmass'])  
     k_p4 =  TLorentzVectorArray.from_ptetaphim(df['kpt'], df['keta'], df['kphi'], 0.493677)  
+    pion_p4 =  TLorentzVectorArray.from_ptetaphim(df['kpt'], df['keta'], df['kphi'], 0.13957018)  
+
     mmm_p4 = mu1_p4+mu2_p4+mu3_p4
     df['m12'                       ] = (mu1_p4+mu2_p4).mass
     df['m23'                       ] = (mu2_p4 + mu3_p4).mass
@@ -51,8 +75,8 @@ def to_define(df):
     #df['jpsiK_eta'                 ] = df['jpsiK_p4.eta()'                                               
     #df['jpsiK_phi'                 ] = df['jpsiK_p4.phi()'                                               
     #df['pion_p4'                   ] = df['ROOT::Math::PtEtaPhiMVector(kpt, keta, kphi, 0.13957018)'      # this is at the correct pion mass
-    #df['jpsipi_p4'                 ] = df['mu1_p4+mu2_p4+pion_p4'                                        
-    #df['jpsipi_mass'               ] = df['jpsipi_p4.mass()'                                             
+    jpsipi_p4                       = mu1_p4+mu2_p4+pion_p4
+    df['jpsipi_mass'               ] = jpsipi_p4.mass
     #df['jpsipi_pt'                 ] = df['jpsipi_p4.pt()'                                               
     #df['jpsipi_eta'                ] = df['jpsipi_p4.eta()'                                              
     #df['jpsipi_phi'                ] = df['jpsipi_p4.phi()'                                              
