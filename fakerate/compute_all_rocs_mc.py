@@ -11,6 +11,7 @@ import numpy as np
 ROOT.gROOT.SetBatch()   
 ROOT.gStyle.SetOptStat(0)
 
+id_variable = 'k_softMvaId'
 # mc
 mc_path = []
 mc_path.append('/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_June2022/jpsi_mu_nopresel_withpresel_v2_withnn_withidiso.root')
@@ -51,12 +52,12 @@ for mc_p in jpsix_path:
     
 mc = pd.concat(mc, ignore_index=True)
 mcjpsix = pd.concat(mcjpsix, ignore_index=True)
-mc['w']   = 0.09 *1.1 *1.04 * 0.85 * 0.9 *1.4
-mcjpsix['w'] = 0.3 * 0.85 *0.7*0.1 * 2.7 *1.6 *0.85 * 1.8 *1.4 * mcjpsix['jpsimother_weight']
+mc['w']   = 0.09 *1.1 *1.04 * 0.85 * 0.9 *1.4 * 0.81 * 1.0022
+mcjpsix['w'] = 0.3 * 0.85 *0.7*0.1 * 2.7 *1.6 *0.85 * 1.8 *1.4 * 0.96 *mcjpsix['jpsimother_weight']
 data = pd.concat([mc,mcjpsix], ignore_index=True)
 
-pass_id = 'k_mediumID<0.5 & k_raw_db_corr_iso03_rel<0.2' 
-fail_id = 'k_mediumID<0.5 & k_raw_db_corr_iso03_rel>0.2'
+pass_id = id_variable+'<0.5 & k_raw_db_corr_iso03_rel<0.2' 
+fail_id = id_variable+'<0.5 & k_raw_db_corr_iso03_rel>0.2'
 
 #main_df is already shuffled
 passing_tmp   = data.query(pass_id).copy()
@@ -135,8 +136,8 @@ for j,var in enumerate(variables):
     rej_bkg.append(1.)
     eff_sig.append(0.)
     eff_sig.append(0.)    
-    #graph = ROOT.TGraph(n_cuts+2,rej_bkg,eff_sig)
-    graph = ROOT.TGraph(n_cuts,rej_bkg,eff_sig)
+    graph = ROOT.TGraph(n_cuts+2,rej_bkg,eff_sig)
+    #graph = ROOT.TGraph(n_cuts,rej_bkg,eff_sig)
     graph.SetTitle(var)
     print("col value",z)
     if z == 5:
@@ -147,7 +148,7 @@ for j,var in enumerate(variables):
     leg.AddEntry(graph,var,'L')
     xy.append(point)
     z+=1
-    #aucs[var] = graph.Integral()-0.5
+    aucs[var] = graph.Integral()-0.5
 
 graph = ROOT.TGraph(n_cuts,xy, xy)
 #mg.Add(graph)

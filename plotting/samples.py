@@ -148,13 +148,17 @@ ff_weights['jpsi_mu_bglvar_e10Down'  ] = 1./0.586
 #ff_weights['jpsi_mu_bglvar_e10Down'  ] = 1./0.603
 
 weights = dict()
-bc_weight = 0.09 *1.1 *1.04 * 0.85 * 0.9 *1.4
+bc_weight = 0.09 *1.1 *1.04 * 0.85 * 0.9 *1.4  *0.81 * 1.0022  #*0.9 #*0.9 * 0.789 *1.14
+#bc_weight = 0.09 *1.1 *1.04 * 0.85 * 0.9 *1.4 
+
 #bc_weight = 0.15  #for prev ff_weights
 #bc_weight = 1.53 #for prev oct21
 fr = 0.19
 #hbmu_norm = 8.5 *1.5 #without weights
 #hbmu_norm = 8.5 *0.5 *0.65 #0.65 from fit, so it will make the fit converge better (old sample)
-hbmu_norm = 0.3 * 0.85 *0.7*0.1 * 2.7 *1.6 *0.85 * 1.8 *1.4    # new sample (0.85 from fit)
+
+hbmu_norm = 0.3 * 0.85 *0.7*0.1 * 2.7 *1.6 *0.85 * 1.8 *1.4 * 0.96 * 1.1318 #* 0.96 # * 0.8 # *1.1 # * 0.96*1.16    # new sample (0.85 from fit)
+#hbmu_norm = 0.3 * 0.85 *0.7*0.1 * 2.7 *1.6 *0.85 * 1.8 *1.4 
 
 
 weights['jpsi_tau' ] = bc_weight * ff_weights['jpsi_tau' ]
