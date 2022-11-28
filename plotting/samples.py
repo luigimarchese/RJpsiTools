@@ -48,6 +48,7 @@ sample_names_explicit_all = basic_samples_names + jpsi_x_mu_sample_all_splitting
 # Overall weight to use to renormalize the Bc->jpsi mu and Bc-> jpsi tau samples due to FF reweighting
 # Computed in tools/hammer/compute_yield_weights
 
+
 ff_weights = dict()
 ff_weights['jpsi_tau' ] = 1./0.554
 ff_weights['jpsi_mu'  ] = 1./0.586
@@ -173,8 +174,9 @@ weights['jpsi_hc'  ] = bc_weight
 weights['fakes'    ] = 1.  #fr/(1-fr) #2.7 # 2.5 # 2.7
 #weights['fakes'    ] = 2 * 1.2 #fr/(1-fr) #2.7 # 2.5 # 2.7
 weights['data'     ] = 1.
+weights['dimuon'     ] = 1.
 #weights['dimuon'     ] = 1.
-weights['jpsi_x'] = 15
+#weights['jpsi_x'] = 15
 weights['jpsi_x_mu'] = 1. * hbmu_norm # 10. # 8.5
 weights['jpsi_x_mu_hm'] = 1. * hbmu_norm # 10. # 8.5
 weights['jpsi_x_mu_lm'] = 1. * hbmu_norm # 10. # 8.5

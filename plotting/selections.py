@@ -69,7 +69,7 @@ preselection_hm = ' & '.join([prepreselection, triggerselection, etaselection, '
 preselection_hm_mc = ' & '.join([preselection_hm, 'abs(k_genpdgId)==13'])
 
 
-common_sel = 'k_softMvaId<0.5'
+common_sel = 'k_softMvaId>0.5'
 pass_iso = 'k_raw_db_corr_iso03_rel<0.2'
 
 pass_id = pass_iso +" & "+ common_sel

@@ -1182,7 +1182,7 @@ if __name__ == '__main__':
                 chi2_value = ROOT.TPaveText(0.75, 0.55, 0.88, 0.65, 'nbNDC')
                 chi2_value.AddText('pvalue = %.3f' %total_histo_for_chi2.Chi2Test(temp_hists[k]['%s_data'%k].GetValue(),"WW"))
                 chi2_value.SetFillColor(0)
-                chi2_value.Draw('EP')
+                #chi2_value.Draw('EP')
             
             # Ratio for pass region
             ratio_pad.cd()
