@@ -37,11 +37,15 @@ ROOT.ROOT.EnableImplicitMT()
 def get_DiMuonBkgNorm():
     
     tree_name = 'BTo3Mu'
-    tree_dir = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_Dec2021/'
+    #tree_dir = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_Dec2021/'
+    tree_dir = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_June2022/'
+    tree_dir_low = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2022Nov22/'
 
     dataframe = {}
-    dataframe["SR"] = ROOT.RDataFrame(tree_name,'%s/data_fakerate_only_iso.root'%(tree_dir))
-    dataframe["SBs"] = ROOT.RDataFrame(tree_name,{'%s/datalowmass_fakerate_only_iso.root'%(tree_dir), '%s/data_fakerate_only_iso.root'%(tree_dir)})
+    #dataframe["SR"] = ROOT.RDataFrame(tree_name,'%s/data_fakerate_only_iso.root'%(tree_dir))
+    #dataframe["SBs"] = ROOT.RDataFrame(tree_name,{'%s/datalowmass_fakerate_only_iso.root'%(tree_dir), '%s/data_fakerate_only_iso.root'%(tree_dir)})
+    dataframe["SR"] = ROOT.RDataFrame(tree_name,'%s/data_nopresel_withpresel_v2_withnn_withidiso_v3.root'%(tree_dir))
+    dataframe["SBs"] = ROOT.RDataFrame(tree_name,{'%s/datalowmass_ptmax_merged_v5.root'%(tree_dir_low), '%s/data_nopresel_withpresel_v2_withnn_withidiso_v3.root'%(tree_dir)})
     regions = list(dataframe.keys())
 
     print("==================================")
@@ -117,7 +121,7 @@ def get_DiMuonBkgNorm():
     bkgSlope               = ROOT.RooRealVar     ("bkgSlope",        "bkgSlope",    -4.,     -20., 20.                                           )
     
     ##### Fit Normalizations #####
-    NSgl                   = ROOT.RooRealVar     ("NSgl",            "NSgl",        5000,     0.,  500000.                                       )
+    NSgl                   = ROOT.RooRealVar     ("NSgl",            "NSgl",        10000,     0.,  500000.                                       )
     NBkg                   = ROOT.RooRealVar     ("NBkg",            "NBkg",        500,      0.,    4000.                                       )
     NBkgSB                 = ROOT.RooRealVar     ("NBkgSB",          "NBkgSB",      5000,     0.,  100000.                                       )
     
@@ -260,11 +264,11 @@ def get_DiMuonBkgNorm():
     if(sanitycheck):
         print("NBkg: ", NBkg.getVal(), "Jpsimass[SRloose].Integral(): ",  JpsimassSRloose["SR"].Integral(), "NormalizationSRloose: ", Normalization)
     print("DiMuon Normalization done")
-    return Normalization
+    return Normalization, NBkg.getVal(), JpsimassSRloose["SR"].Integral()
     
 
 
-def get_DiMuonBkg(NormSRloose, selection, var_index, isfail, label, channel):
+def get_DiMuonBkg(NormSRloose, Nmm_SRloose, Nentr_SRloose, selection, var_index, isfail, label, channel):
     # NormSRloose is the normalization from the SRloose, obtained by calling the function above get_DiMuonBkgNorm()
     # selection is the category selection which will be used to derive the specific DiMuon shape (Q2 or jpsivtx_log10_lxy_sig) in that category
     # var_index is the variable_index used to understand which shape variable we are interested in (Q2 or jpsivtx_log10_lxy_sig, but also several others in case in future we will need them for the BDT)
@@ -276,7 +280,9 @@ def get_DiMuonBkg(NormSRloose, selection, var_index, isfail, label, channel):
         os.makedirs('plots_ul/'+label+'/dimuon/')
 
     tree_name = 'BTo3Mu'
-    tree_dir = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_Dec2021/'
+    tree_dir = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_June2022/'
+    tree_dir_low = '/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_2022Nov22/'
+
         
     dataframe = {}
     #dataframe["SR"] = ROOT.RDataFrame(tree_name,'%s/data_ptmax_merged_fakerate.root'%(tree_dir))
@@ -284,9 +290,11 @@ def get_DiMuonBkg(NormSRloose, selection, var_index, isfail, label, channel):
     #dataframe["ResonantTrg"] = ROOT.RDataFrame(tree_name,'%s/data_ptmax_merged_fakerate.root'%(tree_dir)) 
     #dataframe["NonResonantTrg"] = ROOT.RDataFrame(tree_name,'%s/datalowmass_ptmax_merged_fakerate.root'%(tree_dir))
     #dataframe["SBs"] = ROOT.RDataFrame(tree_name,{'%s/datalowmass_ptmax_merged_fakerate_2.root'%(tree_dir), '%s/data_ptmax_merged_fakerate.root'%(tree_dir)})
-    dataframe["SR"] = ROOT.RDataFrame(tree_name,'%s/data_fakerate_only_iso.root'%(tree_dir))
-    dataframe["SBs"] = ROOT.RDataFrame(tree_name,{'%s/datalowmass_fakerate_only_iso.root'%(tree_dir), '%s/data_fakerate_only_iso.root'%(tree_dir)})
+    
+    dataframe["SR"] = ROOT.RDataFrame(tree_name,'%s/data_nopresel_withpresel_v2_withnn_withidiso_v3.root'%(tree_dir))
+    dataframe["SBs"] = ROOT.RDataFrame(tree_name,{'%s/datalowmass_ptmax_merged_v5.root'%(tree_dir_low), '%s/data_nopresel_withpresel_v2_withnn_withidiso_v3.root'%(tree_dir)})
     regions = list(dataframe.keys())
+   
     
     print("==================================")
     print("==== Dimuon Combinatorial Bkg ====")
@@ -461,6 +469,12 @@ def get_DiMuonBkg(NormSRloose, selection, var_index, isfail, label, channel):
     FinalNorm = NormSRloose*JpsimassSR["SR"].Integral()/DimuonShape.Integral()
     # The final NBkg = NBkg_SRloose * N_entires_SR/N_entries_SRloose. The function get_DiMuonBkgNorm returns the Number of background NormSRloose = events/N_entries_SRloose. The function get_DiMuonBkg() is now scaling it by the missing N_entires_SR. The shape histo must be normalized to unity in order to apply the final normalization, so we need to scale NormSRloose by N_entires_SR/DimuonShape.Integral()
     DimuonShape.Scale(FinalNorm)
+
+    ## Calculation of Normalisation error  ##
+    Nentr_SRx = JpsimassSR["SR"].Integral()
+    ErrNorm_1 = 1/DimuonShape.Integral()/Nentr_SRloose
+    ErrNorm_2 = sqrt(Nentr_SRx*Nentr_SRx*Nmm_SRloose + Nmm_SRloose*Nentr_SRx + Nmm_SRloose*Nmm_SRloose*Nentr_SRx*Nentr_SRx/Nentr_SRloose + Nmm_SRloose*Nmm_SRloose*Nentr_SRx*Nentr_SRx/DimuonShape.Integral())
+    Error_Norm = ErrNorm_1 * ErrNorm_2
     if(sanitycheck):
         print("Dimuon Normalization from SRloose: ", NormSRloose)
         print("Jpsimass[SR].Integral(): ",  JpsimassSR["SR"].Integral(), "Jpsimass[SR].Entries(): ",  JpsimassSR["SR"].GetEntries(), "DimuonShape.Integral() : ", DimuonShape.Integral())
@@ -470,5 +484,6 @@ def get_DiMuonBkg(NormSRloose, selection, var_index, isfail, label, channel):
         DimuonShape.GetValue().Draw("pe")
         DiMuonShapeCanvas.Print('plots_ul/'+label+'/dimuon/NormalizedDiMuonShape'+channel+'.png')
     print("DiMuon done")
+    print("Normalization for category:",  FinalNorm, "+-", Error_Norm)
     return DimuonShape
                     

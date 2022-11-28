@@ -122,7 +122,7 @@ def get_DiMuonBkgNorm(label):
     bkgSlope               = ROOT.RooRealVar     ("bkgSlope",        "bkgSlope",    -4.,     -20., 20.                                           )
     
     ##### Fit Normalizations #####
-    NSgl                   = ROOT.RooRealVar     ("NSgl",            "NSgl",        5000,     0.,  500000.                                       )
+    NSgl                   = ROOT.RooRealVar     ("NSgl",            "NSgl",        10000,    0.,  500000.                                       )
     NBkg                   = ROOT.RooRealVar     ("NBkg",            "NBkg",        500,      0.,    4000.                                       )
     NBkgSB                 = ROOT.RooRealVar     ("NBkgSB",          "NBkgSB",      5000,     0.,  100000.                                       )
     
