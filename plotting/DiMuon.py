@@ -264,11 +264,11 @@ def get_DiMuonBkgNorm():
     if(sanitycheck):
         #print("NBkg: ", NBkg.getVal(), "Jpsimass[SRloose].Integral(): ",  JpsimassSRloose["SR"].Integral(), "NormalizationSRloose: ", Normalization)
         print("DiMuon Normalization done")
-        return Normalization, NBkg.getVal(), JpsimassSRloose["SR"].Integral()
+        return Normalization, NBkg.getVal(), NBkg.getError(), JpsimassSRloose["SR"].Integral()
     
 
 
-def get_DiMuonBkg(NormSRloose, Nmm_SRloose, Nentr_SRloose, selection, var_index, isfail, label, channel):
+def get_DiMuonBkg(NormSRloose, Nmm_SRloose, Nmm_SRlooseErr, Nentr_SRloose, selection, var_index, isfail, label, channel):
     # NormSRloose is the normalization from the SRloose, obtained by calling the function above get_DiMuonBkgNorm()
     # selection is the category selection which will be used to derive the specific DiMuon shape (Q2 or jpsivtx_log10_lxy_sig) in that category
     # var_index is the variable_index used to understand which shape variable we are interested in (Q2 or jpsivtx_log10_lxy_sig, but also several others in case in future we will need them for the BDT)
@@ -475,7 +475,7 @@ def get_DiMuonBkg(NormSRloose, Nmm_SRloose, Nentr_SRloose, selection, var_index,
     #ErrNorm_1 = 1/DimuonShape.Integral()/Nentr_SRloose
     #ErrNorm_2 = sqrt(Nentr_SRx*Nentr_SRx*Nmm_SRloose + Nmm_SRloose*Nentr_SRx + Nmm_SRloose*Nmm_SRloose*Nentr_SRx*Nentr_SRx/Nentr_SRloose + Nmm_SRloose*Nmm_SRloose*Nentr_SRx*Nentr_SRx/DimuonShape.Integral())
     ErrNorm_1 = 1/Nentr_SRloose                                                                  
-    ErrNorm_2 = sqrt(Nentr_SRx*Nentr_SRx*Nmm_SRloose + Nmm_SRloose*Nentr_SRx + Nmm_SRloose*Nmm_SRloose*Nentr_SRx*Nentr_SRx/Nentr_SRloose)  
+    ErrNorm_2 = sqrt(Nentr_SRx*Nentr_SRx*Nmm_SRlooseErr*Nmm_SRlooseErr + Nmm_SRloose*Nentr_SRx + Nmm_SRloose*Nmm_SRloose*Nentr_SRx*Nentr_SRx/Nentr_SRloose)  
     Error_Norm = ErrNorm_1 * ErrNorm_2
     if(sanitycheck):
         #print("Dimuon Normalization from SRloose: ", NormSRloose)
