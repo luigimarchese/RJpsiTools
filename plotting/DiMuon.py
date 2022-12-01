@@ -44,8 +44,8 @@ def get_DiMuonBkgNorm():
     dataframe = {}
     #dataframe["SR"] = ROOT.RDataFrame(tree_name,'%s/data_fakerate_only_iso.root'%(tree_dir))
     #dataframe["SBs"] = ROOT.RDataFrame(tree_name,{'%s/datalowmass_fakerate_only_iso.root'%(tree_dir), '%s/data_fakerate_only_iso.root'%(tree_dir)})
-    dataframe["SR"] = ROOT.RDataFrame(tree_name,'%s/data_nopresel_withpresel_v2_withnn_withidiso_v3.root'%(tree_dir))
-    dataframe["SBs"] = ROOT.RDataFrame(tree_name,{'%s/datalowmass_ptmax_merged_v5.root'%(tree_dir_low), '%s/data_nopresel_withpresel_v2_withnn_withidiso_v3.root'%(tree_dir)})
+    dataframe["SR"] = ROOT.RDataFrame(tree_name,'%s/data_withpresel_notriggersel.root'%(tree_dir)) # no trigger no eta sel
+    dataframe["SBs"] = ROOT.RDataFrame(tree_name,{'%s/datalowmass_withpresel_notriggersel.root'%(tree_dir_low), '%s/data_withpresel_notriggersel.root'%(tree_dir)})
     regions = list(dataframe.keys())
 
     print("==================================")
@@ -121,7 +121,7 @@ def get_DiMuonBkgNorm():
     bkgSlope               = ROOT.RooRealVar     ("bkgSlope",        "bkgSlope",    -4.,     -20., 20.                                           )
     
     ##### Fit Normalizations #####
-    NSgl                   = ROOT.RooRealVar     ("NSgl",            "NSgl",        10000,     0.,  500000.                                       )
+    NSgl                   = ROOT.RooRealVar     ("NSgl",            "NSgl",        50000,     0.,  450000.                                      )
     NBkg                   = ROOT.RooRealVar     ("NBkg",            "NBkg",        500,      0.,    4000.                                       )
     NBkgSB                 = ROOT.RooRealVar     ("NBkgSB",          "NBkgSB",      5000,     0.,  100000.                                       )
     
@@ -262,9 +262,9 @@ def get_DiMuonBkgNorm():
     Normalization = NBkg.getVal()/JpsimassSRloose["SR"].Integral()
     # The final NBkg = NBkg_SRloose * N_entires_SR/N_entries_SRloose. This function returns the Number of background events/N_entries_SRloose. The function get_DiMuonBkg() will later scale it by the missing N_entires_SR
     if(sanitycheck):
-        print("NBkg: ", NBkg.getVal(), "Jpsimass[SRloose].Integral(): ",  JpsimassSRloose["SR"].Integral(), "NormalizationSRloose: ", Normalization)
-    print("DiMuon Normalization done")
-    return Normalization, NBkg.getVal(), JpsimassSRloose["SR"].Integral()
+        #print("NBkg: ", NBkg.getVal(), "Jpsimass[SRloose].Integral(): ",  JpsimassSRloose["SR"].Integral(), "NormalizationSRloose: ", Normalization)
+        print("DiMuon Normalization done")
+        return Normalization, NBkg.getVal(), JpsimassSRloose["SR"].Integral()
     
 
 
@@ -291,8 +291,8 @@ def get_DiMuonBkg(NormSRloose, Nmm_SRloose, Nentr_SRloose, selection, var_index,
     #dataframe["NonResonantTrg"] = ROOT.RDataFrame(tree_name,'%s/datalowmass_ptmax_merged_fakerate.root'%(tree_dir))
     #dataframe["SBs"] = ROOT.RDataFrame(tree_name,{'%s/datalowmass_ptmax_merged_fakerate_2.root'%(tree_dir), '%s/data_ptmax_merged_fakerate.root'%(tree_dir)})
     
-    dataframe["SR"] = ROOT.RDataFrame(tree_name,'%s/data_nopresel_withpresel_v2_withnn_withidiso_v3.root'%(tree_dir))
-    dataframe["SBs"] = ROOT.RDataFrame(tree_name,{'%s/datalowmass_ptmax_merged_v5.root'%(tree_dir_low), '%s/data_nopresel_withpresel_v2_withnn_withidiso_v3.root'%(tree_dir)})
+    dataframe["SR"] = ROOT.RDataFrame(tree_name,'%s/data_withpresel_notriggersel.root'%(tree_dir)) # no trigger no eta sel
+    dataframe["SBs"] = ROOT.RDataFrame(tree_name,{'%s/datalowmass_withpresel_notriggersel.root'%(tree_dir_low), '%s/data_withpresel_notriggersel.root'%(tree_dir)})
     regions = list(dataframe.keys())
    
     
@@ -472,18 +472,20 @@ def get_DiMuonBkg(NormSRloose, Nmm_SRloose, Nentr_SRloose, selection, var_index,
 
     ## Calculation of Normalisation error  ##
     Nentr_SRx = JpsimassSR["SR"].Integral()
-    ErrNorm_1 = 1/DimuonShape.Integral()/Nentr_SRloose
-    ErrNorm_2 = sqrt(Nentr_SRx*Nentr_SRx*Nmm_SRloose + Nmm_SRloose*Nentr_SRx + Nmm_SRloose*Nmm_SRloose*Nentr_SRx*Nentr_SRx/Nentr_SRloose + Nmm_SRloose*Nmm_SRloose*Nentr_SRx*Nentr_SRx/DimuonShape.Integral())
+    #ErrNorm_1 = 1/DimuonShape.Integral()/Nentr_SRloose
+    #ErrNorm_2 = sqrt(Nentr_SRx*Nentr_SRx*Nmm_SRloose + Nmm_SRloose*Nentr_SRx + Nmm_SRloose*Nmm_SRloose*Nentr_SRx*Nentr_SRx/Nentr_SRloose + Nmm_SRloose*Nmm_SRloose*Nentr_SRx*Nentr_SRx/DimuonShape.Integral())
+    ErrNorm_1 = 1/Nentr_SRloose                                                                  
+    ErrNorm_2 = sqrt(Nentr_SRx*Nentr_SRx*Nmm_SRloose + Nmm_SRloose*Nentr_SRx + Nmm_SRloose*Nmm_SRloose*Nentr_SRx*Nentr_SRx/Nentr_SRloose)  
     Error_Norm = ErrNorm_1 * ErrNorm_2
     if(sanitycheck):
-        print("Dimuon Normalization from SRloose: ", NormSRloose)
-        print("Jpsimass[SR].Integral(): ",  JpsimassSR["SR"].Integral(), "Jpsimass[SR].Entries(): ",  JpsimassSR["SR"].GetEntries(), "DimuonShape.Integral() : ", DimuonShape.Integral())
-        print("Final DiMuon number of events for this category = : ", NormSRloose*JpsimassSR["SR"].Integral())
+        #print("Dimuon Normalization from SRloose: ", NormSRloose)
+        #print("Jpsimass[SR].Integral(): ",  JpsimassSR["SR"].Integral(), "Jpsimass[SR].Entries(): ",  JpsimassSR["SR"].GetEntries(), "DimuonShape.Integral() : ", DimuonShape.Integral())
+        print("Final DiMuon number of events for this category = : ", NormSRloose*JpsimassSR["SR"].Integral(), "+-", Error_Norm)
         DiMuonShapeCanvas = TCanvas("DiMuonShapeCanvas", "DiMuonShapeCanvas", 0, 0, 700, 700)
         DiMuonShapeCanvas.cd()
         DimuonShape.GetValue().Draw("pe")
         DiMuonShapeCanvas.Print('plots_ul/'+label+'/dimuon/NormalizedDiMuonShape'+channel+'.png')
     print("DiMuon done")
-    print("Normalization for category:",  FinalNorm, "+-", Error_Norm)
+    #print("Normalization for category:",  FinalNorm, "+-", Error_Norm)
     return DimuonShape
                     
