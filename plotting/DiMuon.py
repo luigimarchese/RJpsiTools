@@ -112,7 +112,7 @@ def get_DiMuonBkgNorm():
     ResSigma               = ROOT.RooRealVar     ("ResSigma",       "ResSigma",     1.5,     0.,   3.                                            )
     alphaCB                = ROOT.RooRealVar     ("alphaCB",        "alphaCB",      1.5,     0.,   10.                                           )
     nCB                    = ROOT.RooRealVar     ("nCB",             "nCB",         1.5,     0.,   100.                                          )
-    fraGauss               = ROOT.RooRealVar     ("fraGauss",       "fraGauss",     0.1,     0.,   0.35                                          )
+    fraGauss               = ROOT.RooRealVar     ("fraGauss",       "fraGauss",     0.05,     0.,   0.35                                          )
     
     MeanMassJpsi           = ROOT.RooFormulaVar  ("MeanMassJpsi",   "MassJpsi*scale", ROOT.RooArgList(MassJpsi, scale))
     sigmaGauss             = ROOT.RooFormulaVar  ("sigmaGauss",     "sigma*ResSigma", ROOT.RooArgList(sigma, ResSigma))
@@ -121,7 +121,7 @@ def get_DiMuonBkgNorm():
     bkgSlope               = ROOT.RooRealVar     ("bkgSlope",        "bkgSlope",    -4.,     -20., 20.                                           )
     
     ##### Fit Normalizations #####
-    NSgl                   = ROOT.RooRealVar     ("NSgl",            "NSgl",        50000,     0.,  450000.                                      )
+    NSgl                   = ROOT.RooRealVar     ("NSgl",            "NSgl",        50000,     0.,  400000.                                      )
     NBkg                   = ROOT.RooRealVar     ("NBkg",            "NBkg",        500,      0.,    4000.                                       )
     NBkgSB                 = ROOT.RooRealVar     ("NBkgSB",          "NBkgSB",      5000,     0.,  100000.                                       )
     

@@ -23,6 +23,31 @@ Difference from _v4:
 - new option for jpsiXMu bkg to be splitted in the different contributions: 
    - FIXME: the datacard production gives an error: I will solve this when we have the new MC, because now we don't need that function
 '''
+'''
+data = 20
+mc = 20
+alpha = 20
+
+data_p03 = 21
+mc_p03 = 21
+alpha_p03 = 21
+
+data_m03 = 22
+mc_m03 = 22
+alpha_m03 = 22
+
+data_inv = 23
+mc_inv = 23
+alpha_inv = 23
+
+data_p03_inv = 24
+mc_p03_inv = 24
+alpha_p03_inv = 24
+
+data_m03_inv = 25
+mc_m03_inv = 25
+alpha_m03_inv = 25
+'''
 
 data = 5
 mc = 5
@@ -79,7 +104,7 @@ from samples import weights, titles, colours, ff_weights
 from selections import preselection, preselection_mc, pass_id, fail_id, pass_id_inv, fail_id_inv, prepreselection, triggerselection
 from create_datacard_v6 import create_datacard_ch1, create_datacard_ch2, create_datacard_ch3, create_datacard_ch4, create_datacard_ch1_onlypass, create_datacard_ch3_onlypass
 from plot_shape_nuisances_v7 import plot_shape_nuisances
-from DiMuon_v2 import get_DiMuonBkgNorm, get_DiMuonBkg
+from DiMuon import get_DiMuonBkgNorm, get_DiMuonBkg
 from shape_comparison import shape_comparison
 
 parser = ArgumentParser()
@@ -108,7 +133,10 @@ nn_weights_selection_inv =    '(abs((fakerate_onlydata_%d-fakerate_alpha_%d*fake
 #preselection_plus = ' & '.join([nn_weights_selection, args.preselection_plus])
 preselection_plus = args.preselection_plus
 
+fail_id_for_dimuon_sr =fail_id
+
 fail_id = ' & '.join([fail_id, '(abs((fakerate_onlydata_%d-fakerate_alpha_%d*fakerate_onlymc_%d)/(1-fakerate_alpha_%d))<10)'%(data,alpha,mc,alpha)])
+
 fail_id_p03 = ' & '.join([fail_id, '(abs((fakerate_onlydata_%d-fakerate_alpha_%d*fakerate_onlymc_%d)/(1-fakerate_alpha_%d))<10)'%(data_p03,alpha_p03,mc_p03,alpha_p03)])
 fail_id_m03 = ' & '.join([fail_id, '(abs((fakerate_onlydata_%d-fakerate_alpha_%d*fakerate_onlymc_%d)/(1-fakerate_alpha_%d))<10)'%(data_m03,alpha_m03,mc_m03,alpha_m03)])
 fail_id_p03_inv = ' & '.join([fail_id_inv, '(abs((fakerate_onlydata_%d-fakerate_alpha_%d*fakerate_onlymc_%d)/(1-fakerate_alpha_%d))<10)'%(data_p03_inv,alpha_p03_inv,mc_p03_inv,alpha_p03_inv)])
@@ -118,7 +146,18 @@ fail_id_inv = ' & '.join([fail_id_inv,'(abs((fakerate_onlydata_%d-fakerate_alpha
 preselection =  ' & '.join([preselection, preselection_plus])
 preselection_mc =  ' & '.join([preselection_mc, preselection_plus])
 preselection_dimuon =  ' & '.join([prepreselection,triggerselection,'jpsi_mass>2.89 & jpsi_mass<3.01', 'Bmass<6.3 ', preselection_plus]) #firsts terms are already in the ntupla
-print(preselection)
+preselection_dimuon_sr =  ' & '.join([prepreselection,triggerselection, 'Bmass<6.3 ', preselection_plus]) #firsts terms are already in the ntupla
+print("Additional selection ",preselection_plus)
+
+dimuon_redefined_branches = ["Q_sq","m_miss_sq","pt_var","pt_miss_vec"]
+
+#dimuon_redefined_branches
+for branch in dimuon_redefined_branches:
+    if branch in preselection_dimuon:
+        preselection_dimuon= preselection_dimuon.replace(branch,branch+"_dimuon")
+
+#print(preselection_dimuon)
+#print(preselection_dimuon_sr)
 
 shape_nuisances = True
 flat_fakerate = False # false mean that we use the NN weights for the fr
@@ -127,20 +166,19 @@ flat_fakerate = False # false mean that we use the NN weights for the fr
 blind_analysis = True
 rjpsi = 1
 
-correct_fakes_with_inverted_method = False
+correct_fakes_with_inverted_method = True
 
 add_dimuon = args.add_dimuon
 compute_dimuon = args.compute_dimuon
 dimuon_load = args.dimuon_load
 
 asimov = args.asimov
-print(type(asimov),asimov)
+print("Asimov",asimov)
 #asimov = False
 only_pass = False
 
-dimuon_redefined_branches = ["Q_sq","m_miss_sq","pt_var"]
 
-Norm_SRloose = 3.999432
+dimuon_norm1 = 0.0089
 
 if asimov:
     blind_analysis=False
@@ -169,6 +207,12 @@ if add_hm_categories:
     from selections import preselection_hm, preselection_hm_mc
     from histos import histos_hm
     preselection_hm_dimuon =  ' & '.join([prepreselection,triggerselection,'jpsi_mass>2.89 & jpsi_mass<3.01', 'Bmass>6.3']) #firsts terms are already in the ntupla
+    preselection_hm_dimuon_sr =  ' & '.join([prepreselection,triggerselection, 'Bmass>6.3']) #firsts terms are already in the ntupla
+
+#dimuon_redefined_branches
+for branch in dimuon_redefined_branches:
+    if branch in preselection_hm_dimuon:
+        preselection_hm_dimuon= preselection_hm_dimuon.replace(branch,branch+"_dimuon")
     
 
 dateTimeObj = datetime.now()
@@ -302,11 +346,11 @@ def create_datacard_prep(hists, shape_hists, shapes_names, sample_names, channel
             if channel == 'ch1' :
                 create_datacard_ch1(label, name,  myhists,  False, jpsi_x_mu_samples, which_sample_bbb_unc, add_dimuon = add_dimuon, sf_reco= sf_reco)
             elif channel == 'ch2' :
-                create_datacard_ch2(label, name,  myhists,  False, jpsi_x_mu_samples, which_sample_bbb_unc, sf_reco)
+                create_datacard_ch2(label, name,  myhists,  False, jpsi_x_mu_samples, which_sample_bbb_unc, add_dimuon = add_dimuon,sf_reco=sf_reco)
             elif channel == 'ch3' :
                 create_datacard_ch3(label, name,  myhists,  False, jpsi_x_mu_samples, which_sample_bbb_unc, add_dimuon = add_dimuon, sf_reco= sf_reco)
             else:
-                create_datacard_ch4(label, name,  myhists,  False, jpsi_x_mu_samples, which_sample_bbb_unc, sf_reco)
+                create_datacard_ch4(label, name,  myhists,  False, jpsi_x_mu_samples, which_sample_bbb_unc, add_dimuon = add_dimuon, sf_reco=sf_reco)
 
     fout.Close()
 
@@ -453,9 +497,11 @@ ratio_pad.SetBottomMargin(0.45)
 ##########################################################################################
 ##########################################################################################
 
+debug_dimuon = False
+
 if __name__ == '__main__':
     
-    datacards = ['Q_sq','jpsivtx_log10_lxy_sig_corr']
+    datacards = ['Q_sq','jpsivtx_log10_lxy_sig_corr','jpsi_mass']
     #datacards = histos
 
     # timestamp
@@ -463,12 +509,8 @@ if __name__ == '__main__':
     # create plot directories
     make_directories(label)
     
-    #central_weights_string = 'br_weight'#*puWeight*sf_reco_total*sf_id_jpsi*sf_id_k'#*jpsimass_weights_for_correction*bc_mc_correction_weight_central' #the mc_correction_central weight is 1, added just to generalize the function for shape uncertainties
-
     central_weights_string = 'ctau_weight_central*br_weight*puWeight*sf_reco_total*sf_id_jpsi*sf_id_k*bc_mc_correction_weight_central_v2*jpsimass_weights_for_correction' #the mc_correction_central weight is 1, added just to generalize the function for shape uncertainties
-    #central_weights_string = 'ctau_weight_central*br_weight*puWeight*sf_reco_total*sf_id_jpsi*sf_id_k*bc_mc_correction_weight_central_v2' #the mc_correction_central weight is 1, added just to generalize the function for shape uncertainties
-
-    #central_weights_string = 'ctau_weight_central*br_weight*puWeight*sf_reco_total*sf_id_jpsi*sf_id_k*jpsimass_weights_for_correction'#*bc_mc_correction_weight_central' #the mc_correction_central weight is 1, added just to generalize the function for shape uncertainties
+    #central_weights_string = 'ctau_weight_central*br_weight*puWeight*sf_reco_total*sf_id_jpsi*sf_id_k*bc_mc_correction_weight_central_v2'#*jpsimass_weights_for_correction' #the mc_correction_central weight is 1, added just to generalize the function for shape uncertainties
 
     # access the samples, via RDataFrames
     samples_orig = dict()
@@ -484,24 +526,61 @@ if __name__ == '__main__':
     print("====== Loading Samples ======")
     print("=============================")
 
+    sample_files =[]
     if add_dimuon:
         sample_names = sample_names + ['dimuon']
 
     #load the samples (jpsi_x_mu even if I want it splitted)
     for k in sample_names:
-        '''if k == 'data':
-            #samples_orig[k] = ROOT.RDataFrame(tree_name,'/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_Dec2021/data_with_mc_corrections.root') 
-            #samples_orig[k] = ROOT.RDataFrame(tree_name,'/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_Dec2021/data_fakerate_only_iso.root') 
-            #samples_orig[k] = ROOT.RDataFrame(tree_name,'/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_June2022/data_withpres_withnn.root') 
-            #samples_orig[k] = ROOT.RDataFrame(tree_name,'/pnfs/psi.ch/cms/trivcat/store/user/friti/dataframes_June2022/data_nopresel_withpresel_v1.root') 
-        else:'''
-        samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_nopresel_withpresel_v2_withnn_withidiso_v3.root'%(tree_dir,k)) 
-        #samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_nopresel.root'%(tree_dir,k)) 
-        #samples_orig[k] = ROOT.RDataFrame(tree_name,'../samples/%s_nopresel_withpresel_v1.root'%(k)) 
-            #samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_with_mc_corrections.root'%(tree_dir,k)) 
-            #samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_nopresel_withpresel_v1.root'%(tree_dir,k)) 
-            #samples_orig[k] = ROOT.RDataFrame(tree_name,'%s/%s_fakerate_only_iso.root'%(tree_dir,k)) 
-        print(k)
+        if k!= 'dimuon':
+            sample_file = ROOT.TFile.Open('%s/%s_nopresel_withpresel_v2_withnn_withidiso_v3_nofakes.root'%(tree_dir,k))
+            #sample_file = ROOT.TFile.Open('%s/%s_nopresel.root'%(tree_dir,k))
+        else:
+            sample_file = ROOT.TFile.Open('%s/%s_nopresel_withpresel_v2_withnn_withidiso_v3.root'%(tree_dir,k))
+
+        sample_files.append(sample_file)
+        sample_tree = sample_file.Get("BTo3Mu")
+        columns = [sample_tree.GetListOfBranches().At(itt).GetName() for itt  in range(sample_tree.GetListOfBranches().GetEntries())]
+        if k =='dimuon':
+            # add friend trees to dimuon 
+            fakerate_data_numbers = [data,data_inv, data_p03, data_m03, data_p03_inv, data_m03_inv]
+            fakerate_mc_numbers = [mc,mc_inv, mc_p03, mc_m03, mc_p03_inv, mc_m03_inv]
+            fakerate_alpha_numbers = [alpha,alpha_inv, alpha_p03, alpha_m03, alpha_p03_inv, alpha_m03_inv]
+
+        else: #just for new fakerate 20
+            fakerate_data_numbers = [data,data_inv, data_p03, data_m03, data_p03_inv, data_m03_inv]
+            fakerate_mc_numbers = [mc,mc_inv, mc_p03, mc_m03, mc_p03_inv, mc_m03_inv]
+            fakerate_alpha_numbers = [alpha,alpha_inv, alpha_p03, alpha_m03, alpha_p03_inv, alpha_m03_inv]
+
+        friends =[]
+        for fakerate_number in fakerate_data_numbers:
+            friends.append(ROOT.TFile.Open('%s/friends/%s_friend_fakerate_data_'%(tree_dir,k)+str(fakerate_number)+'.root'))    
+            if 'fakerate_onlydata_'+str(fakerate_number) in columns:
+                branch_to_remove = sample_tree.GetBranch('fakerate_onlydata_'+str(fakerate_number))
+                sample_tree.GetListOfBranches().Remove(branch_to_remove)        
+                sample_tree.GetListOfBranches().Compress()
+
+        for fakerate_number in fakerate_mc_numbers:
+            friends.append(ROOT.TFile.Open('%s/friends/%s_friend_fakerate_mc_'%(tree_dir,k)+str(fakerate_number)+'.root'))
+            
+            if 'fakerate_onlymc_'+str(fakerate_number) in columns:
+                branch_to_remove = sample_tree.GetBranch('fakerate_onlymc_'+str(fakerate_number))
+                sample_tree.GetListOfBranches().Remove(branch_to_remove)
+                sample_tree.GetListOfBranches().Compress()
+
+        for fakerate_number in fakerate_alpha_numbers:
+            friends.append(ROOT.TFile.Open('%s/friends/%s_friend_fakerate_alpha_'%(tree_dir,k)+str(fakerate_number)+'.root'))
+            if 'fakerate_alpha_'+str(fakerate_number) in columns:
+                branch_to_remove = sample_tree.GetBranch('fakerate_alpha_'+str(fakerate_number))
+                sample_tree.GetListOfBranches().Remove(branch_to_remove)
+                sample_tree.GetListOfBranches().Compress()
+
+        for friend in friends:
+            friend = friend.Get("BTo3Mu")
+            #print([friend.GetListOfBranches().At(itt).GetName() for itt  in range(friend.GetListOfBranches().GetEntries())])
+            sample_tree.AddFriend(friend)
+
+        samples_orig[k] = ROOT.RDataFrame(sample_tree)
 
     #Blind analysis: hide the value of rjpsi for the fit if blind (and not asimov)
     if blind_analysis:
@@ -517,7 +596,7 @@ if __name__ == '__main__':
     ####### Weights ################################
     #################################################
 
-    print("weights definition")
+    print("------>weights definition")
 
     for k, v in samples_orig.items():
         #samples_orig[k] = samples_orig[k].Define('br_weight', '%f*iso_id_corr_weight_4' %weights[k])
@@ -528,9 +607,7 @@ if __name__ == '__main__':
             samples_orig[k] = samples_orig[k].Define('tmp_weight', central_weights_string +'*hammer_bglvar')
         elif 'jpsi_x_mu' in k: #works both if splitted or not
             samples_orig[k] = samples_orig[k].Define('tmp_weight', central_weights_string +'*jpsimother_weight')
-        elif k=='dimuon' and not compute_dimuon:
-            samples_orig[k] = samples_orig[k].Define('tmp_weight', 'br_weight') # no additional weight
-        elif k=='dimuon' and compute_dimuon:
+        elif k=='dimuon':
             samples_orig[k] = samples_orig[k].Define('tmp_weight', '1') # no additional weight
         else:
             samples_orig[k] = samples_orig[k].Define('tmp_weight', central_weights_string  if k!='data' else 'br_weight') 
@@ -542,7 +619,7 @@ if __name__ == '__main__':
                 continue       
             samples_orig[k] = samples_orig[k].Define(new_column, new_definition)
 
-    print("weights defined")
+    print("------>weights defined")
     if flat_fakerate == False:
         for sample in samples_orig:
             #samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr', 'tmp_weight*nn/(
@@ -554,12 +631,7 @@ if __name__ == '__main__':
             #        samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr', 'tmp_weight*fakerate_bcmu') 
             #else:
             
-
             samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr', 'tmp_weight*((fakerate_onlydata_%d-fakerate_alpha_%d*fakerate_onlymc_%d)/(1-fakerate_alpha_%d))'%(data,alpha,mc,alpha))
-            #if sample in basic_samples_names and sample != 'data':
-            #    samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr_p03', 'tmp_weight*1.1*((fakerate_onlydata_%d-fakerate_alpha_%d*fakerate_onlymc_%d)/(1-fakerate_alpha_%d))'%(data_p03,alpha_p03,mc_p03,alpha_p03))
-            #    samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr_m03', 'tmp_weight*0.9*((fakerate_onlydata_%d-fakerate_alpha_%d*fakerate_onlymc_%d)/(1-fakerate_alpha_%d))'%(data_m03,alpha_m03,mc_m03,alpha_m03))
-            #else:
             samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr_p03', 'tmp_weight*((fakerate_onlydata_%d-fakerate_alpha_%d*fakerate_onlymc_%d)/(1-fakerate_alpha_%d))'%(data_p03,alpha_p03,mc_p03,alpha_p03))
             samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr_m03', 'tmp_weight*((fakerate_onlydata_%d-fakerate_alpha_%d*fakerate_onlymc_%d)/(1-fakerate_alpha_%d))'%(data_m03,alpha_m03,mc_m03,alpha_m03))
             if correct_fakes_with_inverted_method:
@@ -568,29 +640,18 @@ if __name__ == '__main__':
                 samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr_m03_inv', 'tmp_weight*((fakerate_onlydata_%d-fakerate_alpha_%d*fakerate_onlymc_%d)/(1-fakerate_alpha_%d))'%(data_m03_inv,alpha_m03_inv,mc_m03_inv,alpha_m03_inv))
 
             
-            #samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr', 'tmp_weight*(fakerate_onlydata_%d)'%(data))
-                #samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr', 'tmp_weight*fakerate_onlydata_13')
-            #else:
-            #samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr', 'tmp_weight*fakerate_onlymc_28')
-            #    samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr', 'tmp_weight*fakerate_onlymc_20 * (fakerate_alpha_42)/(1-fakerate_alpha_42)')
-            #samples_orig[sample] = samples_orig[sample].Define('total_weight_wfr', 'tmp_weight')
-
     # the scale factor on the id on the third muon only for the PASS region 
     # Di muon bkg for PASS
     if add_dimuon and compute_dimuon: 
-        print("Doing the Dimuon")
-        Norm1 = get_DiMuonBkgNorm(label) 
-        Norm_SRloose = get_DiMuonBkg(Norm1,label) 
+        print("Finding the dimuon_norm1")
+        # norm from fit to compute or to take directly from file sample.py (it doesnt depend on the categorization)
+        dimuon_norm1 = get_DiMuonBkgNorm(label) 
+        if debug_dimuon: print("dimuon_norm1 = ",dimuon_norm1)
+
 
     for sample in samples_orig:
-        #samples_orig[sample] = samples_orig[sample].Define('total_weight', 'tmp_weight*sf_id_k' if sample!='data' else 'tmp_weight')
-        if sample == 'dimuon':
-            samples_orig[sample] = samples_orig[sample].Define('total_weight', 'tmp_weight*%f'%Norm_SRloose)
-        else:
-            samples_orig[sample] = samples_orig[sample].Define('total_weight', 'tmp_weight' if sample!='data' else 'tmp_weight')
+        samples_orig[sample] = samples_orig[sample].Define('total_weight', 'tmp_weight' if sample!='data' else 'tmp_weight')
             
-
-
 
     ##############################################
     ##### Preselection ###########################
@@ -603,49 +664,28 @@ if __name__ == '__main__':
     for k, v in samples_orig.items():
         filter = preselection_mc if k!='data' else preselection
         if k == 'dimuon':
-            filter = preselection_dimuon
+            filter = preselection_dimuon #no eta selection + jpsi SR selection 
+            # this sample is udes to find c2 of dimuon
         samples_lm[k] = samples_orig[k].Filter(filter)
-        #if scale_mc_in_fail:
-        #    if k == 'data':
-        #        continue
-        #    if compute_mean_weights:
-        #        mean_nn_data_weights_lm[k] = samples_lm[k].Mean("fakerate_data").GetValue()
-        #        mean_nn_mc_weights_lm[k] = samples_lm[k].Mean("fakerate_bcmu").GetValue()
-        #        print(mean_nn_data_weights_lm[k],mean_nn_mc_weights_lm[k])
-        #    samples_lm[k] = samples_lm[k].Define('total_weight_wfr_norm', 'total_weight_wfr*%f/%f'%(mean_nn_data_weights_lm[k],mean_nn_mc_weights_lm[k]))
-        #     #else:
-        #        samples_lm[k] = samples_lm[k].Define('total_weight_wfr_norm', 'total_weight_wfr*%f/%f'%(mean_nn_data_lm[k].GetValue(),mean_nn_mc_weights_lm[k].GetValue()))
-        
-        #print("Sample "+k +" with "+str(samples_lm[k].Count().GetValue())+" events")
-        
+        #print("sample "+k+" with "+str(samples_lm[k].Count().GetValue())+" events")
+    
     histos_dictionaries = [histos_lm]
     #Apply preselection for ch3 and ch4 (high mass regions)
     if add_hm_categories:
         samples_hm = dict()
-        #if scale_mc_in_fail and compute_mean_weights:
-        #    mean_nn_data_weights_hm = dict()
-        #    mean_nn_mc_weights_hm = dict()
+
         print("############################")
         for k, v in samples_orig.items():
-            if not (k=='data' or 'jpsi_x_mu' in k): #only those samples are different from zero in the high mass region
+            if not (k=='data' or 'jpsi_x_mu' in k or k=='dimuon'): #only those samples are different from zero in the high mass region
                 continue
             #print("Sample "+k )
             filter = preselection_hm_mc if k!='data' else preselection_hm
             if k=='dimuon':
-                filter = preselection_hm_dimuon
-            samples_hm[k] = samples_orig[k].Filter(filter)
-            #print("Sample "+k +" with "+str(samples_hm[k].Count().GetValue())+" events")
-            #if scale_mc_in_fail:
-            #    if k == 'data':
-            #        continue
-            #    if compute_mean_weights:
-            #        mean_nn_data_weights_hm[k] = samples_hm[k].Mean("fakerate_data").GetValue()
-            #        mean_nn_mc_weights_hm[k] = samples_hm[k].Mean("fakerate_bcmu").GetValue()
-            #        print(mean_nn_data_weights_hm[k],mean_nn_mc_weights_hm[k])
-            #    samples_hm[k] = samples_hm[k].Define('total_weight_wfr_norm', 'total_weight_wfr*%f/%f'%(mean_nn_data_weights_hm[k],mean_nn_mc_weights_hm[k]))
+                filter = preselection_hm_dimuon #no eta selection + jpsi SR selection
 
-        histos_dictionaries = [histos_lm, histos_hm]
-    
+
+            samples_hm[k] = samples_orig[k].Filter(filter)
+        histos_dictionaries = [histos_lm, histos_hm]    
 
     samples_dictionaries = [samples_lm]
     if add_hm_categories:
@@ -653,6 +693,43 @@ if __name__ == '__main__':
 
     dateTimeObj = datetime.now()
     print(dateTimeObj.hour, ':', dateTimeObj.minute, ':', dateTimeObj.second, '.', dateTimeObj.microsecond)
+
+    if add_dimuon:
+        # load data file withotu low mass, and without cuts on eta
+        data_for_dimuon_sr = ROOT.RDataFrame(tree_name,'%s/data_withpresel_notriggersel.root'%(tree_dir))
+        for new_column, new_definition in to_define: 
+            if data_for_dimuon_sr.HasColumn(new_column):
+                continue       
+            data_for_dimuon_sr = data_for_dimuon_sr.Define(new_column, new_definition)
+        
+        samples_lm_dimuon_for_norm = data_for_dimuon_sr.Filter(preselection_dimuon_sr) # no eta selection and no jpsi SR selection
+        print(samples_lm_dimuon_for_norm.Count().GetValue())
+        samples_hm_dimuon_for_norm = data_for_dimuon_sr.Filter(preselection_hm_dimuon_sr) # no eta selection and no jpsi SR selection
+
+        # part 2 of the normalisation, dependent on the cateogyr
+        dimuon_lm_pass_norm2 = samples_lm_dimuon_for_norm.Filter(pass_id).Count().GetValue()
+        dimuon_hm_pass_norm2 = samples_hm_dimuon_for_norm.Filter(pass_id).Count().GetValue()
+        
+        dimuon_lm_fail_norm2 = samples_lm_dimuon_for_norm.Filter(fail_id_for_dimuon_sr).Count().GetValue()
+        dimuon_hm_fail_norm2 = samples_hm_dimuon_for_norm.Filter(fail_id_for_dimuon_sr).Count().GetValue()
+
+        dimuon_lm_pass_integral = samples_lm['dimuon'].Filter(pass_id).Count().GetValue()
+        dimuon_hm_pass_integral = samples_hm['dimuon'].Filter(pass_id).Count().GetValue()
+
+        dimuon_lm_fail_integral = samples_lm['dimuon'].Filter(fail_id).Count().GetValue()
+        dimuon_hm_fail_integral = samples_hm['dimuon'].Filter(fail_id).Count().GetValue()
+        if debug_dimuon: print("dimuon norm2 for lm pass ",dimuon_lm_pass_norm2)
+        if debug_dimuon: print("dimuon norm2 for hm pass ",dimuon_hm_pass_norm2)
+        if debug_dimuon: print("dimuon norm2 for lm fail ",dimuon_lm_fail_norm2)
+        if debug_dimuon: print("dimuon norm2 for hm pass ",dimuon_hm_fail_norm2)
+        if debug_dimuon: print("dimuon integral for lm pass ",dimuon_lm_pass_integral)
+        if debug_dimuon: print("dimuon integral for hm pass ",dimuon_hm_pass_integral)
+        if debug_dimuon: print("dimuon integral for lm fail ",dimuon_lm_fail_integral)
+        if debug_dimuon: print("dimuon integral for hm pass ",dimuon_hm_fail_integral)
+
+        print("Dimuon norm factor ", dimuon_norm1*dimuon_lm_pass_norm2/dimuon_lm_pass_integral)
+        dateTimeObj = datetime.now()
+        print(dateTimeObj.hour, ':', dateTimeObj.minute, ':', dateTimeObj.second, '.', dateTimeObj.microsecond)
 
     ###########################################################
     ######### NUISANCES Defininition ##########################
@@ -781,6 +858,7 @@ if __name__ == '__main__':
         print('====> creating pointers to histo')
         temp_hists      = {} # pass muon ID category
         temp_hists_fake = {} # fail muon ID category
+        #temp_hists_fake_dimuon = {}
         if not flat_fakerate:
             temp_hists_fake_nn = {} # fail muon ID category
             if correct_fakes_with_inverted_method:
@@ -793,6 +871,7 @@ if __name__ == '__main__':
         for k, v in histos.items():    
             temp_hists     [k] = {}
             temp_hists_fake[k] = {}
+            #temp_hists_fake_dimuon[k] = {}
             if not flat_fakerate:
                 temp_hists_fake_nn[k] = {}
                 if k in datacards+['jpsivtx_log10_lxy_sig_corr'] :
@@ -804,13 +883,29 @@ if __name__ == '__main__':
                 if correct_fakes_with_inverted_method:
                     temp_hists_fake_nn_inv[k] = {}
 
+            # no weight for this histos, needed later on for the integral without weights in the fail regions
             for kk, vv in samples.items():
                 if kk=='dimuon' and k in dimuon_redefined_branches:
                     branch_name = k+'_dimuon'
                 else:
                     branch_name = k
+                #if kk =='dimuon':
+                #    temp_hists_fake_dimuon[k]['%s_dimuon' %(k)] = vv.Filter(fail_id).Histo1D(v[0], branch_name)
 
                 temp_hists     [k]['%s_%s' %(k, kk)] = vv.Filter(pass_id).Histo1D(v[0], branch_name, 'total_weight')
+                '''
+                    # in this way it takes the value of the integral without the weights
+                    # I do integral and don't just count the events because it may vary depending on the bin choice, but I want the final norm to be dimuon_norm1*dimuon_lm_norm2
+                    dimuon_lm_integral = samples_lm['dimuon'].Filter(pass_id).Histo1D(v[0], branch_name).GetValue().Integral()
+                    dimuon_hm_integral = samples_hm['dimuon'].Filter(pass_id).Histo1D(v[0], branch_name).GetValue().Integral()
+
+                    print("DImuon integral prima dopo ",k,kk,temp_hists     [k]['%s_%s' %(k, kk)].GetValue().Integral())
+                    if not iteration: # lm
+                        temp_hists     [k]['%s_%s' %(k, kk)].GetValue().Scale(dimuon_norm1*dimuon_lm_norm2/dimuon_lm_integral)
+                    if iteration: # lm
+                        temp_hists     [k]['%s_%s' %(k, kk)].GetValue().Scale(dimuon_norm1*dimuon_hm_norm2/dimuon_hm_integral)
+                    print(temp_hists     [k]['%s_%s' %(k, kk)].GetValue().Integral())
+                '''
                 temp_hists_fake[k]['%s_%s' %(k, kk)] = vv.Filter(fail_id).Histo1D(v[0], branch_name, 'total_weight')
                 if not flat_fakerate:
                     temp_hists_fake_nn[k]['%s_%s' %(k, kk)] = vv.Filter(fail_id).Histo1D(v[0], branch_name, 'total_weight_wfr')
@@ -856,8 +951,11 @@ if __name__ == '__main__':
         print('====> now looping')
         for k, v in histos.items():
             print("Histo %s"%k)
-
+            
+            #if debug_dimuon:print("Integral before ",temp_hists[k]['%s_dimuon' %(k)].Integral())
             #check that bins are not zero (if they are, correct)
+            #print(dateTimeObj.hour, ':', dateTimeObj.minute, ':', dateTimeObj.second, '.', dateTimeObj.microsecond)
+
             for i, kv in enumerate(temp_hists[k].items()):
                 key = kv[0]
                 ihist = kv[1]
@@ -882,6 +980,43 @@ if __name__ == '__main__':
                     for i in range(1,ihist.GetNbinsX()+1):
                         if ihist.GetBinContent(i) <= 0:
                             ihist.SetBinContent(i,0.0001)
+
+            # adjust norm for dimuon
+            # easy for pass region, because there are no weights
+            if add_dimuon:
+                if not iteration: # lm
+                    #if debug_dimuon:print("Integral before ",dimuon_norm1)
+                    #if debug_dimuon:print("Integral before ",dimuon_lm_pass_norm2)
+                    #if debug_dimuon:print("Integral before ",dimuon_lm_pass_integral)
+                    if debug_dimuon:print("Norm factor ",dimuon_norm1*dimuon_lm_pass_norm2/dimuon_lm_pass_integral)              
+                    if debug_dimuon:print("Integral before ",temp_hists[k]['%s_dimuon' %(k)].Integral())
+                    temp_hists[k]['%s_dimuon' %(k)].Scale(dimuon_norm1*dimuon_lm_pass_norm2/dimuon_lm_pass_integral)
+                    if debug_dimuon:print("Integral after ",temp_hists[k]['%s_dimuon' %(k)].Integral())
+                if iteration: # hm
+                    temp_hists[k]['%s_dimuon' %(k)].Scale(dimuon_norm1*dimuon_hm_pass_norm2/dimuon_hm_pass_integral)
+            
+                #for fail region I want a set of histos without the weights to use as reference integral
+                if not iteration: # lm
+                    #if debug_dimuon:print("fake integral dimuon ",temp_hists_fake_dimuon[k]['%s_dimuon' %(k)].Integral())
+                    temp_hists_fake_nn[k]['%s_dimuon' %(k)].Scale(dimuon_norm1*dimuon_lm_fail_norm2/dimuon_lm_fail_integral)
+                    temp_hists_fake[k]['%s_dimuon' %(k)].Scale(dimuon_norm1*dimuon_lm_fail_norm2/dimuon_lm_fail_integral)
+                    if k in datacards+['jpsivtx_log10_lxy_sig_corr'] :
+                        temp_hists_fake_nn_p03[k]['%s_dimuon' %(k)].Scale(dimuon_norm1*dimuon_lm_fail_norm2/dimuon_lm_fail_integral)
+                        temp_hists_fake_nn_m03[k]['%s_dimuon' %(k)].Scale(dimuon_norm1*dimuon_lm_fail_norm2/dimuon_lm_fail_integral)
+                        if correct_fakes_with_inverted_method:
+                            temp_hists_fake_nn_p03_inv[k]['%s_dimuon' %(k)].Scale(dimuon_norm1*dimuon_lm_fail_norm2/dimuon_lm_fail_integral)
+                            temp_hists_fake_nn_m03_inv[k]['%s_dimuon' %(k)].Scale(dimuon_norm1*dimuon_lm_fail_norm2/dimuon_lm_fail_integral)
+                        
+                if iteration: # hm
+                    temp_hists_fake_nn[k]['%s_dimuon' %(k)].Scale(dimuon_norm1*dimuon_hm_fail_norm2/dimuon_hm_fail_integral)
+                    temp_hists_fake[k]['%s_dimuon' %(k)].Scale(dimuon_norm1*dimuon_hm_fail_norm2/dimuon_hm_fail_integral)
+                    if k in datacards+['jpsivtx_log10_lxy_sig_corr'] :
+                        temp_hists_fake_nn_p03[k]['%s_dimuon' %(k)].Scale(dimuon_norm1*dimuon_hm_fail_norm2/dimuon_hm_fail_integral)
+                        temp_hists_fake_nn_m03[k]['%s_dimuon' %(k)].Scale(dimuon_norm1*dimuon_hm_fail_norm2/dimuon_hm_fail_integral)
+                        if correct_fakes_with_inverted_method:
+                            temp_hists_fake_nn_p03_inv[k]['%s_dimuon' %(k)].Scale(dimuon_norm1*dimuon_hm_fail_norm2/dimuon_hm_fail_integral)
+                            temp_hists_fake_nn_m03_inv[k]['%s_dimuon' %(k)].Scale(dimuon_norm1*dimuon_hm_fail_norm2/dimuon_hm_fail_integral)
+
 
             single_bbb_histos = {}
             single_bbb_histos_fake = {}
@@ -1245,8 +1380,6 @@ if __name__ == '__main__':
             c1.SaveAs('plots_ul/%s/%s/pdf/log/%s.pdf' %(label, channels[0], k))
             c1.SaveAs('plots_ul/%s/%s/png/log/%s.png' %(label, channels[0], k))
             
-            print("DATA integral ",temp_hists[k]['%s_data'%k].Integral(),temp_hists[k]['%s_data'%k].GetBinContent(1))
-
             if shape_nuisances and ((k in datacards and  iteration==0) or (k =='jpsivtx_log10_lxy_sig_corr' and iteration)):
             #if shape_nuisances and ((iteration==0) or (k == 'Bmass' and iteration)):
                 
@@ -1307,13 +1440,13 @@ if __name__ == '__main__':
                 shapes['fakes_fakesshapeUp'] = [] #just for the name
                 shapes['fakes_fakesshapeDown'] = []
                 
-                print(samples_for_legend)
+                #print(samples_for_legend)
                 sf_reco = scale_factor_norm_for_each_region(k,temp_hists[k],unc_hists[k], samples_for_legend)
                 
                 create_datacard_prep(temp_hists[k], unc_hists[k], shapes, samples_for_legend, channels[0], k, label, which_sample_bbb_unc, sf_reco)
                 #shape_comparison(label, k, channels[0], [name for name,v in samples.items()], verbose = True)
                 #if not add_dimuon:
-                #plot_shape_nuisances(label, k, channels[0], [name for name,v in samples.items()], which_sample_bbb_unc, compute_sf = False)
+                plot_shape_nuisances(label, k, channels[0], [name for name,v in samples.items()], which_sample_bbb_unc, compute_sf = False)
                     # script per comparison shapes tau mu fakes
 
             #####################################################
